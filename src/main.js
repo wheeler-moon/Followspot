@@ -295,6 +295,16 @@ function setupIPC() {
       event.returnValue = results;
     } catch(e) { event.returnValue = []; }
   });
+ipcMain.on('db-get-show-stats', (event, showId) => {
+    try {
+      const database = getDb();
+      const cues = database.prepare('SELECT COUNT(*) as c FROM cues WHERE show_id = ?').get(showId);
+      const scenes = database.prepare('SELECT COUNT(*) as c FROM scenes WHERE show_id = ?').get(showId);
+      const characters = database.prepare('SELECT COUNT(*) as c FROM characters WHERE show_id = ?').get(showId);
+      const spots = database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY spot_number').all(showId);
+      event.returnValue = { cues: cues.c, scenes: scenes.c, characters: characters.c, spots };
+    } catch(e) { event.returnValue = { cues: 0, scenes: 0, characters: 0, spots: [] }; }
+  });
 }
 
 const createWindow = () => {
