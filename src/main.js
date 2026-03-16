@@ -94,6 +94,7 @@ function initSchema() {
       location TEXT,
       active_frames TEXT,
       description TEXT,
+      notes TEXT,
       ignore INTEGER DEFAULT 0,
       FOREIGN KEY (cue_id) REFERENCES cues(id) ON DELETE CASCADE,
       FOREIGN KEY (spot_id) REFERENCES spots(id)
@@ -294,6 +295,12 @@ function setupIPC() {
       `).all(q, q);
       event.returnValue = results;
     } catch(e) { event.returnValue = []; }
+  ipcMain.on('db-update-cue-scene', (event, { cueId, sceneId }) => {
+    try {
+      getDb().prepare('UPDATE cues SET scene_id = ? WHERE id = ?').run(sceneId, cueId);
+      event.returnValue = { success: true };
+    } catch(e) { event.returnValue = { success: false }; }
+  });
   });
 ipcMain.on('db-get-show-stats', (event, showId) => {
     try {
@@ -350,20 +357,67 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
     } catch(e) { event.returnValue = { success: false }; }
   });
 
-  ipcMain.on('db-create-cue', (event, { showId, sceneId, sortOrder }) => {
+  ipcMain.on('db-create-cue', (event, { showId, sceneId, afterCueId }) => {
     try {
       const database = getDb();
       const maxTrack = database.prepare('SELECT MAX(track_number) as m FROM cues WHERE show_id = ?').get(showId);
       const trackNum = (maxTrack.m || 0) + 1;
-      const maxSort = database.prepare('SELECT MAX(sort_order) as m FROM cues WHERE show_id = ?').get(showId);
-      const sort = sortOrder !== undefined ? sortOrder : (maxSort.m || 0) + 1;
-      const result = database.prepare('INSERT INTO cues (show_id, scene_id, track_number, sort_order, lq_number) VALUES (?, ?, ?, ?, ?)').run(showId, sceneId || null, trackNum, sort, '');
       const spots = database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY spot_number').all(showId);
-      for (const spot of spots) {
-        database.prepare('INSERT INTO spot_cues (cue_id, spot_id, action, intensity, fade_time, active_frames) VALUES (?, ?, ?, ?, ?, ?)').run(result.lastInsertRowid, spot.id, '', '', '', '');
+
+      const allCues = database.prepare('SELECT * FROM cues WHERE show_id = ? ORDER BY sort_order ASC, id ASC').all(showId);
+
+      let insertIndex;
+      let prevCueId = null;
+
+      if (afterCueId) {
+        insertIndex = allCues.findIndex(c => c.id === afterCueId);
+        prevCueId = afterCueId;
+      } else {
+        insertIndex = allCues.length - 1;
+        prevCueId = allCues.length > 0 ? allCues[allCues.length - 1].id : null;
       }
-      event.returnValue = { success: true, id: result.lastInsertRowid, track_number: trackNum };
-    } catch(e) { console.error(e); event.returnValue = { success: false }; }
+
+      const newSortOrder = (insertIndex + 1) * 1000 + 500;
+
+      const result = database.prepare('INSERT INTO cues (show_id, scene_id, track_number, sort_order, lq_number) VALUES (?, ?, ?, ?, ?)').run(showId, sceneId || null, trackNum, newSortOrder, '');
+      const newCueId = result.lastInsertRowid;
+
+      const allCuesAfterInsert = database.prepare('SELECT * FROM cues WHERE show_id = ? ORDER BY sort_order ASC, id ASC').all(showId);
+      allCuesAfterInsert.forEach((c, i) => {
+        database.prepare('UPDATE cues SET sort_order = ? WHERE id = ?').run((i + 1) * 1000, c.id);
+      });
+
+      let prevSpotCues = {};
+      if (prevCueId) {
+        const prevSCs = database.prepare('SELECT * FROM spot_cues WHERE cue_id = ?').all(prevCueId);
+        prevSCs.forEach(sc => { prevSpotCues[sc.spot_id] = sc; });
+      }
+
+      for (const spot of spots) {
+        const prevSpotCue = prevSpotCues[spot.id] || null;
+        const prevAction = prevSpotCue ? prevSpotCue.action : '';
+        const endsInOff = ['Fade Out', 'Bump Out', 'Fade In Place'].includes(prevAction);
+        const wasOff = prevAction === 'Off';
+        const startsOff = endsInOff || wasOff;
+
+        database.prepare('INSERT INTO spot_cues (cue_id, spot_id, action, character_id, intensity, fade_time, active_frames, description, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run(
+          newCueId,
+          spot.id,
+          startsOff ? 'Off' : '',
+          startsOff ? null : (prevSpotCue ? prevSpotCue.character_id : null),
+          '',
+          '',
+          startsOff ? '' : (prevSpotCue ? prevSpotCue.active_frames : ''),
+          '',
+          ''
+        );
+      }
+
+      event.returnValue = { success: true, id: newCueId, track_number: trackNum };
+    } catch(e) {
+      console.error(e);
+      event.returnValue = { success: false };
+    }
   });
 
   ipcMain.on('db-update-cue', (event, { cueId, field, value }) => {
@@ -377,7 +431,7 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
 
   ipcMain.on('db-update-spot-cue', (event, { spotCueId, field, value }) => {
     try {
-      const safe = ['action','character_id','frame_size','intensity','fade_time','location','active_frames','description','ignore'];
+      const safe = ['action','character_id','frame_size','intensity','fade_time','location','active_frames','description','notes','ignore'];
       if (!safe.includes(field)) { event.returnValue = { success: false }; return; }
       getDb().prepare(`UPDATE spot_cues SET ${field} = ? WHERE id = ?`).run(value, spotCueId);
       event.returnValue = { success: true };
