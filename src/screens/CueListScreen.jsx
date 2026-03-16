@@ -26,6 +26,7 @@ const ACTIONS = [
 
 const INTENSITIES = ['Full','90%','80%','75%','70%','60%','50%','40%','30%','25%','20%','10%','Glow','Out'];
 const TIMES = ['0','1','2','3','4','5','6','7','8','9','10','Custom'];
+const IRIS_SIZES = ['Full Body', '3/4 Body', '1/2 Body', 'Head & Shoulders', 'Head', 'Custom'];
 
 const selectStyle = {
   width: '100%', background: '#111', border: '1px solid #2a2a2a',
@@ -178,13 +179,24 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '3px', marginBottom: '5px', flexWrap: 'wrap' }}>
-          {colorSlots.map(slot => (
-            <div key={slot.id} onClick={() => toggleFrame('F' + slot.slot_number)}
-              style={{ padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: '600', cursor: 'pointer', background: activeFrames.includes('F' + slot.slot_number) ? '#534AB7' : '#1a1a1a', color: activeFrames.includes('F' + slot.slot_number) ? '#fff' : '#555', border: `1px solid ${activeFrames.includes('F' + slot.slot_number) ? '#534AB7' : '#2a2a2a'}` }}>
-              F{slot.slot_number}
-            </div>
-          ))}
+<div style={{ display: 'flex', alignItems: 'center', marginBottom: '3px', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', gap: '3px' }}>
+            {[{label:'FB',value:'Full Body'},{label:'3/4',value:'3/4 Body'},{label:'1/2',value:'1/2 Body'},{label:'H&S',value:'Head & Shoulders'},{label:'Hd',value:'Head'}].map(iris => (
+              <div key={iris.value}
+                onClick={() => onUpdate(spotCue.id, 'frame_size', spotCue.frame_size === iris.value ? '' : iris.value)}
+                style={{ padding: '2px 6px', borderRadius: '20px', fontSize: '10px', fontWeight: '600', cursor: 'pointer', background: spotCue.frame_size === iris.value ? '#185FA5' : '#1a1a1a', color: spotCue.frame_size === iris.value ? '#fff' : '#444', border: `1px solid ${spotCue.frame_size === iris.value ? '#185FA5' : '#2a2a2a'}` }}>
+                {iris.label}
+              </div>
+            ))}
+          </div>
+          <div style={{ display: 'flex', gap: '3px' }}>
+            {colorSlots.map(slot => (
+              <div key={slot.id} onClick={() => toggleFrame('F' + slot.slot_number)}
+                style={{ padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: '600', cursor: 'pointer', background: activeFrames.includes('F' + slot.slot_number) ? '#534AB7' : '#1a1a1a', color: activeFrames.includes('F' + slot.slot_number) ? '#fff' : '#555', border: `1px solid ${activeFrames.includes('F' + slot.slot_number) ? '#534AB7' : '#2a2a2a'}` }}>
+                F{slot.slot_number}
+              </div>
+            ))}
+          </div>
         </div>
 
         <div style={{ display: 'flex', gap: '4px', alignItems: 'center', marginBottom: '3px' }}>
