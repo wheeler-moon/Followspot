@@ -280,6 +280,7 @@ function setupIPC() {
       event.returnValue = { success: true };
     } catch(e) {
       console.error(e);
+      console.error('PDF generation error:', e);
       event.returnValue = { success: false, error: e.message };
     }
   });
@@ -301,6 +302,39 @@ function setupIPC() {
       event.returnValue = { success: true };
     } catch(e) { event.returnValue = { success: false }; }
   });
+  });
+  ipcMain.on('db-generate-pdf', async (event, { showId, spotId, label }) => {
+    try {
+      const { generateSpotSheetPDF } = require('./pdfGenerator');
+      const { dialog } = require('electron');
+      const database = getDb();
+      const show = database.prepare('SELECT * FROM shows WHERE id = ?').get(showId);
+      const spot = database.prepare('SELECT * FROM spots WHERE id = ?').get(spotId);
+      const colorSlots = database.prepare('SELECT * FROM color_slots WHERE spot_id = ? ORDER BY is_permanent, slot_number').all(spotId);
+      const cues = database.prepare('SELECT * FROM cues WHERE show_id = ? ORDER BY sort_order').all(showId);
+      const spotCues = database.prepare('SELECT * FROM spot_cues WHERE spot_id = ?').all(spotId);
+      const characters = database.prepare('SELECT * FROM characters WHERE show_id = ?').all(showId);
+      const scenes = database.prepare('SELECT * FROM scenes WHERE show_id = ? ORDER BY sort_order').all(showId);
+      const spots = database.prepare('SELECT * FROM spots WHERE show_id = ?').all(showId);
+
+      const { filePath } = await dialog.showSaveDialog({
+        defaultPath: `${show.title} - Spot ${spot.spot_number} - ${label || 'Sheet'}.pdf`,
+        filters: [{ name: 'PDF', extensions: ['pdf'] }],
+      });
+
+      if (!filePath) { event.returnValue = { success: false, cancelled: true }; return; }
+
+      await generateSpotSheetPDF({
+        show, spot, colorSlots, cues, spotCues, characters, scenes,
+        label, numSpots: spots.length, outputPath: filePath,
+      });
+
+      event.returnValue = { success: true, path: filePath };
+    } catch(e) {
+      console.error(e);
+     console.error('PDF generation error:', e);
+      event.returnValue = { success: false, error: e.message };
+    }
   });
 ipcMain.on('db-get-show-stats', (event, showId) => {
     try {

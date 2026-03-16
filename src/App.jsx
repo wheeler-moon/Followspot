@@ -3,6 +3,7 @@ import HomeScreen from './screens/HomeScreen';
 import NewShowScreen from './screens/NewShowScreen';
 import ShowDashboard from './screens/ShowDashboard';
 import CueListScreen from './screens/CueListScreen';
+import PrintScreen from './screens/PrintScreen';
 
 export default function App() {
   const [screen, setScreen] = useState('home');
@@ -19,6 +20,7 @@ export default function App() {
       {screen === 'new-show' && <NewShowScreen navigate={navigate} />}
       {screen === 'show' && <ShowDashboard show={currentShow} navigate={navigate} />}
       {screen === 'cue-list' && <CueListScreen show={currentShow} navigate={navigate} />}
+      {screen === 'print' && <div style={{color:'white',padding:'20px'}}><PrintScreen show={currentShow} navigate={navigate} /></div>}
     </div>
   );
 }

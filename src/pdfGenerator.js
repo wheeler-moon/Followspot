@@ -1,0 +1,459 @@
+const puppeteer = require('puppeteer');
+const path = require('path');
+const { app } = require('electron');
+
+function actionIconSVG(action, size = 28) {
+  const s = size;
+  const icons = {
+    'Pick Up': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><polygon points="16,4 24,20 8,20" fill="#3B6D11"/><polygon points="16,14 22,26 10,26" fill="#639922" opacity="0.5"/></svg>`,
+    'Fade Up': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><polygon points="16,5 23,18 9,18" fill="#3B6D11"/></svg>`,
+    'Fade Down': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><polygon points="16,27 23,14 9,14" fill="#A32D2D"/></svg>`,
+    'Fade Out': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><polygon points="16,28 24,12 8,12" fill="#A32D2D"/><polygon points="16,18 22,6 10,6" fill="#E24B4A" opacity="0.5"/></svg>`,
+    'Fade In Place': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="none" stroke="#A32D2D" stroke-width="2"/><polygon points="16,27 23,14 9,14" fill="#A32D2D"/></svg>`,
+    'Bump Up': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><rect x="8" y="10" width="16" height="3" rx="1.5" fill="#3B6D11"/><rect x="10" y="15" width="12" height="3" rx="1.5" fill="#3B6D11" opacity="0.6"/><rect x="12" y="20" width="8" height="3" rx="1.5" fill="#3B6D11" opacity="0.3"/></svg>`,
+    'Bump Out': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><rect x="8" y="19" width="16" height="3" rx="1.5" fill="#A32D2D"/><rect x="10" y="14" width="12" height="3" rx="1.5" fill="#A32D2D" opacity="0.6"/><rect x="12" y="9" width="8" height="3" rx="1.5" fill="#A32D2D" opacity="0.3"/></svg>`,
+    'Swap To': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><path d="M10 10 C10 6 22 6 22 10 L22 16 C22 20 16 24 16 24 C16 24 10 20 10 16 Z" fill="none" stroke="#185FA5" stroke-width="2"/><path d="M20 20 L26 24 L22 26 L20 20Z" fill="#185FA5"/></svg>`,
+    'Slide To': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><line x1="6" y1="16" x2="26" y2="16" stroke="#185FA5" stroke-width="2.5" stroke-linecap="round"/><polygon points="22,10 30,16 22,22" fill="#185FA5"/><polygon points="10,10 2,16 10,22" fill="#185FA5"/></svg>`,
+    'Stay With': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><circle cx="16" cy="16" r="9" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.5"/><circle cx="12" cy="16" r="3" fill="#185FA5"/><circle cx="20" cy="16" r="3" fill="#185FA5"/></svg>`,
+    'Iris In': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="none" stroke="#534AB7" stroke-width="2"/><line x1="8" y1="16" x2="24" y2="16" stroke="#534AB7" stroke-width="2" stroke-linecap="round"/><polygon points="10,12 6,16 10,20" fill="#534AB7"/><polygon points="22,12 26,16 22,20" fill="#534AB7"/></svg>`,
+    'Iris Out': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="none" stroke="#534AB7" stroke-width="2"/><line x1="8" y1="16" x2="24" y2="16" stroke="#534AB7" stroke-width="2" stroke-linecap="round"/><polygon points="6,12 10,16 6,20" fill="#534AB7"/><polygon points="26,12 22,16 26,20" fill="#534AB7"/></svg>`,
+    'Iris/Fade Up': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><circle cx="16" cy="18" r="9" fill="none" stroke="#534AB7" stroke-width="2"/><polygon points="16,4 22,14 10,14" fill="#3B6D11"/></svg>`,
+    'Iris/Fade Down': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><circle cx="16" cy="14" r="9" fill="none" stroke="#534AB7" stroke-width="2"/><polygon points="16,28 22,18 10,18" fill="#A32D2D"/></svg>`,
+    'Iris/Fade Out': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><circle cx="16" cy="16" r="9" fill="none" stroke="#534AB7" stroke-width="2"/><line x1="9" y1="16" x2="23" y2="16" stroke="#A32D2D" stroke-width="2"/><polygon points="11,12 7,16 11,20" fill="#A32D2D"/><polygon points="21,12 25,16 21,20" fill="#A32D2D"/></svg>`,
+    'Up & Out': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><polygon points="16,4 22,14 10,14" fill="#3B6D11"/><polygon points="16,28 22,18 10,18" fill="#A32D2D"/></svg>`,
+    'Bump Color': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><rect x="9" y="8" width="14" height="16" rx="2" fill="none" stroke="#BA7517" stroke-width="1.5"/><rect x="12" y="11" width="3" height="10" fill="#639922"/><rect x="16" y="11" width="3" height="10" fill="#E24B4A"/></svg>`,
+    'Roll Color': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><rect x="9" y="8" width="14" height="16" rx="2" fill="none" stroke="#BA7517" stroke-width="1.5"/><rect x="9" y="8" width="3.5" height="16" rx="1" fill="#E24B4A"/><rect x="12.5" y="8" width="3.5" height="16" fill="#EF9F27"/><rect x="16" y="8" width="3.5" height="16" fill="#639922"/><rect x="19.5" y="8" width="3.5" height="16" rx="1" fill="#185FA5"/></svg>`,
+    'Ballyhoo': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><path d="M8 16 C8 10 12 6 16 6 C20 6 24 10 24 16 C24 22 20 26 16 26 C12 26 8 22 8 16 Z" fill="none" stroke="#D85A30" stroke-width="2.5"/><path d="M16 6 C16 6 20 16 16 26" fill="none" stroke="#D85A30" stroke-width="2"/><path d="M16 6 C16 6 12 16 16 26" fill="none" stroke="#D85A30" stroke-width="2"/></svg>`,
+    'Off': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><line x1="8" y1="8" x2="24" y2="24" stroke="#999" stroke-width="2.5" stroke-linecap="round"/><line x1="24" y1="8" x2="8" y2="24" stroke="#999" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+  };
+  return icons[action] || `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><circle cx="16" cy="16" r="8" fill="#ccc"/></svg>`;
+}
+
+function buildSpotSheetHTML({ show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots }) {
+  const isLandscape = numSpots > 2;
+  const sceneMap = {};
+  scenes.forEach(s => { sceneMap[s.id] = s; });
+  const charMap = {};
+  characters.forEach(c => { charMap[c.id] = c; });
+
+  const sortedCues = [...cues].sort((a, b) => a.sort_order - b.sort_order);
+
+  const gelFramesHTML = colorSlots.filter(s => !s.is_permanent).map(slot => `
+    <div class="gel-slot">
+      <span class="gel-num">${slot.gel_number || '—'}</span>
+      <span class="gel-name">${slot.gel_name || 'Empty'}</span>
+      <span class="gel-label">F${slot.slot_number}</span>
+    </div>
+  `).join('');
+
+  const permSlot = colorSlots.find(s => s.is_permanent);
+  const permHTML = permSlot && permSlot.gel_number ? `
+    <div class="gel-slot perm">
+      <span class="gel-num">${permSlot.gel_number}</span>
+      <span class="gel-name">${permSlot.gel_name || ''}</span>
+      <span class="gel-label">PERM</span>
+    </div>
+  ` : '';
+
+  let rowsHTML = '';
+  let currentSceneId = 'NONE';
+
+  for (const cue of sortedCues) {
+    const sc = spotCues.find(sc => sc.cue_id === cue.id && sc.spot_id === spot.id);
+    if (!sc) continue;
+
+    if (cue.scene_id !== currentSceneId) {
+      currentSceneId = cue.scene_id;
+      const scene = sceneMap[cue.scene_id];
+      if (scene) {
+        rowsHTML += `
+          <tr class="scene-row">
+            <td colspan="9">${scene.label}${scene.song ? ' · ' + scene.song : ''}</td>
+          </tr>
+        `;
+      }
+    }
+
+    const char = charMap[sc.character_id];
+    const activeFrames = sc.active_frames ? sc.active_frames.split(',').filter(Boolean).join(' + ') : '';
+    const isOff = sc.action === 'Off';
+
+    rowsHTML += `
+      <tr class="${isOff ? 'off-row' : ''}">
+        <td class="lq-cell">${cue.lq_number || '—'}</td>
+        <td class="action-cell">
+          ${sc.action ? `
+            <div class="action-inner">
+              ${actionIconSVG(sc.action, 34)}
+              <span class="action-name">${sc.action}</span>
+            </div>
+          ` : '<span class="empty">—</span>'}
+        </td>
+        <td class="char-cell">${char ? char.name : (isOff ? '' : '—')}</td>
+       <td class="int-cell">${sc.intensity || '—'}</td>
+        <td class="iris-cell">${sc.frame_size || '—'}</td>
+        <td class="frames-cell">${activeFrames || '—'}</td>
+        <td class="time-cell">${sc.fade_time ? sc.fade_time + 's' : '—'}</td>
+        <td class="when-cell">${sc.description || ''}</td>
+        <td class="notes-cell">${sc.notes || ''}</td>
+      </tr>
+    `;
+  }
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  @page {
+    size: ${isLandscape ? '11in 8.5in' : '8.5in 11in'};
+    margin: 0.45in 0.4in 0.4in 0.4in;
+  }
+
+  body {
+    font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12pt;
+    color: #1a1a1a;
+    background: white;
+  }
+
+  .header {
+    display: flex;
+    align-items: stretch;
+    gap: 14px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 2.5px solid #1a1a1a;
+  }
+
+  .header-logo-placeholder {
+    width: 64px;
+    height: 64px;
+    background: #f0f0f0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8pt;
+    color: #999;
+    flex-shrink: 0;
+    align-self: center;
+  }
+
+  .header-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .show-title {
+    font-size: 22pt;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+
+  .header-team {
+    font-size: 8.5pt;
+    color: #555;
+    line-height: 1.5;
+  }
+
+  .spot-card {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #f5f5f5;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    padding: 6px 12px;
+    margin-top: 2px;
+  }
+
+  .spot-number {
+    font-size: 16pt;
+    font-weight: 800;
+    color: #1a1a1a;
+    padding-right: 10px;
+    border-right: 1.5px solid #ccc;
+  }
+
+  .spot-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .spot-operator {
+    font-size: 11pt;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  .spot-meta {
+    font-size: 8pt;
+    color: #666;
+  }
+
+  .header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .print-label {
+    font-size: 14pt;
+    font-weight: 800;
+    color: #1a1a1a;
+  }
+
+  .print-date {
+    font-size: 8.5pt;
+    color: #888;
+  }
+
+  .gel-frames {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .gel-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 3px 7px;
+    min-width: 46px;
+  }
+
+  .gel-slot.perm {
+    background: #fffbe6;
+    border-color: #f0c040;
+  }
+
+  .gel-label {
+    font-size: 7pt;
+    color: #888;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .gel-num {
+    font-size: 9.5pt;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  .gel-name {
+    font-size: 7pt;
+    color: #555;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12pt;
+  }
+
+  thead th {
+    font-size: 8pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #555;
+    padding: 5px 7px;
+    border-bottom: 1.5px solid #1a1a1a;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 0.75px solid #e0e0e0;
+  }
+
+  tbody tr:nth-child(even) {
+    background: #fafafa;
+  }
+
+  tbody td {
+    padding: 8px 7px;
+    vertical-align: middle;
+    line-height: 1.3;
+  }
+
+  .scene-row td {
+    background: #1a1a1a;
+    color: white;
+    font-size: 9pt;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 10px;
+  }
+
+  .off-row td {
+    background: #f2f2f2;
+    color: #bbb;
+  }
+
+  .off-row .action-inner {
+    opacity: 0.35;
+  }
+
+  .lq-cell {
+    font-size: 16pt;
+    font-weight: 800;
+    color: #1a1a1a;
+    width: 56px;
+    white-space: nowrap;
+  }
+
+  .action-cell {
+    width: 130px;
+  }
+
+  .action-inner {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .action-name {
+    font-size: 11pt;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  .char-cell {
+    font-size: 13pt;
+    font-weight: 800;
+    color: #1a1a1a;
+    width: 120px;
+  }
+
+  .iris-cell {
+    font-size: 10pt;
+    color: #333;
+    width: 90px;
+  }
+
+  .int-cell {
+    font-size: 11pt;
+    font-weight: 700;
+    width: 52px;
+    color: #1a1a1a;
+  }
+
+  .frames-cell {
+    font-size: 10pt;
+    color: #333;
+    width: 72px;
+  }
+
+  .time-cell {
+    font-size: 11pt;
+    font-weight: 700;
+    width: 44px;
+    color: #1a1a1a;
+  }
+
+  .when-cell {
+    font-size: 10pt;
+    color: #333;
+    width: 110px;
+  }
+
+  .notes-cell {
+    font-size: 10pt;
+    color: #555;
+    font-style: italic;
+  }
+
+  .empty { color: #ccc; }
+</style>
+</head>
+<body>
+<div class="header">
+    <div class="header-logo-placeholder">LOGO</div>
+    <div class="header-main">
+      <div class="show-title">${show.title}</div>
+      <div class="header-team">
+        ${[
+          show.designer ? `LD: ${show.designer}` : '',
+          show.associate_ld ? `Assoc: ${show.associate_ld}` : '',
+          show.assistant_ld ? `Asst: ${show.assistant_ld}` : '',
+        ].filter(Boolean).join(' &nbsp;·&nbsp; ')}
+      </div>
+      <div class="spot-card">
+        <div class="spot-number">SPOT ${spot.spot_number}</div>
+        <div class="spot-details">
+          <div class="spot-operator">${spot.operator_name || 'Operator TBD'}</div>
+          <div class="spot-meta">${[spot.location, spot.fixture_type].filter(Boolean).join(' · ')}</div>
+        </div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div>
+        <div class="print-label">${label || 'Spot Sheet'}</div>
+        <div class="print-date">${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+      </div>
+      <div class="gel-frames">
+        ${gelFramesHTML}
+        ${permHTML}
+      </div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+<tr>
+        <th>LQ</th>
+        <th>Action</th>
+        <th>Character</th>
+        <th>Int</th>
+        <th>Iris</th>
+        <th>Color</th>
+        <th>Time</th>
+        <th>When</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rowsHTML}
+    </tbody>
+  </table>
+</body>
+</html>`;
+}
+
+async function generateSpotSheetPDF({ show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, outputPath }) {
+  const html = buildSpotSheetHTML({ show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots });
+  const isLandscape = numSpots > 2;
+
+  const browser = await puppeteer.launch({ headless: true });
+  const page = await browser.newPage();
+  await page.setContent(html, { waitUntil: 'networkidle0' });
+  await page.pdf({
+    path: outputPath,
+    width: isLandscape ? '11in' : '8.5in',
+    height: isLandscape ? '8.5in' : '11in',
+    printBackground: true,
+    margin: { top: '0.5in', right: '0.4in', bottom: '0.4in', left: '0.4in' },
+  });
+  await browser.close();
+  return outputPath;
+}
+
+module.exports = { generateSpotSheetPDF };
