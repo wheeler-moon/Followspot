@@ -1,4 +1,5 @@
 const puppeteer = require('puppeteer');
+const fs = require('fs');
 const path = require('path');
 const { app } = require('electron');
 
@@ -31,6 +32,18 @@ function actionIconSVG(action, size = 28) {
 
 function buildSpotSheetHTML({ show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots }) {
   const isLandscape = numSpots > 2;
+  let logoHTML = '<div class="header-logo-placeholder">LOGO</div>';
+  if (show.logo_path) {
+    try {
+      const logoData = fs.readFileSync(show.logo_path);
+      const ext = show.logo_path.split('.').pop().toLowerCase();
+      const mimeType = ext === 'png' ? 'image/png' : ext === 'svg' ? 'image/svg+xml' : 'image/jpeg';
+      const base64 = logoData.toString('base64');
+      logoHTML = `<img src="data:${mimeType};base64,${base64}" style="width:64px;height:64px;object-fit:contain;border-radius:8px;flex-shrink:0;align-self:center;" />`;
+    } catch(e) {
+      console.error('Could not load logo:', e);
+    }
+  }
   const sceneMap = {};
   scenes.forEach(s => { sceneMap[s.id] = s; });
   const charMap = {};
@@ -386,8 +399,8 @@ function buildSpotSheetHTML({ show, spot, colorSlots, cues, spotCues, characters
 </head>
 <body>
 <div class="header">
-    <div class="header-logo-placeholder">LOGO</div>
-    <div class="header-main">
+${logoHTML}
+<div class="header-main">
       <div class="show-title">${show.title}</div>
       <div class="header-team">
         ${[

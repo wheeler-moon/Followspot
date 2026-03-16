@@ -227,6 +227,14 @@ function setupIPC() {
     } catch(e) { event.returnValue = []; }
   });
 
+  ipcMain.on('dialog-open-image', (event) => {
+    const { dialog } = require('electron');
+    const result = dialog.showOpenDialogSync({
+      properties: ['openFile'],
+      filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'svg', 'gif'] }],
+    });
+    event.returnValue = result ? result[0] : null;
+  });
   ipcMain.on('db-create-show', (event, { form, spots }) => {
     try {
       const database = getDb();

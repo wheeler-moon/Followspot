@@ -147,6 +147,9 @@ export default function NewShowScreen({ navigate }) {
 
   const handleSave = () => {
     if (!form.title.trim()) { setError('Show title is required.'); return; }
+    console.log('Saving form with logo_path:', form.logo_path);
+    setSaving(true);
+    if (!form.title.trim()) { setError('Show title is required.'); return; }
     setSaving(true);
     const result = ipcRenderer.sendSync('db-create-show', { form, spots });
     if (result.success) { navigate('home'); }
@@ -170,7 +173,30 @@ export default function NewShowScreen({ navigate }) {
           <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '12px', padding: '20px', marginBottom: '20px' }}>
             <div style={{ fontSize: '11px', fontWeight: '600', color: '#555', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Show info</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                            <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '4px' }}>
+                <div style={{ width: '80px', height: '80px', borderRadius: '8px', background: '#111', border: '1px solid #2a2a2a', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                  {form.logo_path ? (
+                    <img src={form.logo_path} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                  ) : (
+                    <span style={{ fontSize: '10px', color: '#444', textAlign: 'center', padding: '8px' }}>No logo</span>
+                  )}
+                </div>
+                <div>
+                  <label style={labelStyle}>Show logo</label>
+                  <input type="file" accept="image/*"
+                    onChange={e => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        console.log('File selected:', file.path, file.name);
+                        updateForm('logo_path', file.path);
+                      }
+                    }}
+                    style={{ fontSize: '12px', color: '#888' }} />
+                  <div style={{ fontSize: '11px', color: '#444', marginTop: '4px' }}>PNG, JPG or SVG recommended</div>
+                </div>
+              </div>
               <div style={{ gridColumn: '1 / -1' }}>
+                <label style={labelStyle}>Show title *</label>
                 <label style={labelStyle}>Show title *</label>
                 <input style={{ ...inputStyle, fontSize: '15px' }} value={form.title}
                   onChange={e => updateForm('title', e.target.value)} placeholder="e.g. Hamilton" />
