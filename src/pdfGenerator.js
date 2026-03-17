@@ -30,7 +30,7 @@ function actionIconSVG(action, size = 28) {
   return icons[action] || `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><circle cx="16" cy="16" r="8" fill="#ccc"/></svg>`;
 }
 
-function buildSpotSheetHTML({ show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots }) {
+function buildSpotSheetHTML({ show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, hideOff, hideTracked, rangeStart, rangeEnd }) {
   const isLandscape = numSpots > 2;
   let logoHTML = '<div class="header-logo-placeholder">LOGO</div>';
   if (show.logo_path) {
@@ -49,7 +49,27 @@ function buildSpotSheetHTML({ show, spot, colorSlots, cues, spotCues, characters
   const charMap = {};
   characters.forEach(c => { charMap[c.id] = c; });
 
-  const sortedCues = [...cues].sort((a, b) => a.sort_order - b.sort_order);
+  let sortedCues = [...cues].sort((a, b) => a.sort_order - b.sort_order);
+
+  if (rangeStart !== null && rangeStart !== undefined) {
+    sortedCues = sortedCues.filter(c => c.track_number >= rangeStart);
+  }
+  if (rangeEnd !== null && rangeEnd !== undefined) {
+    sortedCues = sortedCues.filter(c => c.track_number <= rangeEnd);
+  }
+  if (hideOff) {
+    sortedCues = sortedCues.filter(c => {
+      const sc = spotCues.find(sc => sc.cue_id === c.id && sc.spot_id === spot.id);
+      return sc && sc.action !== 'Off' && sc.action !== '';
+    });
+  }
+
+  if (hideTracked) {
+    sortedCues = sortedCues.filter(c => {
+      const sc = spotCues.find(sc => sc.cue_id === c.id && sc.spot_id === spot.id);
+      return sc && sc.action && sc.action !== '';
+    });
+  }
 
   const gelFramesHTML = colorSlots.filter(s => !s.is_permanent).map(slot => `
     <div class="gel-slot">
@@ -451,8 +471,8 @@ ${logoHTML}
 </html>`;
 }
 
-async function generateSpotSheetPDF({ show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, outputPath }) {
-  const html = buildSpotSheetHTML({ show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots });
+async function generateSpotSheetPDF({ show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, outputPath, hideOff, hideTracked, rangeStart, rangeEnd }) {
+  const html = buildSpotSheetHTML({ show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, hideOff, hideTracked, rangeStart, rangeEnd });
   const isLandscape = numSpots > 2;
 
   const browser = await puppeteer.launch({ headless: true });
@@ -468,5 +488,454 @@ async function generateSpotSheetPDF({ show, spot, colorSlots, cues, spotCues, ch
   await browser.close();
   return outputPath;
 }
+function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label }) {
+  const isLandscape = spots.length > 2;
+  const sceneMap = {};
+  scenes.forEach(s => { sceneMap[s.id] = s; });
+  const charMap = {};
+  characters.forEach(c => { charMap[c.id] = c; });
 
-module.exports = { generateSpotSheetPDF };
+  const sortedCues = [...cues].sort((a, b) => a.sort_order - b.sort_order);
+
+  const spotsHeaderHTML = spots.map(spot => {
+    const slots = (colorSlotsBySpot[spot.id] || []).filter(s => !s.is_permanent);
+    const gelHTML = slots.map(slot => `
+      <div class="gel-slot">
+        <span class="gel-label">F${slot.slot_number}</span>
+        <span class="gel-num">${slot.gel_number || '—'}</span>
+        <span class="gel-name">${slot.gel_name || 'Empty'}</span>
+      </div>
+    `).join('');
+    return `
+      <div class="spot-header-card">
+        <div class="spot-header-top">
+          <span class="spot-number">SPOT ${spot.spot_number}</span>
+          <span class="spot-operator">${spot.operator_name || 'TBD'}</span>
+        </div>
+        <div class="spot-meta">${[spot.location, spot.fixture_type].filter(Boolean).join(' · ')}</div>
+        <div class="gel-frames">${gelHTML}</div>
+      </div>
+    `;
+  }).join('');
+
+  const colSpan = spots.length;
+
+  let rowsHTML = '';
+  let currentSceneId = 'NONE';
+
+  for (const cue of sortedCues) {
+    if (cue.scene_id !== currentSceneId) {
+      currentSceneId = cue.scene_id;
+      const scene = sceneMap[cue.scene_id];
+      if (scene) {
+        rowsHTML += `
+          <tr class="scene-row">
+            <td colspan="${colSpan + 1}">${scene.label}${scene.song ? ' · ' + scene.song : ''}</td>
+          </tr>
+        `;
+      }
+    }
+
+    let spotCellsHTML = '';
+    for (const spot of spots) {
+      const spotCues = spotCuesBySpot[spot.id] || [];
+      const sc = spotCues.find(sc => sc.cue_id === cue.id);
+      const isOff = !sc || sc.action === 'Off' || sc.action === '';
+      const char = sc ? charMap[sc.character_id] : null;
+      const activeFrames = sc && sc.active_frames ? sc.active_frames.split(',').filter(Boolean).join('+') : '';
+
+      if (isOff) {
+        spotCellsHTML += `
+          <td class="spot-cell off-cell">
+            <div class="action-inner off-action">
+              ${actionIconSVG('Off', 20)}
+              <span class="action-name off-text">Off</span>
+            </div>
+          </td>
+        `;
+      } else {
+        spotCellsHTML += `
+          <td class="spot-cell">
+            <div class="cell-top">
+              <div class="action-char">
+                <div class="action-inner">
+                  ${actionIconSVG(sc.action, 22)}
+                  <span class="action-name">${sc.action || '—'}</span>
+                </div>
+                <div class="char-name">${char ? char.name : '—'}</div>
+              </div>
+              <div class="intensity-badge">${sc.intensity || ''}</div>
+            </div>
+            <div class="cue-details">
+              ${sc.frame_size ? `<span class="detail-badge iris">${sc.frame_size}</span>` : ''}
+              ${activeFrames ? `<span class="detail-badge color">${activeFrames}</span>` : ''}
+              ${sc.fade_time ? `<span class="detail-badge time">${sc.fade_time}s</span>` : ''}
+            </div>
+            ${sc.description ? `<div class="when-text">${sc.description}</div>` : ''}
+            ${sc.notes ? `<div class="notes-text">${sc.notes}</div>` : ''}
+          </td>
+        `;
+      }
+    }
+
+    rowsHTML += `
+      <tr class="cue-row">
+        <td class="lq-cell">${cue.lq_number || '—'}</td>
+        ${spotCellsHTML}
+      </tr>
+    `;
+  }
+
+  const spotColHeaders = spots.map(spot => `
+    <th class="spot-col-header" style="width:calc((100% - 48px) / ${spots.length})">SPOT ${spot.spot_number} · ${spot.operator_name || 'TBD'}</th>
+  `).join('');
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  @page {
+    size: ${isLandscape ? '11in 8.5in' : '8.5in 11in'};
+    margin: 0.4in 0.35in 0.35in 0.35in;
+  }
+
+  body {
+    font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10pt;
+    color: #1a1a1a;
+    background: white;
+  }
+
+  .header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 2.5px solid #1a1a1a;
+  }
+
+  .header-logo-placeholder {
+    width: 56px;
+    height: 56px;
+    background: #f0f0f0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 7pt;
+    color: #999;
+    flex-shrink: 0;
+  }
+
+  .header-main { flex: 1; }
+
+  .show-title {
+    font-size: 20pt;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1;
+    margin-bottom: 3px;
+  }
+
+  .header-team {
+    font-size: 8pt;
+    color: #555;
+    margin-bottom: 8px;
+  }
+
+  .spots-header-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .spot-header-card {
+    flex: 1;
+    background: #f5f5f5;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    padding: 6px 10px;
+    min-width: 120px;
+  }
+
+  .spot-header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 2px;
+  }
+
+  .spot-number {
+    font-size: 11pt;
+    font-weight: 800;
+    color: #1a1a1a;
+  }
+
+  .spot-operator {
+    font-size: 10pt;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .spot-meta {
+    font-size: 7.5pt;
+    color: #777;
+    margin-bottom: 4px;
+  }
+
+  .gel-frames {
+    display: flex;
+    gap: 3px;
+    flex-wrap: wrap;
+  }
+
+  .gel-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: white;
+    border: 0.75px solid #ddd;
+    border-radius: 3px;
+    padding: 2px 4px;
+    min-width: 32px;
+  }
+
+  .gel-label {
+    font-size: 6pt;
+    color: #aaa;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .gel-num {
+    font-size: 7.5pt;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  .gel-name {
+    font-size: 6pt;
+    color: #777;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 44px;
+    text-overflow: ellipsis;
+  }
+
+  .header-right {
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .print-label {
+    font-size: 13pt;
+    font-weight: 800;
+    color: #1a1a1a;
+  }
+
+  .print-date {
+    font-size: 8pt;
+    color: #888;
+    margin-top: 2px;
+  }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10pt;
+    table-layout: fixed;
+  }
+
+  .cell-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 3px;
+  }
+
+  .action-char { flex: 1; }
+
+  .intensity-badge {
+    font-size: 13pt;
+    font-weight: 800;
+    color: #1a1a1a;
+    white-space: nowrap;
+    padding-left: 4px;
+  }
+
+  .notes-text {
+    font-size: 8pt;
+    color: #888;
+    font-style: italic;
+  }
+
+  thead th {
+    font-size: 7.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #555;
+    padding: 4px 6px;
+    border-bottom: 1.5px solid #1a1a1a;
+    text-align: left;
+  }
+
+  .spot-col-header {
+    color: #1a1a1a;
+    font-size: 8pt;
+    font-weight: 800;
+    border-left: 2px solid #ddd;
+    padding-left: 8px;
+  }
+
+  tbody tr {
+    border-bottom: 0.75px solid #e0e0e0;
+  }
+
+  tbody tr:nth-child(even) { background: #fafafa; }
+
+  .lq-cell {
+    font-size: 15pt;
+    font-weight: 800;
+    color: #1a1a1a;
+    width: 48px;
+    padding: 6px;
+    vertical-align: top;
+  }
+
+  .spot-cell {
+    padding: 6px 8px;
+    vertical-align: top;
+    border-left: 2px solid #eee;
+  }
+
+  .off-cell {
+    background: #f5f5f5;
+    vertical-align: middle;
+  }
+
+  .action-inner {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 2px;
+  }
+
+  .off-action { opacity: 0.35; }
+
+  .action-name {
+    font-size: 10pt;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  .off-text { color: #999; }
+
+  .char-name {
+    font-size: 12pt;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin-bottom: 3px;
+  }
+
+  .cue-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-bottom: 2px;
+  }
+
+  .detail-badge {
+    font-size: 8pt;
+    font-weight: 600;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: #f0f0f0;
+    color: #333;
+  }
+
+  .detail-badge.iris { background: #e8f0fb; color: #1a4a8a; }
+  .detail-badge.color { background: #f0e8fb; color: #4a1a8a; }
+  .detail-badge.time { background: #f0fbe8; color: #1a4a1a; }
+
+  .when-text {
+    font-size: 8pt;
+    color: #666;
+    font-style: italic;
+  }
+
+  .scene-row td {
+    background: #1a1a1a;
+    color: white;
+    font-size: 8.5pt;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+  }
+  .lq-col { width: 48px; }
+  .spot-col { width: calc((100% - 48px) / VAR_SPOT_COUNT); }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-logo-placeholder">LOGO</div>
+    <div class="header-main">
+      <div class="show-title">${show.title}</div>
+      <div class="header-team">
+        ${[
+          show.designer ? `LD: ${show.designer}` : '',
+          show.associate_ld ? `Assoc: ${show.associate_ld}` : '',
+          show.assistant_ld ? `Asst: ${show.assistant_ld}` : '',
+        ].filter(Boolean).join(' &nbsp;·&nbsp; ')}
+      </div>
+      <div class="spots-header-row">
+        ${spotsHeaderHTML}
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="print-label">${label || 'Caller Sheet'}</div>
+      <div class="print-date">${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:48px">LQ</th>
+        ${spotColHeaders}
+      </tr>
+    </thead>
+    <tbody>
+      ${rowsHTML}
+    </tbody>
+  </table>
+</body>
+</html>`;
+}
+
+async function generateCallerSheetPDF({ show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, outputPath }) {
+  const isLandscape = spots.length > 2;
+  const html = buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label });
+
+  const browser = await puppeteer.launch({ headless: true });
+  const page = await browser.newPage();
+  await page.setContent(html, { waitUntil: 'networkidle0' });
+  await page.pdf({
+    path: outputPath,
+    width: isLandscape ? '11in' : '8.5in',
+    height: isLandscape ? '8.5in' : '11in',
+    printBackground: true,
+    margin: { top: '0.4in', right: '0.35in', bottom: '0.35in', left: '0.35in' },
+  });
+  await browser.close();
+  return outputPath;
+}
+
+module.exports = { generateSpotSheetPDF, generateCallerSheetPDF };

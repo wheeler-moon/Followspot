@@ -183,16 +183,17 @@ export default function NewShowScreen({ navigate }) {
                 </div>
                 <div>
                   <label style={labelStyle}>Show logo</label>
-                  <input type="file" accept="image/*"
-                    onChange={e => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        console.log('File selected:', file.path, file.name);
-                        updateForm('logo_path', file.path);
-                      }
+                  <button
+                    onClick={async () => {
+                      const { ipcRenderer } = window.require('electron');
+                      const result = ipcRenderer.sendSync('dialog-open-image');
+                      if (result) updateForm('logo_path', result);
                     }}
-                    style={{ fontSize: '12px', color: '#888' }} />
-                  <div style={{ fontSize: '11px', color: '#444', marginTop: '4px' }}>PNG, JPG or SVG recommended</div>
+                    style={{ padding: '6px 12px', background: '#111', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#888', fontSize: '12px', cursor: 'pointer', display: 'block', marginBottom: '4px' }}>
+                    Choose image...
+                  </button>
+                  {form.logo_path && <div style={{ fontSize: '11px', color: '#534AB7', marginTop: '2px' }}>✓ Image selected</div>}
+                  <div style={{ fontSize: '11px', color: '#444', marginTop: '4px' }}>PNG, JPG or SVG</div>
                 </div>
               </div>
               <div style={{ gridColumn: '1 / -1' }}>

@@ -226,7 +226,42 @@ function setupIPC() {
       event.returnValue = shows;
     } catch(e) { event.returnValue = []; }
   });
+ipcMain.on('db-generate-caller-pdf', async (event, { showId, label, hideOff, hideTracked, rangeStart, rangeEnd }) => {
+    try {
+      const { generateCallerSheetPDF } = require('./pdfGenerator');
+      const { dialog } = require('electron');
+      const database = getDb();
+      const show = database.prepare('SELECT * FROM shows WHERE id = ?').get(showId);
+      const spots = database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY spot_number').all(showId);
+      const cues = database.prepare('SELECT * FROM cues WHERE show_id = ? ORDER BY sort_order').all(showId);
+      const characters = database.prepare('SELECT * FROM characters WHERE show_id = ?').all(showId);
+      const scenes = database.prepare('SELECT * FROM scenes WHERE show_id = ? ORDER BY sort_order').all(showId);
 
+      const colorSlotsBySpot = {};
+      const spotCuesBySpot = {};
+      for (const spot of spots) {
+        colorSlotsBySpot[spot.id] = database.prepare('SELECT * FROM color_slots WHERE spot_id = ? ORDER BY is_permanent, slot_number').all(spot.id);
+        spotCuesBySpot[spot.id] = database.prepare('SELECT * FROM spot_cues WHERE spot_id = ?').all(spot.id);
+      }
+
+      const { filePath } = await dialog.showSaveDialog({
+        defaultPath: `${show.title} - Caller Sheet - ${label || 'Sheet'}.pdf`,
+        filters: [{ name: 'PDF', extensions: ['pdf'] }],
+      });
+
+      if (!filePath) { event.returnValue = { success: false, cancelled: true }; return; }
+
+      await generateCallerSheetPDF({
+        show, spots, colorSlotsBySpot, cues, spotCuesBySpot,
+        characters, scenes, label, outputPath: filePath,
+      });
+
+      event.returnValue = { success: true, path: filePath };
+    } catch(e) {
+      console.error('Caller PDF error:', e);
+      event.returnValue = { success: false, error: e.message };
+    }
+  });
   ipcMain.on('dialog-open-image', (event) => {
     const { dialog } = require('electron');
     const result = dialog.showOpenDialogSync({
@@ -311,7 +346,7 @@ function setupIPC() {
     } catch(e) { event.returnValue = { success: false }; }
   });
   });
-  ipcMain.on('db-generate-pdf', async (event, { showId, spotId, label }) => {
+      ipcMain.on('db-generate-pdf', async (event, { showId, spotId, label, hideOff, hideTracked, rangeStart, rangeEnd }) => {
     try {
       const { generateSpotSheetPDF } = require('./pdfGenerator');
       const { dialog } = require('electron');
@@ -335,6 +370,7 @@ function setupIPC() {
       await generateSpotSheetPDF({
         show, spot, colorSlots, cues, spotCues, characters, scenes,
         label, numSpots: spots.length, outputPath: filePath,
+        hideOff, hideTracked, rangeStart, rangeEnd,
       });
 
       event.returnValue = { success: true, path: filePath };
