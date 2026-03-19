@@ -32,7 +32,23 @@ export default function HomeScreen({ navigate }) {
                 onMouseLeave={e => e.currentTarget.style.borderColor = '#2a2a2a'}>
                 <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '6px' }}>{show.title}</div>
                 <div style={{ fontSize: '12px', color: '#666', marginBottom: '12px' }}>{show.theatre || 'No theatre set'}</div>
-                <span style={{ fontSize: '11px', padding: '3px 8px', background: '#2a2a2a', borderRadius: '20px', color: '#888' }}>{show.num_spots} spot{show.num_spots !== 1 ? 's' : ''}</span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '11px', padding: '3px 8px', background: '#2a2a2a',
+                    borderRadius: '20px', color: '#888' }}>{show.num_spots} spot{show.num_spots !== 1 ? 's' : ''}</span>
+                  <button
+                    onClick={e => {
+                      e.stopPropagation();
+                      if (window.confirm(`Delete "${show.title}"? This cannot be undone.`)) {
+                        ipcRenderer.sendSync('db-delete-show', show.id);
+                        setShows(shows.filter(s => s.id !== show.id));
+                      }
+                    }}
+                    style={{ background: 'none', border: 'none', color: '#c44', fontSize: '11px', cursor: 'pointer', opacity: 0.4, padding: '2px 6px' }}
+                    onMouseEnter={e => e.currentTarget.style.opacity = 1}
+                    onMouseLeave={e => e.currentTarget.style.opacity = 0.4}>
+                    Delete
+                  </button>
+                </div>
               </div>
             ))}
           </div>

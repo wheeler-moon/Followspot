@@ -229,6 +229,12 @@ function setupIPC() {
       event.returnValue = shows;
     } catch(e) { event.returnValue = []; }
   });
+  ipcMain.on('db-delete-show', (event, showId) => {
+    try {
+      getDb().prepare('DELETE FROM shows WHERE id = ?').run(showId);
+      event.returnValue = { success: true };
+    } catch(e) { event.returnValue = { success: false }; }
+  });
   ipcMain.on('dialog-get-dropped-path', (event, fileName) => {
     const { dialog } = require('electron');
     const result = dialog.showOpenDialogSync({
