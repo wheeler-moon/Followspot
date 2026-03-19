@@ -6,6 +6,7 @@ import CueListScreen from './screens/CueListScreen';
 import PrintScreen from './screens/PrintScreen';
 import ScenesScreen from './screens/ScenesScreen';
 import CharactersScreen from './screens/CharactersScreen';
+import SpotSettingsScreen from './screens/SpotSettingsScreen';
 
 export default function App() {
   const [screen, setScreen] = useState('home');
@@ -25,6 +26,7 @@ export default function App() {
       {screen === 'print' && <PrintScreen show={currentShow} navigate={navigate} />}
       {screen === 'scenes' && <ScenesScreen show={currentShow} navigate={navigate} />}
       {screen === 'characters' && <CharactersScreen show={currentShow} navigate={navigate} />}
+      {screen === 'spot-settings' && <SpotSettingsScreen show={currentShow} navigate={navigate} />}
     </div>
   );
 }

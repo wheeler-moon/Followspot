@@ -229,6 +229,61 @@ function setupIPC() {
       event.returnValue = shows;
     } catch(e) { event.returnValue = []; }
   });
+  ipcMain.on('db-get-spots', (event, showId) => {
+    try {
+      const spots = getDb().prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY spot_number').all(showId);
+      event.returnValue = spots;
+    } catch(e) { event.returnValue = []; }
+  });
+
+  ipcMain.on('db-get-color-slots-all', (event, spotId) => {
+    try {
+      const slots = getDb().prepare('SELECT * FROM color_slots WHERE spot_id = ? ORDER BY is_permanent, slot_number').all(spotId);
+      event.returnValue = slots;
+    } catch(e) { event.returnValue = []; }
+  });
+
+  ipcMain.on('db-update-spot', (event, { spotId, operator_name, fixture_type, location }) => {
+    try {
+      getDb().prepare('UPDATE spots SET operator_name = ?, fixture_type = ?, location = ? WHERE id = ?').run(operator_name || '', fixture_type || '', location || '', spotId);
+      event.returnValue = { success: true };
+    } catch(e) { event.returnValue = { success: false }; }
+  });
+
+  ipcMain.on('db-update-color-slot', (event, { slotId, gelNumber, gelName }) => {
+    try {
+      getDb().prepare('UPDATE color_slots SET gel_number = ?, gel_name = ? WHERE id = ?').run(gelNumber || '', gelName || '', slotId);
+      event.returnValue = { success: true };
+    } catch(e) { event.returnValue = { success: false }; }
+  });
+
+  ipcMain.on('db-add-spot', (event, { showId, spotNumber }) => {
+    try {
+      const database = getDb();
+      const result = database.prepare('INSERT INTO spots (show_id, spot_number, operator_name, fixture_type, location) VALUES (?, ?, ?, ?, ?)').run(showId, spotNumber, '', '', '');
+      const spotId = result.lastInsertRowid;
+      for (let i = 1; i <= 6; i++) {
+        database.prepare('INSERT INTO color_slots (spot_id, slot_number, is_permanent, gel_number, gel_name) VALUES (?, ?, 0, ?, ?)').run(spotId, i, '', '');
+      }
+      database.prepare('INSERT INTO color_slots (spot_id, slot_number, is_permanent, gel_number, gel_name) VALUES (?, NULL, 1, ?, ?)').run(spotId, '', '');
+      database.prepare('UPDATE shows SET num_spots = ? WHERE id = ?').run(spotNumber, showId);
+      event.returnValue = { success: true };
+    } catch(e) { event.returnValue = { success: false }; }
+  });
+
+  ipcMain.on('db-remove-spot', (event, spotId) => {
+    try {
+      const database = getDb();
+      const spot = database.prepare('SELECT * FROM spots WHERE id = ?').get(spotId);
+      database.prepare('DELETE FROM spot_cues WHERE spot_id = ?').run(spotId);
+      database.prepare('DELETE FROM color_slots WHERE spot_id = ?').run(spotId);
+      database.prepare('DELETE FROM spots WHERE id = ?').run(spotId);
+      const remaining = database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY spot_number').all(spot.show_id);
+      remaining.forEach((s, i) => database.prepare('UPDATE spots SET spot_number = ? WHERE id = ?').run(i + 1, s.id));
+      database.prepare('UPDATE shows SET num_spots = ? WHERE id = ?').run(remaining.length, spot.show_id);
+      event.returnValue = { success: true };
+    } catch(e) { event.returnValue = { success: false }; }
+  });
     ipcMain.on('db-update-show', (event, { showId, form }) => {
     try {
       getDb().prepare(`
