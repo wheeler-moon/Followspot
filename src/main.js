@@ -229,6 +229,18 @@ function setupIPC() {
       event.returnValue = shows;
     } catch(e) { event.returnValue = []; }
   });
+    ipcMain.on('db-update-show', (event, { showId, form }) => {
+    try {
+      getDb().prepare(`
+        UPDATE shows SET title = ?, theatre = ?, producer = ?, designer = ?,
+        associate_ld = ?, assistant_ld = ?, production_electrician = ?, programmer = ?,
+        updated_at = CURRENT_TIMESTAMP WHERE id = ?
+      `).run(form.title, form.theatre || '', form.producer || '', form.designer || '',
+        form.associate_ld || '', form.assistant_ld || '', form.production_electrician || '',
+        form.programmer || '', showId);
+      event.returnValue = { success: true };
+    } catch(e) { event.returnValue = { success: false }; }
+  });
   ipcMain.on('db-delete-show', (event, showId) => {
     try {
       getDb().prepare('DELETE FROM shows WHERE id = ?').run(showId);
