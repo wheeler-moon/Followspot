@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('node:path');
 const Database = require('better-sqlite3');
+const { generateSpotSheetPDF, generateCallerSheetPDF, generateColorLoadPDF } = require('./pdfGenerator');
 
 if (require('electron-squirrel-startup')) app.quit();
 
@@ -228,7 +229,6 @@ function setupIPC() {
   });
 ipcMain.on('db-generate-caller-pdf', async (event, { showId, label, hideOff, hideTracked, rangeStart, rangeEnd }) => {
     try {
-      const { generateCallerSheetPDF } = require('./pdfGenerator');
       const { dialog } = require('electron');
       const database = getDb();
       const show = database.prepare('SELECT * FROM shows WHERE id = ?').get(showId);
@@ -259,6 +259,28 @@ ipcMain.on('db-generate-caller-pdf', async (event, { showId, label, hideOff, hid
       event.returnValue = { success: true, path: filePath };
     } catch(e) {
       console.error('Caller PDF error:', e);
+      event.returnValue = { success: false, error: e.message };
+    }
+  });
+  ipcMain.on('db-generate-color-load-pdf', async (event, { showId, label }) => {
+    try {
+      const { dialog } = require('electron');
+      const database = getDb();
+      const show = database.prepare('SELECT * FROM shows WHERE id = ?').get(showId);
+      const spots = database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY spot_number').all(showId);
+      const colorSlotsBySpot = {};
+      for (const spot of spots) {
+        colorSlotsBySpot[spot.id] = database.prepare('SELECT * FROM color_slots WHERE spot_id = ? ORDER BY is_permanent, slot_number').all(spot.id);
+      }
+      const { filePath } = await dialog.showSaveDialog({
+        defaultPath: `${show.title} - Color Load - ${label || 'Sheet'}.pdf`,
+        filters: [{ name: 'PDF', extensions: ['pdf'] }],
+      });
+      if (!filePath) { event.returnValue = { success: false, cancelled: true }; return; }
+      await generateColorLoadPDF({ show, spots, colorSlotsBySpot, label, outputPath: filePath });
+      event.returnValue = { success: true, path: filePath };
+    } catch(e) {
+      console.error('Color load PDF error:', e);
       event.returnValue = { success: false, error: e.message };
     }
   });
@@ -348,7 +370,6 @@ ipcMain.on('db-generate-caller-pdf', async (event, { showId, label, hideOff, hid
   });
       ipcMain.on('db-generate-pdf', async (event, { showId, spotId, label, hideOff, hideTracked, rangeStart, rangeEnd }) => {
     try {
-      const { generateSpotSheetPDF } = require('./pdfGenerator');
       const { dialog } = require('electron');
       const database = getDb();
       const show = database.prepare('SELECT * FROM shows WHERE id = ?').get(showId);

@@ -937,5 +937,226 @@ async function generateCallerSheetPDF({ show, spots, colorSlotsBySpot, cues, spo
   await browser.close();
   return outputPath;
 }
+function buildColorLoadHTML({ show, spots, colorSlotsBySpot, label }) {
+  const isLandscape = spots.length > 2;
 
-module.exports = { generateSpotSheetPDF, generateCallerSheetPDF };
+  const GEL_COLORS = {
+    'R01': '#F5DFA0', 'R02': '#F0C060', 'R03': '#F5E090', 'R04': '#EDB84A',
+    'R05': '#F0A030', 'R06': '#F5EAA0', 'R07': '#FAEEC0', 'R08': '#F5D878',
+    'R09': '#F0C050', 'R10': '#F5E060', 'R16': '#F5C84A', 'R17': '#F5A030',
+    'R18': '#F08020', 'R19': '#E06010', 'R20': '#E09030', 'R21': '#E8A020',
+    'R22': '#D07010', 'R23': '#E07010', 'R24': '#D03020', 'R25': '#E05020',
+    'R26': '#D04030', 'R27': '#C02020', 'R28': '#C01010', 'R33': '#F5D0C0',
+    'R34': '#F0C0A0', 'R35': '#F0C8B8', 'R36': '#F0A8A0', 'R37': '#F0C0C8',
+    'R38': '#F0A0B0', 'R39': '#E890A0', 'R40': '#E870A0', 'R45': '#D05070',
+    'R46': '#C03070', 'R51': '#C0A0D0', 'R52': '#D0C0E0', 'R53': '#E0D0F0',
+    'R54': '#C8A8E0', 'R55': '#B890D0', 'R56': '#A870C0', 'R57': '#9060B0',
+    'R58': '#7050A0', 'R59': '#503080', 'R60': '#C0D0F0', 'R61': '#B0C8E8',
+    'R62': '#90B0E0', 'R63': '#A0C0E8', 'R64': '#80A8D8', 'R65': '#6090C8',
+    'R66': '#5080C0', 'R67': '#7098C0', 'R68': '#4878B0', 'R69': '#3060A0',
+    'R70': '#408090', 'R71': '#307080', 'R72': '#206070', 'R73': '#305070',
+    'R74': '#203060', 'R75': '#182850', 'R79': '#2040A0', 'R80': '#1030C0',
+    'R83': '#2040B0', 'R85': '#102080', 'R88': '#90C070', 'R89': '#708050',
+    'R91': '#208030', 'R92': '#308080', 'R93': '#206050', 'R94': '#206030',
+    'R96': '#90C020', 'R97': '#C0C0B8', 'R98': '#A0A098', 'R99': '#704030',
+    'R100': '#F0F0F0', 'R101': '#F8F8F8',
+    'L001': '#FAEEC0', 'L002': '#F5D890', 'L003': '#F5E090', 'L004': '#EDB84A',
+    'L035': '#F0C8B8', 'L036': '#F0A8A0', 'L045': '#D05070', 'L046': '#C03070',
+    'L051': '#C0A0D0', 'L063': '#A0C0E8', 'L065': '#6090C8', 'L079': '#3060A0',
+    'L080': '#1030C0', 'L088': '#90C070', 'L091': '#208030', 'L092': '#308080',
+    'L094': '#206030', 'L100': '#F0F0F0', 'L101': '#F8F8F8',
+    'L109': '#C09060', 'L119': '#102080', 'L120': '#102060', 'L129': '#E8E8E8',
+    'L131': '#204060', 'L134': '#E8A020', 'L147': '#F0B878', 'L148': '#E870A0',
+    'L149': '#D03020', 'L150': '#B0D0F0', 'L156': '#704030', 'L157': '#E890A0',
+    'L158': '#D06010', 'L160': '#7088B0', 'L161': '#6080A8', 'L162': '#F0C060',
+    'L164': '#D04020', 'L165': '#5888B8', 'L170': '#7050A0', 'L172': '#3070A0',
+    'L176': '#E8A840', 'L179': '#E07820', 'L180': '#8060A0', 'L181': '#101850',
+    'L182': '#D04030', 'L183': '#3060A8', 'L193': '#E0A878', 'L194': '#F090B0',
+    'L195': '#2050A0', 'L196': '#2048A0', 'L199': '#1828A0', 'L200': '#6090D0',
+    'L201': '#4070C0', 'L202': '#6090C8', 'L204': '#E09030', 'L205': '#E8B060',
+  };
+
+  const getGelColor = (gelNum) => {
+    if (!gelNum) return '#e0e0e0';
+    const key = gelNum.toUpperCase().replace(/\s/g, '');
+    return GEL_COLORS[key] || '#d0d0d0';
+  };
+
+  const isDark = (hex) => {
+    const r = parseInt(hex.slice(1,3),16);
+    const g = parseInt(hex.slice(3,5),16);
+    const b = parseInt(hex.slice(5,7),16);
+    return (r * 0.299 + g * 0.587 + b * 0.114) < 140;
+  };
+
+  const spotsHTML = spots.map(spot => {
+    const slots = colorSlotsBySpot[spot.id] || [];
+    const regularSlots = slots.filter(s => !s.is_permanent);
+    const permSlot = slots.find(s => s.is_permanent);
+
+    const framesHTML = regularSlots.map(slot => {
+      const bgColor = getGelColor(slot.gel_number);
+      const textColor = isDark(bgColor) ? '#ffffff' : '#1a1a1a';
+      const subColor = isDark(bgColor) ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.5)';
+      return `
+        <div class="frame-card" style="background:${bgColor};">
+          <div class="frame-label" style="color:${subColor};">Frame ${slot.slot_number}</div>
+          <div class="frame-gel-num" style="color:${textColor};">${slot.gel_number || '—'}</div>
+          <div class="frame-gel-name" style="color:${subColor};">${slot.gel_name || 'Empty'}</div>
+          <div class="frame-check" style="border-color:${isDark(bgColor) ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.3)'}"></div>
+        </div>
+      `;
+    }).join('');
+
+    const permHTML = permSlot && permSlot.gel_number ? (() => {
+      const bgColor = getGelColor(permSlot.gel_number);
+      const textColor = isDark(bgColor) ? '#ffffff' : '#1a1a1a';
+      const subColor = isDark(bgColor) ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.5)';
+      return `
+        <div class="perm-card" style="background:${bgColor};">
+          <div class="frame-label" style="color:${subColor};">Permanent</div>
+          <div class="frame-gel-num" style="color:${textColor};">${permSlot.gel_number}</div>
+          <div class="frame-gel-name" style="color:${subColor};">${permSlot.gel_name || ''}</div>
+          <div class="frame-check" style="border-color:${isDark(bgColor) ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.3)'}"></div>
+        </div>
+      `;
+    })() : '';
+
+    return `
+      <div class="spot-card">
+        <div class="spot-header">
+          <div class="spot-left">
+            <span class="spot-number">SPOT ${spot.spot_number}</span>
+            <span class="spot-operator">${spot.operator_name || 'TBD'}</span>
+          </div>
+          <div class="spot-right">
+            <div class="spot-detail">${spot.location || ''}</div>
+            <div class="spot-detail">${spot.fixture_type || ''}</div>
+          </div>
+        </div>
+        <div class="frames-grid">
+          ${framesHTML}
+          ${permHTML}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  @page { size: ${isLandscape ? '11in 8.5in' : '8.5in 11in'}; margin: 0.45in 0.4in 0.4in 0.4in; }
+  body { font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif; font-size: 11pt; color: #1a1a1a; background: white; }
+
+  .header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2.5px solid #1a1a1a;
+  }
+  .header-logo-placeholder {
+    width: 60px; height: 60px; background: #f0f0f0;
+    border-radius: 8px; display: flex; align-items: center;
+    justify-content: center; font-size: 8pt; color: #999; flex-shrink: 0;
+  }
+  .header-main { flex: 1; }
+  .show-title { font-size: 22pt; font-weight: 800; letter-spacing: -0.5px; line-height: 1; margin-bottom: 4px; }
+  .header-team { font-size: 8.5pt; color: #555; margin-bottom: 2px; }
+  .header-right { text-align: right; flex-shrink: 0; }
+  .print-label { font-size: 14pt; font-weight: 800; color: #1a1a1a; }
+  .print-sub { font-size: 8.5pt; color: #888; margin-top: 2px; }
+
+  .spots-grid {
+    display: grid;
+    grid-template-columns: ${spots.length === 1 ? '1fr' : spots.length === 2 ? '1fr 1fr' : 'repeat(2, 1fr)'};
+    gap: 16px;
+  }
+
+  .spot-card { border: 1.5px solid #ddd; border-radius: 10px; overflow: hidden; }
+
+  .spot-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #1a1a1a; color: white; padding: 10px 14px;
+  }
+  .spot-left { display: flex; align-items: baseline; gap: 8px; }
+  .spot-number { font-size: 14pt; font-weight: 800; color: white; }
+  .spot-operator { font-size: 11pt; font-weight: 600; color: #ccc; }
+  .spot-right { text-align: right; }
+  .spot-detail { font-size: 8pt; color: #aaa; line-height: 1.4; }
+
+  .frames-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+  }
+
+  .frame-card, .perm-card {
+    padding: 12px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    border-right: 1px solid rgba(0,0,0,0.08);
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    min-height: 90px;
+    justify-content: space-between;
+  }
+
+  .perm-card {
+    border: 2px solid rgba(0,0,0,0.15);
+    position: relative;
+  }
+
+  .frame-label { font-size: 7.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+  .frame-gel-num { font-size: 14pt; font-weight: 800; line-height: 1; }
+  .frame-gel-name { font-size: 8pt; line-height: 1.3; }
+  .frame-check {
+    width: 16px; height: 16px;
+    border: 1.5px solid;
+    border-radius: 3px;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-logo-placeholder">LOGO</div>
+    <div class="header-main">
+      <div class="show-title">${show.title}</div>
+      <div class="header-team">${[show.designer ? 'LD: ' + show.designer : '', show.associate_ld ? 'Assoc: ' + show.associate_ld : '', show.assistant_ld ? 'Asst: ' + show.assistant_ld : ''].filter(Boolean).join(' · ')}</div>
+    </div>
+    <div class="header-right">
+      <div class="print-label">${label || 'Color Load'}</div>
+      <div class="print-sub">All Spots Color Load</div>
+      <div class="print-sub">${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+    </div>
+  </div>
+  <div class="spots-grid">
+    ${spotsHTML}
+  </div>
+</body>
+</html>`;
+}
+
+async function generateColorLoadPDF({ show, spots, colorSlotsBySpot, label, outputPath }) {
+  const html = buildColorLoadHTML({ show, spots, colorSlotsBySpot, label });
+  const isLandscape = spots.length > 2;
+  const browser = await puppeteer.launch({ headless: true });
+  const page = await browser.newPage();
+  await page.setContent(html, { waitUntil: 'networkidle0' });
+  await page.pdf({
+    path: outputPath,
+    width: isLandscape ? '11in' : '8.5in',
+    height: isLandscape ? '8.5in' : '11in',
+    printBackground: true,
+    margin: { top: '0.5in', right: '0.4in', bottom: '0.4in', left: '0.4in' },
+  });
+  await browser.close();
+  return outputPath;
+}
+
+module.exports = { generateSpotSheetPDF, generateCallerSheetPDF, generateColorLoadPDF };
