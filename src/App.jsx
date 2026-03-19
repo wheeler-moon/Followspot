@@ -4,6 +4,8 @@ import NewShowScreen from './screens/NewShowScreen';
 import ShowDashboard from './screens/ShowDashboard';
 import CueListScreen from './screens/CueListScreen';
 import PrintScreen from './screens/PrintScreen';
+import ScenesScreen from './screens/ScenesScreen';
+import CharactersScreen from './screens/CharactersScreen';
 
 export default function App() {
   const [screen, setScreen] = useState('home');
@@ -20,7 +22,9 @@ export default function App() {
       {screen === 'new-show' && <NewShowScreen navigate={navigate} />}
       {screen === 'show' && <ShowDashboard show={currentShow} navigate={navigate} />}
       {screen === 'cue-list' && <CueListScreen show={currentShow} navigate={navigate} />}
-      {screen === 'print' && <div style={{color:'white',padding:'20px'}}><PrintScreen show={currentShow} navigate={navigate} /></div>}
+      {screen === 'print' && <PrintScreen show={currentShow} navigate={navigate} />}
+      {screen === 'scenes' && <ScenesScreen show={currentShow} navigate={navigate} />}
+      {screen === 'characters' && <CharactersScreen show={currentShow} navigate={navigate} />}
     </div>
   );
 }

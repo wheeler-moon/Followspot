@@ -68,6 +68,7 @@ function initSchema() {
       name TEXT NOT NULL,
       actor_name TEXT,
       costume_notes TEXT,
+      photo_path TEXT,
       FOREIGN KEY (show_id) REFERENCES shows(id) ON DELETE CASCADE
     );
     CREATE TABLE IF NOT EXISTS cues (
@@ -108,6 +109,7 @@ function initSchema() {
     );
   `);
   seedGels();
+  try { db.exec('ALTER TABLE characters ADD COLUMN photo_path TEXT'); } catch(e) {}
 }
 
 function seedGels() {
@@ -226,6 +228,67 @@ function setupIPC() {
       const shows = getDb().prepare('SELECT * FROM shows ORDER BY created_at DESC').all();
       event.returnValue = shows;
     } catch(e) { event.returnValue = []; }
+  });
+  ipcMain.on('dialog-get-dropped-path', (event, fileName) => {
+    const { dialog } = require('electron');
+    const result = dialog.showOpenDialogSync({
+      properties: ['openFile'],
+      filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'svg', 'gif'] }],
+      message: `Select the image file: ${fileName}`,
+    });
+    event.returnValue = result ? result[0] : null;
+  });
+  ipcMain.on('db-update-character', (event, { characterId, name, actorName, costumeNotes, photoPath }) => {
+    try {
+      getDb().prepare('UPDATE characters SET name = ?, actor_name = ?, costume_notes = ?, photo_path = ? WHERE id = ?').run(name, actorName || '', costumeNotes || '', photoPath || '', characterId);
+      event.returnValue = { success: true };
+    } catch(e) { event.returnValue = { success: false }; }
+  });
+
+  ipcMain.on('db-delete-character', (event, characterId) => {
+    try {
+      getDb().prepare('UPDATE spot_cues SET character_id = NULL WHERE character_id = ?').run(characterId);
+      getDb().prepare('DELETE FROM characters WHERE id = ?').run(characterId);
+      event.returnValue = { success: true };
+    } catch(e) { event.returnValue = { success: false }; }
+  });
+
+  ipcMain.on('db-reorder-characters', (event, updates) => {
+    try {
+      const database = getDb();
+      const stmt = database.prepare('UPDATE characters SET sort_order = ? WHERE id = ?');
+      const update = database.transaction((updates) => {
+        for (const u of updates) stmt.run(u.sort_order, u.id);
+      });
+      update(updates);
+      event.returnValue = { success: true };
+    } catch(e) { event.returnValue = { success: false }; }
+  });
+  ipcMain.on('db-update-scene', (event, { sceneId, label, song, actBreak }) => {
+    try {
+      getDb().prepare('UPDATE scenes SET label = ?, song = ?, act_break = ? WHERE id = ?').run(label, song || '', actBreak ? 1 : 0, sceneId);
+      event.returnValue = { success: true };
+    } catch(e) { event.returnValue = { success: false }; }
+  });
+
+  ipcMain.on('db-delete-scene', (event, sceneId) => {
+    try {
+      getDb().prepare('UPDATE cues SET scene_id = NULL WHERE scene_id = ?').run(sceneId);
+      getDb().prepare('DELETE FROM scenes WHERE id = ?').run(sceneId);
+      event.returnValue = { success: true };
+    } catch(e) { event.returnValue = { success: false }; }
+  });
+
+  ipcMain.on('db-reorder-scenes', (event, updates) => {
+    try {
+      const database = getDb();
+      const stmt = database.prepare('UPDATE scenes SET sort_order = ? WHERE id = ?');
+      const update = database.transaction((updates) => {
+        for (const u of updates) stmt.run(u.sort_order, u.id);
+      });
+      update(updates);
+      event.returnValue = { success: true };
+    } catch(e) { event.returnValue = { success: false }; }
   });
 ipcMain.on('db-generate-caller-pdf', async (event, { showId, label, hideOff, hideTracked, rangeStart, rangeEnd }) => {
     try {

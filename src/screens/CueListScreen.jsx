@@ -372,30 +372,33 @@ export default function CueListScreen({ show, navigate }) {
     setCharacters(Array.isArray(chars) ? chars : []);
   };
 
-  const groupedCues = () => {
+const groupedCues = () => {
     const cues = data?.cues || [];
     const scenes = data?.scenes || [];
-    const sceneMap = {};
-    scenes.forEach(s => { sceneMap[s.id] = s; });
     const sorted = [...cues].sort((a, b) => a.sort_order - b.sort_order);
     const groups = [];
-    let currentSceneId = 'NONE';
-    let currentGroup = null;
-    for (const cue of sorted) {
-      const sceneId = cue.scene_id || null;
-      if (sceneId !== currentSceneId) {
-        currentSceneId = sceneId;
-        const scene = sceneMap[sceneId];
-        currentGroup = {
-          sceneId,
-          sceneLabel: scene ? scene.label : 'Unassigned',
-          sceneSong: scene ? scene.song : '',
-          cues: []
-        };
-        groups.push(currentGroup);
-      }
-      if (currentGroup) currentGroup.cues.push(cue);
+
+    const sceneOrder = scenes.map(s => s.id);
+    const usedSceneIds = new Set();
+
+    for (const sceneId of sceneOrder) {
+      const sceneCues = sorted.filter(c => c.scene_id === sceneId);
+      if (sceneCues.length === 0) continue;
+      const scene = scenes.find(s => s.id === sceneId);
+      groups.push({
+        sceneId,
+        sceneLabel: scene ? scene.label : 'Unknown',
+        sceneSong: scene ? scene.song : '',
+        cues: sceneCues,
+      });
+      usedSceneIds.add(sceneId);
     }
+
+    const unassigned = sorted.filter(c => !c.scene_id);
+    if (unassigned.length > 0) {
+      groups.push({ sceneId: null, sceneLabel: 'Unassigned', sceneSong: '', cues: unassigned });
+    }
+
     return groups;
   };
 
