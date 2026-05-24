@@ -40,13 +40,13 @@ const generateColorLoadPDF = () => {
     else if (!result.cancelled) setMessage('Error generating PDF. Please try again.');
   };
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#0f0f0f' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#0f0f0f', overflow: 'hidden' }}>
       <div style={{ padding: '14px 24px', borderBottom: '1px solid #2a2a2a', background: '#1a1a1a', display: 'flex', alignItems: 'center', gap: '16px' }}>
         <button onClick={() => navigate('show', show)} style={{ background: 'none', border: 'none', color: '#888', fontSize: '13px', cursor: 'pointer' }}>← {show.title}</button>
         <span style={{ fontSize: '16px', fontWeight: '600', color: '#f0f0f0' }}>Print Options</span>
       </div>
 
-      <div style={{ flex: 1, padding: '32px 24px', overflowY: 'hidden' }}>
+      <div style={{ flex: 1, padding: '32px 24px', overflowY: 'auto' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
 
           <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '12px', padding: '20px', marginBottom: '20px' }}>
