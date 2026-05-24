@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AppHeader from '../components/AppHeader';
 const { ipcRenderer } = window.require('electron');
 
 const FIXTURES = ['Strong Super Trouper','Strong Gladiator','Lycian 1290','Lycian Starklite','Robert Juliat Lancelot','Robert Juliat Merlin','Altman Comet','Robe BMFL','Robe Esprite','High End SolaSpot','Moving Light - Other','Other'];
@@ -158,15 +159,14 @@ export default function NewShowScreen({ navigate }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <div style={{ padding: '14px 24px', borderBottom: '1px solid #2a2a2a', background: '#1a1a1a', display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <button onClick={() => navigate('home')} style={{ background: 'none', border: 'none', color: '#888', fontSize: '13px', cursor: 'pointer' }}>← Back</button>
-        <span style={{ fontSize: '16px', fontWeight: '600' }}>New Show</span>
+      <AppHeader title="New Show" onBack={() => navigate('home')} backLabel="Back">
         <div style={{ flex: 1 }} />
         {error && <span style={{ fontSize: '12px', color: '#f55' }}>{error}</span>}
         <button onClick={handleSave} disabled={saving} style={{ padding: '8px 20px', background: '#534AB7', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: 'pointer', opacity: saving ? 0.6 : 1 }}>
           {saving ? 'Saving...' : 'Save Show'}
         </button>
-      </div>
+      </AppHeader>
+
       <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
         <div style={{ maxWidth: '760px', margin: '0 auto' }}>
 

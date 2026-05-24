@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AppHeader from '../components/AppHeader';
 const { ipcRenderer } = window.require('electron');
 
 const FIXTURES = ['Strong Super Trouper','Strong Gladiator','Lycian 1290','Lycian Starklite','Robert Juliat Lancelot','Robert Juliat Merlin','Altman Comet','Robe BMFL','Robe Esprite','High End SolaSpot','Moving Light - Other','Other'];
@@ -188,9 +189,7 @@ export default function SpotSettingsScreen({ show, navigate }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#0f0f0f' }}>
-      <div style={{ padding: '14px 24px', borderBottom: '1px solid #2a2a2a', background: '#1a1a1a', display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <button onClick={() => navigate('show', show)} style={{ background: 'none', border: 'none', color: '#888', fontSize: '13px', cursor: 'pointer' }}>← {show.title}</button>
-        <span style={{ fontSize: '16px', fontWeight: '600', color: '#f0f0f0' }}>Spot Settings</span>
+     <AppHeader title="Spot Settings" onBack={() => navigate('show', show)} backLabel={show.title}>
         <span style={{ fontSize: '12px', color: '#555' }}>{spots.length} spot{spots.length !== 1 ? 's' : ''}</span>
         <div style={{ flex: 1 }} />
         {spots.length < 4 && (
@@ -198,7 +197,7 @@ export default function SpotSettingsScreen({ show, navigate }) {
             + Add spot
           </button>
         )}
-      </div>
+      </AppHeader>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
         <div style={{ maxWidth: '760px', margin: '0 auto' }}>

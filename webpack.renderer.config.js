@@ -21,6 +21,15 @@ rules.push({
     { loader: 'css-loader' }
   ]
 });
+rules.push({
+  test: /\.(png|jpg|jpeg|gif|svg|ico)$/,
+  use: {
+    loader: 'file-loader',
+    options: {
+      name: '[name].[ext]',
+    }
+  }
+});
 
 module.exports = {
   module: {

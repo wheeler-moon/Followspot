@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 const { ipcRenderer } = window.require('electron');
+import AppHeader from '../components/AppHeader';
 
 export default function HomeScreen({ navigate }) {
   const [shows, setShows] = useState([]);
@@ -11,10 +12,10 @@ export default function HomeScreen({ navigate }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <div style={{ padding: '16px 24px', borderBottom: '1px solid #2a2a2a', background: '#1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: '20px', fontWeight: '600' }}>Followspot Tracker</span>
+      <AppHeader title="SpotPlot">
+        <div style={{ flex: 1 }} />
         <button onClick={() => navigate('new-show')} style={{ padding: '8px 18px', background: '#534AB7', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>+ New Show</button>
-      </div>
+      </AppHeader>
       <div style={{ flex: 1, padding: '32px 24px', overflowY: 'auto' }}>
         {shows.length === 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60%', gap: '12px' }}>

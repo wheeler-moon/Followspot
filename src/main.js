@@ -235,7 +235,17 @@ function setupIPC() {
       event.returnValue = spots;
     } catch(e) { event.returnValue = []; }
   });
-
+ipcMain.on('get-app-icon', (event) => {
+    try {
+      const fs = require('fs');
+      const iconPath = path.join(__dirname, '../../src/icon.png');
+      const data = fs.readFileSync(iconPath);
+      event.returnValue = 'data:image/png;base64,' + data.toString('base64');
+    } catch(e) {
+      console.error('Icon load error:', e);
+      event.returnValue = null;
+    }
+  });
   ipcMain.on('db-get-color-slots-all', (event, spotId) => {
     try {
       const slots = getDb().prepare('SELECT * FROM color_slots WHERE spot_id = ? ORDER BY is_permanent, slot_number').all(spotId);
@@ -702,6 +712,7 @@ const createWindow = () => {
   const mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
+    icon: path.join(__dirname, '../src/icons/mac/icon.icns'),
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
       nodeIntegration: true,

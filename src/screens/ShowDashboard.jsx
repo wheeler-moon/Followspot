@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 const { ipcRenderer } = window.require('electron');
+import AppHeader from '../components/AppHeader';
 
 export default function ShowDashboard({ show, navigate }) {
   const [stats, setStats] = useState({ cues: 0, scenes: 0, characters: 0, spots: [] });
@@ -46,15 +47,13 @@ const startEdit = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#0f0f0f' }}>
-      <div style={{ padding: '14px 24px', borderBottom: '1px solid #2a2a2a', background: '#1a1a1a', display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <button onClick={() => navigate('home')} style={{ background: 'none', border: 'none', color: '#888', fontSize: '13px', cursor: 'pointer' }}>← All shows</button>
-        <span style={{ fontSize: '16px', fontWeight: '600', color: '#f0f0f0' }}>{show.title}</span>
+     <AppHeader title={show.title} onBack={() => navigate('home')} backLabel="All shows">
         <span style={{ fontSize: '12px', color: '#555' }}>{show.theatre}</span>
         <div style={{ flex: 1 }} />
         <button onClick={() => navigate('cue-list', show)} style={{ padding: '8px 18px', background: '#534AB7', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
           Open cue list →
         </button>
-      </div>
+      </AppHeader>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '32px 24px' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>

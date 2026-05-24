@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AppHeader from '../components/AppHeader';
 const { ipcRenderer } = window.require('electron');
 
 const ACTIONS = [
@@ -402,11 +403,9 @@ const groupedCues = () => {
     return groups;
   };
 
-  return (
+      return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#0a0a0a' }}>
-      <div style={{ padding: '10px 16px', borderBottom: '1px solid #1e1e1e', background: '#141414', display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
-        <button onClick={() => navigate('show', show)} style={{ background: 'none', border: 'none', color: '#555', fontSize: '12px', cursor: 'pointer' }}>← {show.title}</button>
-        <span style={{ fontSize: '14px', fontWeight: '600', color: '#f0f0f0' }}>Cue List</span>
+    <AppHeader title="Cue List" onBack={() => navigate('show', show)} backLabel={show.title}>
         <div style={{ flex: 1 }} />
         <select value={selectedSceneId || ''} onChange={e => setSelectedSceneId(e.target.value ? parseInt(e.target.value) : null)}
           style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#ccc', padding: '5px 8px', fontSize: '12px', outline: 'none' }}>
@@ -416,7 +415,7 @@ const groupedCues = () => {
         <button onClick={() => setShowSceneModal(true)} style={{ padding: '5px 10px', background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#888', fontSize: '12px', cursor: 'pointer' }}>+ Scene</button>
         <button onClick={() => setShowCharModal(true)} style={{ padding: '5px 10px', background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#888', fontSize: '12px', cursor: 'pointer' }}>+ Character</button>
         <button onClick={addCue} style={{ padding: '6px 14px', background: '#534AB7', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>+ Cue</button>
-      </div>
+      </AppHeader>
 
       <div style={{ flex: 1, overflowY: 'auto', overflowX: 'auto' }}>
         {(data?.cues || []).length === 0 ? (

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AppHeader from '../components/AppHeader';
 const { ipcRenderer } = window.require('electron');
 
 export default function ScenesScreen({ show, navigate }) {
@@ -86,11 +87,9 @@ export default function ScenesScreen({ show, navigate }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#0f0f0f' }}>
-      <div style={{ padding: '14px 24px', borderBottom: '1px solid #2a2a2a', background: '#1a1a1a', display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <button onClick={() => navigate('show', show)} style={{ background: 'none', border: 'none', color: '#888', fontSize: '13px', cursor: 'pointer' }}>← {show.title}</button>
-        <span style={{ fontSize: '16px', fontWeight: '600', color: '#f0f0f0' }}>Scene List</span>
+      <AppHeader title="Scene List" onBack={() => navigate('show', show)} backLabel={show.title}>
         <span style={{ fontSize: '12px', color: '#555' }}>{scenes.length} scenes</span>
-      </div>
+      </AppHeader>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
         <div style={{ maxWidth: '700px', margin: '0 auto' }}>

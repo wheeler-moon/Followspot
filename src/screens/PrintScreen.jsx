@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import AppHeader from '../components/AppHeader';
 const { ipcRenderer } = window.require('electron');
 
 export default function PrintScreen({ show, navigate }) {
@@ -41,10 +42,7 @@ const generateColorLoadPDF = () => {
   };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#0f0f0f', overflow: 'hidden' }}>
-      <div style={{ padding: '14px 24px', borderBottom: '1px solid #2a2a2a', background: '#1a1a1a', display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <button onClick={() => navigate('show', show)} style={{ background: 'none', border: 'none', color: '#888', fontSize: '13px', cursor: 'pointer' }}>← {show.title}</button>
-        <span style={{ fontSize: '16px', fontWeight: '600', color: '#f0f0f0' }}>Print Options</span>
-      </div>
+      <AppHeader title="Print Options" onBack={() => navigate('show', show)} backLabel={show.title} />
 
       <div style={{ flex: 1, padding: '32px 24px', overflowY: 'auto' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
