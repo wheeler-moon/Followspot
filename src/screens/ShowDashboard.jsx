@@ -47,7 +47,7 @@ const startEdit = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#0f0f0f' }}>
-     <AppHeader title={show.title} onBack={() => navigate('home')} backLabel="All shows">
+           <AppHeader title={show.title} onBack={() => navigate('home')} backLabel="All shows">
         <span style={{ fontSize: '12px', color: '#555' }}>{show.theatre}</span>
         <div style={{ flex: 1 }} />
         <button onClick={() => navigate('cue-list', show)} style={{ padding: '8px 18px', background: '#534AB7', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
@@ -174,7 +174,6 @@ const startEdit = () => {
               ))}
             </div>
           </div>
-
         </div>
       </div>
     </div>
