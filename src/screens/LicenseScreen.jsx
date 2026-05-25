@@ -1,7 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { activateLicense, validateLicense, setCachedLicense } from '../license';
 
+const { ipcRenderer } = window.require('electron');
+
 export default function LicenseScreen({ onActivated }) {
+    const [logoSrc, setLogoSrc] = useState('');
+  
+  useEffect(() => {
+    const result = ipcRenderer.sendSync('get-app-icon');
+    if (result) setLogoSrc(result);
+  }, []);
   const [email, setEmail] = useState('');
   const [licenseKey, setLicenseKey] = useState('');
   const [error, setError] = useState('');
@@ -31,7 +39,7 @@ export default function LicenseScreen({ onActivated }) {
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#0f0f0f', padding: '40px' }}>
       <div style={{ width: '100%', maxWidth: '440px' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <div style={{ fontSize: '48px', fontWeight: '800', color: '#f0f0f0', letterSpacing: '-1px', marginBottom: '8px' }}>SpotPlot</div>
+          <img src={logoSrc} style={{ width: '120px', height: '120px', borderRadius: '24px', marginBottom: '16px' }} />
           <div style={{ fontSize: '14px', color: '#555' }}>Professional followspot tracking</div>
         </div>
         <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '16px', padding: '32px' }}>
