@@ -62,16 +62,16 @@ function ActionIcon({ action, size = 20 }) {
   }
 }
 
-function ActionPicker({ value, onChange, onClose }) {
+function ActionPicker({ value, onChange, onClose, pos }) {
   return (
-    <div style={{ position: 'absolute', top: '100%', left: 0, zIndex: 9999, background: '#1a1a1a', border: '1px solid #3a3a3a', borderRadius: '10px', padding: '8px', width: '280px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', marginTop: '4px' }}>
+    <div style={{ position: 'fixed', top: pos ? pos.top : 0, left: pos ? pos.left : 0, zIndex: 99999, background: '#1a1a1a', border: '1px solid #3a3a3a', borderRadius: '10px', padding: '8px', width: '280px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', marginTop: '4px' }}>
       {ACTIONS.map(a => (
         <div key={a.name} onClick={() => { onChange(a); onClose(); }}
           style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', padding: '6px 4px', borderRadius: '6px', cursor: 'pointer', background: value === a.name ? '#2a2a3a' : 'transparent', border: value === a.name ? '1px solid #534AB7' : '1px solid transparent' }}
           onMouseEnter={e => e.currentTarget.style.background = '#2a2a2a'}
           onMouseLeave={e => e.currentTarget.style.background = value === a.name ? '#2a2a3a' : 'transparent'}>
-          <ActionIcon action={a.name} size={22} />
-          <span style={{ fontSize: '9px', color: '#888', textAlign: 'center', lineHeight: 1.2 }}>{a.short}</span>
+          <ActionIcon action={a.name} size={28} />
+          <span style={{ fontSize: '11px', color: '#888', textAlign: 'center', lineHeight: 1.2 }}>{a.short}</span>
         </div>
       ))}
     </div>
@@ -82,7 +82,9 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
   const [showActionPicker, setShowActionPicker] = useState(false);
   const [showCustomTime, setShowCustomTime] = useState(false);
   const [customTimeVal, setCustomTimeVal] = useState('');
+  const [pickerPos, setPickerPos] = useState({ top: 0, left: 0 });
   const ref = useRef();
+  const actionBtnRef = useRef();
   const isOff = spotCue?.action === 'Off' || !spotCue?.action;
 
   useEffect(() => {
@@ -120,13 +122,22 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
   if (spotCue.action === 'Off') {
     return (
       <td style={{ padding: '8px 10px', borderRight: '1px solid #1e1e1e', verticalAlign: 'top', minWidth: '200px', background: '#080808' }}>
-        <div ref={ref} style={{ position: 'relative', zIndex: showActionPicker ? 9999 : 'auto' }}>
-          <div onClick={() => setShowActionPicker(v => !v)}
+        <div ref={ref} style={{ position: 'relative', zIndex: showActionPicker ? 99999 : 'auto' }}>
+          <div ref={actionBtnRef} onClick={() => {
+            if (actionBtnRef.current) {
+              const rect = actionBtnRef.current.getBoundingClientRect();
+              const pickerHeight = 380;
+              const spaceBelow = window.innerHeight - rect.bottom;
+              const top = spaceBelow < pickerHeight ? rect.top - pickerHeight - 4 : rect.bottom + 4;
+              setPickerPos({ top, left: rect.left });
+            }
+            setShowActionPicker(v => !v);
+          }}
             style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '3px 7px', borderRadius: '5px', background: '#111', border: '1px solid #222', cursor: 'pointer' }}>
             <ActionIcon action="Off" size={16} />
             <span style={{ fontSize: '11px', color: '#444', fontWeight: '500' }}>Off</span>
           </div>
-          {showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} />}
+          {showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} pos={pickerPos} />}
           <div style={{ fontSize: '10px', color: '#2a2a2a', marginTop: '6px', fontStyle: 'italic', textAlign: 'center' }}>spot inactive</div>
         </div>
       </td>
@@ -137,18 +148,27 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
     <td style={{ padding: '8px 10px', borderRight: '1px solid #1e1e1e', verticalAlign: 'top', minWidth: '200px' }}>
       <div ref={ref} style={{ position: 'relative', zIndex: showActionPicker ? 9999 : 'auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '5px' }}>
-          <div onClick={() => setShowActionPicker(v => !v)}
+          <div ref={actionBtnRef} onClick={() => {
+            if (actionBtnRef.current) {
+              const rect = actionBtnRef.current.getBoundingClientRect();
+              const pickerHeight = 380;
+              const spaceBelow = window.innerHeight - rect.bottom;
+              const top = spaceBelow < pickerHeight ? rect.top - pickerHeight - 4 : rect.bottom + 4;
+              setPickerPos({ top, left: rect.left });
+            }
+            setShowActionPicker(v => !v);
+          }}
             style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '3px 7px', borderRadius: '5px', background: actionDef ? '#1e1e2e' : '#1a1a1a', border: `1px solid ${actionDef ? actionDef.color + '55' : '#2a2a2a'}`, cursor: 'pointer', flex: 1 }}>
             {spotCue.action ? (
               <>
                 <ActionIcon action={spotCue.action} size={16} />
-                <span style={{ fontSize: '11px', color: actionDef ? actionDef.color : '#888', fontWeight: '500' }}>{spotCue.action}</span>
+                <span style={{ fontSize: '13px', color: actionDef ? actionDef.color : '#888', fontWeight: '500' }}>{spotCue.action}</span>
               </>
             ) : (
-              <span style={{ fontSize: '11px', color: '#333' }}>Select action...</span>
+              <span style={{ fontSize: '13px', color: '#333' }}>Select action...</span>
             )}
           </div>
-          {showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} />}
+          {showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} pos={pickerPos} />} 
         </div>
 
         <select value={spotCue.character_id || ''} onChange={e => onUpdate(spotCue.id, 'character_id', e.target.value ? parseInt(e.target.value) : null)}
@@ -185,7 +205,7 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
             {[{label:'FB',value:'Full Body'},{label:'3/4',value:'3/4 Body'},{label:'1/2',value:'1/2 Body'},{label:'H&S',value:'Head & Shoulders'},{label:'Hd',value:'Head'}].map(iris => (
               <div key={iris.value}
                 onClick={() => onUpdate(spotCue.id, 'frame_size', spotCue.frame_size === iris.value ? '' : iris.value)}
-                style={{ padding: '2px 6px', borderRadius: '20px', fontSize: '10px', fontWeight: '600', cursor: 'pointer', background: spotCue.frame_size === iris.value ? '#185FA5' : '#1a1a1a', color: spotCue.frame_size === iris.value ? '#fff' : '#444', border: `1px solid ${spotCue.frame_size === iris.value ? '#185FA5' : '#2a2a2a'}` }}>
+                style={{ padding: '2px 6px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: spotCue.frame_size === iris.value ? '#185FA5' : '#1a1a1a', color: spotCue.frame_size === iris.value ? '#fff' : '#444', border: `1px solid ${spotCue.frame_size === iris.value ? '#185FA5' : '#2a2a2a'}` }}>
                 {iris.label}
               </div>
             ))}
@@ -193,7 +213,7 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
           <div style={{ display: 'flex', gap: '3px' }}>
             {colorSlots.map(slot => (
               <div key={slot.id} onClick={() => toggleFrame('F' + slot.slot_number)}
-                style={{ padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: '600', cursor: 'pointer', background: activeFrames.includes('F' + slot.slot_number) ? '#534AB7' : '#1a1a1a', color: activeFrames.includes('F' + slot.slot_number) ? '#fff' : '#555', border: `1px solid ${activeFrames.includes('F' + slot.slot_number) ? '#534AB7' : '#2a2a2a'}` }}>
+                style={{ padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: activeFrames.includes('F' + slot.slot_number) ? '#534AB7' : '#1a1a1a', color: activeFrames.includes('F' + slot.slot_number) ? '#fff' : '#555', border: `1px solid ${activeFrames.includes('F' + slot.slot_number) ? '#534AB7' : '#2a2a2a'}` }}>
                 F{slot.slot_number}
               </div>
             ))}
@@ -203,7 +223,7 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
         <div style={{ display: 'flex', gap: '4px', alignItems: 'center', marginBottom: '3px' }}>
           <input value={spotCue.description || ''} onChange={e => onUpdate(spotCue.id, 'description', e.target.value)}
             placeholder="When..."
-            style={{ flex: 1, background: 'transparent', border: 'none', borderBottom: '1px solid #1e1e1e', color: '#888', padding: '2px 0', fontSize: '11px', outline: 'none' }} />
+            style={{ flex: 1, background: 'transparent', border: 'none', borderBottom: '1px solid #1e1e1e', color: '#888', padding: '2px 0', fontSize: '12px', outline: 'none' }} />
           <div onClick={handleWLQ} title="Auto-fill w/ LQ number"
             style={{ fontSize: '9px', color: '#333', cursor: 'pointer', padding: '2px 4px', borderRadius: '3px', border: '1px solid #222', whiteSpace: 'nowrap', lineHeight: 1.3 }}
             onMouseEnter={e => { e.currentTarget.style.color = '#888'; e.currentTarget.style.borderColor = '#444'; }}
@@ -214,7 +234,7 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
 
         <input value={spotCue.notes || ''} onChange={e => onUpdate(spotCue.id, 'notes', e.target.value)}
           placeholder="Notes..."
-          style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid #1e1e1e', color: '#666', padding: '2px 0', fontSize: '11px', outline: 'none', fontStyle: 'italic' }} />
+          style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid #1e1e1e', color: '#666', padding: '2px 0', fontSize: '12px', outline: 'none', fontStyle: 'italic' }} />
       </div>
     </td>
   );
@@ -264,7 +284,7 @@ function CueRow({ cue, spots, spotCues, characters, colorSlotsBySpot, scenes, on
                 onBlur={saveLQ} onKeyDown={e => e.key === 'Enter' && saveLQ()}
                 style={{ width: '64px', background: '#111', border: '1px solid #534AB7', borderRadius: '4px', color: '#f0f0f0', padding: '3px 6px', fontSize: '16px', fontWeight: '700', textAlign: 'center', outline: 'none' }} />
             ) : (
-              <div onClick={() => setEditingLQ(true)} style={{ fontSize: '18px', fontWeight: '700', color: lqVal ? '#f0f0f0' : '#2a2a2a', cursor: 'pointer', minHeight: '24px' }}>
+              <div onClick={() => setEditingLQ(true)} style={{ fontSize: '20px', fontWeight: '700', color: lqVal ? '#f0f0f0' : '#2a2a2a', cursor: 'pointer', minHeight: '24px' }}>
                 {lqVal || '—'}
               </div>
             )}
