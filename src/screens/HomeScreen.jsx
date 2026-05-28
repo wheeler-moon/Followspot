@@ -19,6 +19,16 @@ export default function HomeScreen({ navigate }) {
         <button onClick={() => setShowSettings(true)} style={{ padding: '8px 14px', background: 'none', border: '1px solid #2a2a2a', borderRadius: '8px', color: '#666', fontSize: '13px', cursor: 'pointer' }}>
           ⚙ Settings
         </button>
+        <button onClick={() => {
+          const result = ipcRenderer.sendSync('db-import-show');
+          if (result.success) {
+            alert('Show imported successfully!');
+            const updated = ipcRenderer.sendSync('db-get-shows');
+            setShows(Array.isArray(updated) ? updated : []);
+          } else if (!result.cancelled) alert('Import failed: ' + result.error);
+        }} style={{ padding: '8px 14px', background: 'none', border: '1px solid #534AB7', borderRadius: '8px', color: '#534AB7', fontSize: '13px', cursor: 'pointer' }}>
+          ↓ Import
+        </button>
         <button onClick={() => navigate('new-show')} style={{ padding: '8px 18px', background: '#534AB7', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>+ New Show</button>
       </AppHeader>
       <div style={{ flex: 1, padding: '32px 24px', overflowY: 'auto' }}>

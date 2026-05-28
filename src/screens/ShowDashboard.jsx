@@ -50,6 +50,13 @@ const startEdit = () => {
            <AppHeader title={show.title} onBack={() => navigate('home')} backLabel="All shows">
         <span style={{ fontSize: '12px', color: '#555' }}>{show.theatre}</span>
         <div style={{ flex: 1 }} />
+        <button onClick={() => {
+          const result = ipcRenderer.sendSync('db-export-show', show.id);
+          if (result.success) alert(`Show exported successfully!`);
+          else if (!result.cancelled) alert('Export failed: ' + result.error);
+        }} style={{ padding: '8px 14px', background: 'none', border: '1px solid #2a2a2a', borderRadius: '8px', color: '#666', fontSize: '13px', cursor: 'pointer' }}>
+          ↑ Export
+        </button>
         <button onClick={() => navigate('cue-list', show)} style={{ padding: '8px 18px', background: '#534AB7', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
           Open cue list →
         </button>

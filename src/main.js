@@ -462,6 +462,83 @@ function seedGels() {
 }
 
 function setupIPC() {
+  ipcMain.on('db-export-show', async (event, showId) => {
+    try {
+      const { dialog } = require('electron');
+      const database = getDb();
+      const show = database.prepare('SELECT * FROM shows WHERE id = ?').get(showId);
+      const spots = database.prepare('SELECT * FROM spots WHERE show_id = ?').all(showId);
+      const colorSlots = database.prepare('SELECT * FROM color_slots WHERE spot_id IN (SELECT id FROM spots WHERE show_id =?)').all(showId);
+      const scenes = database.prepare('SELECT * FROM scenes WHERE show_id = ? ORDER BY sort_order').all(showId);
+      const characters = database.prepare('SELECT * FROM characters WHERE show_id = ? ORDER BY sort_order').all(showId);
+      const cues = database.prepare('SELECT * FROM cues WHERE show_id = ? ORDER BY sort_order').all(showId);
+      const spotCues = database.prepare('SELECT sc.* FROM spot_cues sc JOIN cues c ON sc.cue_id = c.id WHERE c.show_id = ?').all(showId);
+      const { filePath } = await dialog.showSaveDialog({
+        defaultPath: `${show.title}.spotplot`,
+        filters: [{ name: 'SpotPlot Show', extensions: ['spotplot'] }],
+      });
+      if (!filePath) { event.returnValue = { success: false, cancelled: true }; return; }
+      const fs = require('fs');
+      const exportData = { version: '1.0', exported_at: new Date().toISOString(), show, spots, colorSlots, scenes, characters, cues, spotCues };
+      fs.writeFileSync(filePath, JSON.stringify(exportData, null, 2));
+      event.returnValue = { success: true, path: filePath };
+    } catch(e) {
+      console.error('Export error:', e);
+      event.returnValue = { success: false, error: e.message };
+    }
+  });
+
+  ipcMain.on('db-import-show', async (event) => {
+    try {
+      const { dialog } = require('electron');
+      const fs = require('fs');
+      const { filePaths } = await dialog.showOpenDialog({
+        filters: [{ name: 'SpotPlot Show', extensions: ['spotplot'] }],
+        properties: ['openFile'],
+      });
+      if (!filePaths || !filePaths[0]) { event.returnValue = { success: false, cancelled: true }; return; }
+      const data = JSON.parse(fs.readFileSync(filePaths[0], 'utf8'));
+      const database = getDb();
+      const insertShow = database.prepare(`INSERT INTO shows (title, theatre, producer, designer, associate_ld, assistant_ld, production_electrician, programmer, num_spots) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+      const showResult = insertShow.run(data.show.title + ' (imported)', data.show.theatre, data.show.producer, data.show.designer, data.show.associate_ld, data.show.assistant_ld, data.show.production_electrician, data.show.programmer, data.show.num_spots);
+      const newShowId = showResult.lastInsertRowid;
+      const spotIdMap = {};
+      for (const spot of data.spots) {
+        const r = database.prepare('INSERT INTO spots (show_id, spot_number, operator_name, fixture_type, location) VALUES (?, ?, ?, ?, ?)').run(newShowId, spot.spot_number, spot.operator_name, spot.fixture_type, spot.location);
+        spotIdMap[spot.id] = r.lastInsertRowid;
+      }
+      for (const slot of data.colorSlots) {
+        const newSpotId = spotIdMap[slot.spot_id];
+        if (newSpotId) database.prepare('INSERT INTO color_slots (spot_id, slot_number, is_permanent, gel_number, gel_name) VALUES (?, ?, ?, ?, ?)').run(newSpotId, slot.slot_number, slot.is_permanent, slot.gel_number, slot.gel_name);
+      }
+      const sceneIdMap = {};
+      for (const scene of data.scenes) {
+        const r = database.prepare('INSERT INTO scenes (show_id, label, song, act_break, sort_order) VALUES (?, ?, ?, ?, ?)').run(newShowId, scene.label, scene.song, scene.act_break, scene.sort_order);
+        sceneIdMap[scene.id] = r.lastInsertRowid;
+      }
+      const charIdMap = {};
+      for (const char of data.characters) {
+        const r = database.prepare('INSERT INTO characters (show_id, name, actor_name, costume_notes, sort_order) VALUES (?, ?, ?, ?, ?)').run(newShowId, char.name, char.actor_name, char.costume_notes, char.sort_order);
+        charIdMap[char.id] = r.lastInsertRowid;
+      }
+      const cueIdMap = {};
+      for (const cue of data.cues) {
+        const newSceneId = sceneIdMap[cue.scene_id] || null;
+        const r = database.prepare('INSERT INTO cues (show_id, lq_number, track_number, scene_id, sort_order, caller_notes, rehearsal_notes) VALUES (?, ?, ?, ?, ?, ?, ?)').run(newShowId, cue.lq_number, cue.track_number, newSceneId, cue.sort_order, cue.caller_notes, cue.rehearsal_notes);
+        cueIdMap[cue.id] = r.lastInsertRowid;
+      }
+      for (const sc of data.spotCues) {
+        const newCueId = cueIdMap[sc.cue_id];
+        const newSpotId = spotIdMap[sc.spot_id];
+        const newCharId = charIdMap[sc.character_id] || null;
+        if (newCueId && newSpotId) database.prepare('INSERT INTO spot_cues (cue_id, spot_id, action, character_id, frame_size, intensity, fade_time, active_frames, description, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(newCueId, newSpotId, sc.action, newCharId, sc.frame_size, sc.intensity, sc.fade_time, sc.active_frames, sc.description, sc.notes);
+      }
+      event.returnValue = { success: true, showId: newShowId };
+    } catch(e) {
+      console.error('Import error:', e);
+      event.returnValue = { success: false, error: e.message };
+    }
+  });
   ipcMain.on('db-get-shows', (event) => {
     try {
       const shows = getDb().prepare('SELECT * FROM shows ORDER BY created_at DESC').all();
