@@ -114,7 +114,7 @@ function initSchema() {
 
 function seedGels() {
   const count = db.prepare('SELECT COUNT(*) as c FROM gels').get();
-  if (count.c >= 500) return;
+    if (count.c >= 500) return;
   db.prepare('DELETE FROM gels').run();
   const insert = db.prepare('INSERT INTO gels (manufacturer, gel_number, gel_name) VALUES (?, ?, ?)');
   const insertMany = db.transaction((gels) => {
@@ -219,34 +219,34 @@ function seedGels() {
     ['Rosco','R126','Green Cyc Silk'],['Rosco','R127','Amber Cyc Silk'],
     ['Rosco','R132','Quarter Hamburg Frost'],
     // ROSCO Cinegel - Diffusions
-    ['Rosco','3000','Cinegel Tough Rolux'],['Rosco','3006','Cinegel Tough Spun'],
-    ['Rosco','3007','Cinegel Light Spun'],['Rosco','3008','Cinegel Hilite'],
-    ['Rosco','3010','Cinegel Tough Frost'],['Rosco','3012','Cinegel Light Frost'],
-    ['Rosco','3014','Cinegel Opal Frost'],['Rosco','3015','Cinegel Light Grid Cloth'],
-    ['Rosco','3016','Cinegel Grid Cloth'],['Rosco','3017','Cinegel Tough Grid Cloth'],
-    ['Rosco','3018','Cinegel Silent Grid Cloth'],['Rosco','3019','Cinegel Silent Light Grid'],
-    ['Rosco','3020','Cinegel Tough Silk'],['Rosco','3021','Cinegel Soft Frost'],
-    ['Rosco','3026','Cinegel Light Hamburg Frost'],['Rosco','3027','Cinegel Hamburg Frost'],
-    ['Rosco','3028','Cinegel Heavy Frost'],['Rosco','3029','Cinegel Tough White Diffusion'],
-    ['Rosco','3030','Cinegel Ultra Bounce'],['Rosco','3031','Cinegel Full Bounce'],
-    ['Rosco','3032','Cinegel Light Grid Cloth'],
+    ['Rosco','R3000','Cinegel Tough Rolux'],['Rosco','R3006','Cinegel Tough Spun'],
+    ['Rosco','R3007','Cinegel Light Spun'],['Rosco','R3008','Cinegel Hilite'],
+    ['Rosco','R3010','Cinegel Tough Frost'],['Rosco','R3012','Cinegel Light Frost'],
+    ['Rosco','R3014','Cinegel Opal Frost'],['Rosco','R3015','Cinegel Light Grid Cloth'],
+    ['Rosco','R3016','Cinegel Grid Cloth'],['Rosco','R3017','Cinegel Tough Grid Cloth'],
+    ['Rosco','R3018','Cinegel Silent Grid Cloth'],['Rosco','R3019','Cinegel Silent Light Grid'],
+    ['Rosco','R3020','Cinegel Tough Silk'],['Rosco','R3021','Cinegel Soft Frost'],
+    ['Rosco','R3026','Cinegel Light Hamburg Frost'],['Rosco','R3027','Cinegel Hamburg Frost'],
+    ['Rosco','R3028','Cinegel Heavy Frost'],['Rosco','R3029','Cinegel Tough White Diffusion'],
+    ['Rosco','R3030','Cinegel Ultra Bounce'],['Rosco','R3031','Cinegel Full Bounce'],
+    ['Rosco','R3032','Cinegel Light Grid Cloth'],
     // ROSCO Cinegel - Color Corrections (CTB)
-    ['Rosco','3202','Full Blue CTB'],['Rosco','3203','3/4 Blue CTB'],
-    ['Rosco','3204','Half Blue CTB'],['Rosco','3206','Third Blue CTB'],
-    ['Rosco','3208','Quarter Blue CTB'],['Rosco','3216','Eighth Blue CTB'],
-    ['Rosco','3220','Double Blue CTB'],
+    ['Rosco','R3202','Full Blue CTB'],['Rosco','R3203','3/4 Blue CTB'],
+    ['Rosco','R3204','Half Blue CTB'],['Rosco','R3206','Third Blue CTB'],
+    ['Rosco','R3208','Quarter Blue CTB'],['Rosco','R3216','Eighth Blue CTB'],
+    ['Rosco','R3220','Double Blue CTB'],
     // ROSCO Cinegel - Color Corrections (CTO)
-    ['Rosco','3401','Sun 85 CTO'],['Rosco','3407','Full CTO'],
-    ['Rosco','3408','Half CTO'],['Rosco','3409','Quarter CTO'],
-    ['Rosco','3410','Eighth CTO'],
+    ['Rosco','R3401','Sun 85 CTO'],['Rosco','R3407','Full CTO'],
+    ['Rosco','R3408','Half CTO'],['Rosco','R3409','Quarter CTO'],
+    ['Rosco','R3410','Eighth CTO'],
     // ROSCO Cinegel - Plus/Minus Green
-    ['Rosco','3304','Full Plus Green'],['Rosco','3308','Full Minus Green'],
-    ['Rosco','3313','Half Minus Green'],['Rosco','3314','Quarter Minus Green'],
-    ['Rosco','3315','Half Plus Green'],['Rosco','3316','Quarter Plus Green'],
+    ['Rosco','R3304','Full Plus Green'],['Rosco','R3308','Full Minus Green'],
+    ['Rosco','R3313','Half Minus Green'],['Rosco','R3314','Quarter Minus Green'],
+    ['Rosco','R3315','Half Plus Green'],['Rosco','R3316','Quarter Plus Green'],
     // ROSCO Cinegel - Neutral Density
-    ['Rosco','3401','ND 0.3 (1 Stop)'],['Rosco','3402','ND 0.6 (2 Stop)'],
-    ['Rosco','3403','ND 0.9 (3 Stop)'],['Rosco','3404','ND 1.2 (4 Stop)'],
-    ['Rosco','3405','ND 1.5 (5 Stop)'],
+    ['Rosco','R3401','ND 0.3 (1 Stop)'],['Rosco','R3402','ND 0.6 (2 Stop)'],
+    ['Rosco','R3403','ND 0.9 (3 Stop)'],['Rosco','R3404','ND 1.2 (4 Stop)'],
+    ['Rosco','R3405','ND 1.5 (5 Stop)'],
     // LEE FILTERS - Colors
     ['Lee','L001','Pale Yellow'],['Lee','L002','Pale Amber'],
     ['Lee','L003','Straw'],['Lee','L004','Medium Bastard Amber'],
