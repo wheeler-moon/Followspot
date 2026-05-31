@@ -40,6 +40,20 @@ const generateColorLoadPDF = () => {
     if (result.success) setMessage('Color load sheet saved successfully!');
     else if (!result.cancelled) setMessage('Error generating PDF. Please try again.');
   };
+  const generatePDF = (spotId) => {
+    if (!label.trim()) { setMessage('Please enter a label first (e.g. "2-24 Dress Run")'); return; }
+    setGenerating(true);
+    setMessage('');
+    const result = ipcRenderer.sendSync('db-generate-pdf', {
+      showId: show.id, spotId, label,
+      hideOff, hideTracked,
+      rangeStart: rangeStart ? parseInt(rangeStart) : null,
+      rangeEnd: rangeEnd ? parseInt(rangeEnd) : null,
+    });
+    setGenerating(false);
+    if (result.success) setMessage('PDF saved successfully!');
+    else if (!result.cancelled) setMessage('Error generating PDF. Please try again.');
+  };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#0f0f0f', overflow: 'hidden' }}>
       <AppHeader title="Print Options" onBack={() => navigate('show', show)} backLabel={show.title} />

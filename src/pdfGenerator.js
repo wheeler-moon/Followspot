@@ -57,10 +57,10 @@ function buildSpotSheetHTML({ show, spot, colorSlots, cues, spotCues, characters
   if (rangeEnd !== null && rangeEnd !== undefined) {
     sortedCues = sortedCues.filter(c => c.track_number <= rangeEnd);
   }
-  if (hideOff) {
+ if (hideOff) {
     sortedCues = sortedCues.filter(c => {
       const sc = spotCues.find(sc => sc.cue_id === c.id && sc.spot_id === spot.id);
-      return sc && sc.action !== 'Off' && sc.action !== '';
+      return sc && sc.action !== 'Off';
     });
   }
 
@@ -489,6 +489,16 @@ async function generateSpotSheetPDF({ show, spot, colorSlots, cues, spotCues, ch
   return outputPath;
 }
 function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label }) {
+  let logoBase64 = '';
+  if (show.logo_path) {
+    try {
+      const fs = require('fs');
+      const data = fs.readFileSync(show.logo_path);
+      const ext = show.logo_path.split('.').pop().toLowerCase();
+      const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
+      logoBase64 = `data:${mime};base64,${data.toString('base64')}`;
+    } catch(e) {}
+  }
   const isLandscape = spots.length > 2;
   const sceneMap = {};
   scenes.forEach(s => { sceneMap[s.id] = s; });
@@ -540,16 +550,16 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
     for (const spot of spots) {
       const spotCues = spotCuesBySpot[spot.id] || [];
       const sc = spotCues.find(sc => sc.cue_id === cue.id);
-      const isOff = !sc || sc.action === 'Off' || sc.action === '';
+      const isOff = !sc || sc.action === 'Off';
       const char = sc ? charMap[sc.character_id] : null;
       const activeFrames = sc && sc.active_frames ? sc.active_frames.split(',').filter(Boolean).join('+') : '';
 
       if (isOff) {
         spotCellsHTML += `
           <td class="spot-cell off-cell">
-            <div class="action-inner off-action">
-              ${actionIconSVG('Off', 20)}
-              <span class="action-name off-text">Off</span>
+            <div class="off-inner">
+              ${actionIconSVG('Off', 18)}
+              <span class="off-label">Off</span>
             </div>
           </td>
         `;
@@ -599,138 +609,57 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
 
   @page {
     size: ${isLandscape ? '11in 8.5in' : '8.5in 11in'};
-    margin: 0.4in 0.35in 0.35in 0.35in;
+    margin: 0.3in 0.3in 0.3in 0.3in;
   }
 
   body {
     font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
-    font-size: 10pt;
+    font-size: 11pt;
     color: #1a1a1a;
     background: white;
   }
 
   .header {
     display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    margin-bottom: 10px;
-    padding-bottom: 10px;
-    border-bottom: 2.5px solid #1a1a1a;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 3px solid #1a1a1a;
+  }
+
+  .header-logo {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+    border-radius: 6px;
+    flex-shrink: 0;
   }
 
   .header-logo-placeholder {
-    width: 56px;
-    height: 56px;
+    width: 52px;
+    height: 52px;
     background: #f0f0f0;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 7pt;
-    color: #999;
+    border-radius: 6px;
     flex-shrink: 0;
   }
 
   .header-main { flex: 1; }
 
   .show-title {
-    font-size: 20pt;
+    font-size: 18pt;
     font-weight: 800;
     letter-spacing: -0.5px;
     line-height: 1;
-    margin-bottom: 3px;
+    margin-bottom: 2px;
   }
 
   .header-team {
     font-size: 8pt;
     color: #555;
-    margin-bottom: 8px;
   }
 
-  .spots-header-row {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .spot-header-card {
-    flex: 1;
-    background: #f5f5f5;
-    border: 1.5px solid #ddd;
-    border-radius: 8px;
-    padding: 6px 10px;
-    min-width: 120px;
-  }
-
-  .spot-header-top {
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
-    margin-bottom: 2px;
-  }
-
-  .spot-number {
-    font-size: 11pt;
-    font-weight: 800;
-    color: #1a1a1a;
-  }
-
-  .spot-operator {
-    font-size: 10pt;
-    font-weight: 600;
-    color: #333;
-  }
-
-  .spot-meta {
-    font-size: 7.5pt;
-    color: #777;
-    margin-bottom: 4px;
-  }
-
-  .gel-frames {
-    display: flex;
-    gap: 3px;
-    flex-wrap: wrap;
-  }
-
-  .gel-slot {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: white;
-    border: 0.75px solid #ddd;
-    border-radius: 3px;
-    padding: 2px 4px;
-    min-width: 32px;
-  }
-
-  .gel-label {
-    font-size: 6pt;
-    color: #aaa;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-
-  .gel-num {
-    font-size: 7.5pt;
-    font-weight: 700;
-    color: #1a1a1a;
-  }
-
-  .gel-name {
-    font-size: 6pt;
-    color: #777;
-    text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    max-width: 44px;
-    text-overflow: ellipsis;
-  }
-
-  .header-right {
-    text-align: right;
-    flex-shrink: 0;
-  }
+  .header-right { text-align: right; flex-shrink: 0; }
 
   .print-label {
     font-size: 13pt;
@@ -744,11 +673,75 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
     margin-top: 2px;
   }
 
-table {
+  table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 10pt;
+    font-size: 11pt;
     table-layout: fixed;
+  }
+
+  thead th {
+    font-size: 8pt;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #fff;
+    background: #1a1a1a;
+    padding: 5px 8px;
+    text-align: left;
+  }
+
+  thead th:first-child {
+    width: 48px;
+    text-align: center;
+  }
+
+  thead th.spot-col-header {
+    width: calc((100% - 48px) / ${spots.length});
+    border-left: 2px solid #444;
+  }
+
+  tbody tr {
+    border-bottom: 1.5px solid #d0d0d0;
+  }
+
+  tbody tr:nth-child(even) { background: #f8f8f8; }
+
+  .lq-cell {
+    font-size: 20pt;
+    font-weight: 900;
+    color: #1a1a1a;
+    width: 48px;
+    padding: 8px 4px;
+    vertical-align: middle;
+    text-align: center;
+    border-right: 2px solid #1a1a1a;
+  }
+
+  .spot-cell {
+    padding: 8px 10px;
+    vertical-align: top;
+    border-left: 2px solid #ddd;
+  }
+
+  .off-cell {
+    background: #f0f0f0;
+    vertical-align: middle;
+    text-align: center;
+  }
+
+  .off-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    opacity: 0.4;
+  }
+
+  .off-label {
+    font-size: 13pt;
+    font-weight: 700;
+    color: #666;
   }
 
   .cell-top {
@@ -756,69 +749,10 @@ table {
     align-items: flex-start;
     justify-content: space-between;
     gap: 6px;
-    margin-bottom: 3px;
+    margin-bottom: 4px;
   }
 
   .action-char { flex: 1; }
-
-  .intensity-badge {
-    font-size: 13pt;
-    font-weight: 800;
-    color: #1a1a1a;
-    white-space: nowrap;
-    padding-left: 4px;
-  }
-
-  .notes-text {
-    font-size: 8pt;
-    color: #888;
-    font-style: italic;
-  }
-
-  thead th {
-    font-size: 7.5pt;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #555;
-    padding: 4px 6px;
-    border-bottom: 1.5px solid #1a1a1a;
-    text-align: left;
-  }
-
-  .spot-col-header {
-    color: #1a1a1a;
-    font-size: 8pt;
-    font-weight: 800;
-    border-left: 2px solid #ddd;
-    padding-left: 8px;
-  }
-
-  tbody tr {
-    border-bottom: 0.75px solid #e0e0e0;
-  }
-
-  tbody tr:nth-child(even) { background: #fafafa; }
-
-  .lq-cell {
-    font-size: 15pt;
-    font-weight: 800;
-    color: #1a1a1a;
-    width: 48px;
-    padding: 6px;
-    vertical-align: top;
-  }
-
-  .spot-cell {
-    padding: 6px 8px;
-    vertical-align: top;
-    border-left: 2px solid #eee;
-  }
-
-  .off-cell {
-    background: #f5f5f5;
-    vertical-align: middle;
-  }
 
   .action-inner {
     display: flex;
@@ -827,65 +761,119 @@ table {
     margin-bottom: 2px;
   }
 
-  .off-action { opacity: 0.35; }
-
   .action-name {
-    font-size: 10pt;
-    font-weight: 700;
+    font-size: 13pt;
+    font-weight: 800;
     color: #1a1a1a;
   }
 
-  .off-text { color: #999; }
-
   .char-name {
-    font-size: 12pt;
-    font-weight: 800;
+    font-size: 16pt;
+    font-weight: 900;
     color: #1a1a1a;
-    margin-bottom: 3px;
+    line-height: 1.1;
+  }
+
+  .intensity-badge {
+    font-size: 18pt;
+    font-weight: 900;
+    color: #1a1a1a;
+    white-space: nowrap;
+    padding-left: 4px;
+    line-height: 1;
   }
 
   .cue-details {
     display: flex;
     flex-wrap: wrap;
-    gap: 3px;
-    margin-bottom: 2px;
+    gap: 4px;
+    margin-top: 4px;
   }
 
   .detail-badge {
-    font-size: 8pt;
-    font-weight: 600;
-    padding: 1px 5px;
-    border-radius: 3px;
-    background: #f0f0f0;
+    font-size: 10pt;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: #e8e8e8;
     color: #333;
   }
 
-  .detail-badge.iris { background: #e8f0fb; color: #1a4a8a; }
-  .detail-badge.color { background: #f0e8fb; color: #4a1a8a; }
-  .detail-badge.time { background: #f0fbe8; color: #1a4a1a; }
+  .detail-badge.iris { background: #ddeeff; color: #1a3a7a; }
+  .detail-badge.color { background: #eeddff; color: #3a1a7a; }
+  .detail-badge.time { background: #ddffd8; color: #1a4a1a; }
 
   .when-text {
-    font-size: 8pt;
-    color: #666;
+    font-size: 10pt;
+    font-weight: 600;
+    color: #222;
     font-style: italic;
+    margin-top: 4px;
+  }
+
+  .notes-text {
+    font-size: 10pt;
+    color: #444;
+    font-style: italic;
+    margin-top: 3px;
   }
 
   .scene-row td {
     background: #1a1a1a;
     color: white;
-    font-size: 8.5pt;
-    font-weight: 700;
+    font-size: 9pt;
+    font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    padding: 4px 8px;
+    padding: 5px 10px;
   }
-  .lq-col { width: 48px; }
-  .spot-col { width: calc((100% - 48px) / VAR_SPOT_COUNT); }
+
+  .spots-header-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .spot-header-card {
+    flex: 1;
+    background: #f5f5f5;
+    border: 1.5px solid #ddd;
+    border-radius: 6px;
+    padding: 5px 8px;
+  }
+
+  .spot-header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 2px;
+  }
+
+  .spot-number { font-size: 11pt; font-weight: 800; }
+  .spot-operator { font-size: 10pt; font-weight: 600; color: #444; }
+  .spot-meta { font-size: 7pt; color: #888; margin-bottom: 3px; }
+
+  .gel-frames { display: flex; gap: 3px; flex-wrap: wrap; }
+
+  .gel-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: white;
+    border: 0.75px solid #ddd;
+    border-radius: 3px;
+    padding: 2px 4px;
+    min-width: 32px;
+  }
+
+  .gel-label { font-size: 6pt; color: #aaa; font-weight: 700; }
+  .gel-num { font-size: 8pt; font-weight: 800; color: #1a1a1a; }
+  .gel-name { font-size: 6pt; color: #777; text-align: center; white-space: nowrap; overflow: hidden; max-width: 44px; text-overflow: ellipsis; }
 </style>
 </head>
 <body>
   <div class="header">
-    <div class="header-logo-placeholder">LOGO</div>
+    ${show.logo_path ? `<img class="header-logo" src="${logoBase64}" />` : `<div class="header-logo-placeholder"></div>`}
     <div class="header-main">
       <div class="show-title">${show.title}</div>
       <div class="header-team">
