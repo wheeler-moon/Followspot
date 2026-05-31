@@ -110,6 +110,7 @@ function initSchema() {
   `);
   seedGels();
   try { db.exec('ALTER TABLE characters ADD COLUMN photo_path TEXT'); } catch(e) {}
+  try { db.exec('ALTER TABLE shows ADD COLUMN logo_path TEXT'); } catch(e) {}
 }
 
 function seedGels() {
@@ -615,10 +616,10 @@ ipcMain.on('get-app-icon', (event) => {
       getDb().prepare(`
         UPDATE shows SET title = ?, theatre = ?, producer = ?, designer = ?,
         associate_ld = ?, assistant_ld = ?, production_electrician = ?, programmer = ?,
-        updated_at = CURRENT_TIMESTAMP WHERE id = ?
+        logo_path = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
       `).run(form.title, form.theatre || '', form.producer || '', form.designer || '',
         form.associate_ld || '', form.assistant_ld || '', form.production_electrician || '',
-        form.programmer || '', showId);
+        form.programmer || '', form.logo_path || '', showId);
       event.returnValue = { success: true };
     } catch(e) { event.returnValue = { success: false }; }
   });

@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react';
 const { ipcRenderer } = window.require('electron');
 import AppHeader from '../components/AppHeader';
+const getImageSrc = (path) => {
+  if (!path) return null;
+  try {
+    const fs = window.require('fs');
+    const data = fs.readFileSync(path);
+    const ext = path.split('.').pop().toLowerCase();
+    const mime = ext === 'png' ? 'image/png' : ext === 'svg' ? 'image/svg+xml' : 'image/jpeg';
+    return `data:${mime};base64,${data.toString('base64')}`;
+  } catch(e) { return null; }
+};
 
 export default function ShowDashboard({ show, navigate }) {
   const [stats, setStats] = useState({ cues: 0, scenes: 0, characters: 0, spots: [] });
@@ -106,12 +116,54 @@ const startEdit = () => {
                   <button onClick={() => setEditing(false)} style={{ padding: '7px 14px', background: 'none', border: '1px solid #333', borderRadius: '6px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
                   <button onClick={saveEdit} disabled={saving} style={{ padding: '7px 14px', background: '#534AB7', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer' }}>{saving ? 'Saving...' : 'Save'}</button>
                 </div>
+                <div style={{ gridColumn: '1 / -1', marginBottom: '4px' }}>
+                  <div style={{ fontSize: '11px', color: '#666', marginBottom: '6px' }}>Show logo (optional)</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div
+                      onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = '#534AB7'; }}
+                      onDragLeave={e => { e.currentTarget.style.borderColor = '#2a2a2a'; }}
+                      onDrop={e => {
+                        e.preventDefault();
+                        e.currentTarget.style.borderColor = '#2a2a2a';
+                        const file = e.dataTransfer.files[0];
+                        if (file && file.type.startsWith('image/')) {
+                          const result = ipcRenderer.sendSync('dialog-open-image');
+                          if (result) updateEdit('logo_path', result);
+                        }
+                      }}
+                      onClick={() => {
+                        const result = ipcRenderer.sendSync('dialog-open-image');
+                        if (result) updateEdit('logo_path', result);
+                      }}
+                      style={{ width: '80px', height: '80px', background: '#111', borderRadius: '8px', border: '2px dashed #2a2a2a', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', cursor: 'pointer', flexShrink: 0 }}>
+                      {editForm.logo_path ? (
+                        <img src={getImageSrc(editForm.logo_path)} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                      ) : (
+                        <div style={{ textAlign: 'center', padding: '8px' }}>
+                          <div style={{ fontSize: '20px', color: '#333' }}>+</div>
+                          <div style={{ fontSize: '8px', color: '#444' }}>Drop or click</div>
+                        </div>
+                      )}
+                    </div>
+                    {editForm.logo_path && (
+                      <button onClick={() => updateEdit('logo_path', '')}
+                        style={{ padding: '5px 10px', background: 'none', border: '1px solid #3a2a2a', borderRadius: '6px', color: '#c44', fontSize: '11px', cursor: 'pointer' }}>
+                        Remove logo
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             ) : (
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                <div>
-                  <div style={{ fontSize: '28px', fontWeight: '700', color: '#f0f0f0', marginBottom: '4px' }}>{show.title}</div>
-                  <div style={{ fontSize: '14px', color: '#666' }}>{show.theatre}{show.producer ? ` · ${show.producer}` : ''}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  {show.logo_path && getImageSrc(show.logo_path) && (
+                    <img src={getImageSrc(show.logo_path)} style={{ height: '60px', maxWidth: '120px', objectFit: 'contain', borderRadius: '6px' }} />
+                  )}
+                  <div>
+                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#f0f0f0', marginBottom: '4px' }}>{show.title}</div>
+                    <div style={{ fontSize: '14px', color: '#666' }}>{show.theatre}{show.producer ? ` · ${show.producer}` : ''}</div>
+                  </div>
                 </div>
                 <button onClick={startEdit} style={{ padding: '6px 14px', background: 'none', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#666', fontSize: '12px', cursor: 'pointer', marginTop: '4px' }}>
                   Edit show info
