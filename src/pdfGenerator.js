@@ -123,8 +123,10 @@ function buildSpotSheetHTML({ show, spot, colorSlots, cues, spotCues, characters
           ` : '<span class="empty">—</span>'}
         </td>
         <td class="char-cell">${char ? char.name : (isOff ? '' : '—')}</td>
-       <td class="int-cell">${sc.intensity || '—'}</td>
-        <td class="iris-cell">${sc.frame_size || '—'}</td>
+       <td class="int-iris-cell">
+          <div style="font-size:11pt;font-weight:700;color:#1a1a1a;">${sc.intensity || '—'}</div>
+          <div style="font-size:10pt;color:#333;">${sc.frame_size || '—'}</div>
+        </td>
         <td class="frames-cell">${activeFrames || '—'}</td>
         <td class="time-cell">${sc.fade_time ? sc.fade_time + 's' : '—'}</td>
         <td class="when-cell">${sc.description || ''}</td>
@@ -376,17 +378,9 @@ function buildSpotSheetHTML({ show, spot, colorSlots, cues, spotCues, characters
     width: 120px;
   }
 
-  .iris-cell {
-    font-size: 10pt;
-    color: #333;
-    width: 90px;
-  }
-
-  .int-cell {
-    font-size: 11pt;
-    font-weight: 700;
-    width: 52px;
-    color: #1a1a1a;
+  .int-iris-cell {
+    width: 72px;
+    vertical-align: middle;
   }
 
   .frames-cell {
@@ -405,13 +399,14 @@ function buildSpotSheetHTML({ show, spot, colorSlots, cues, spotCues, characters
   .when-cell {
     font-size: 10pt;
     color: #333;
-    width: 110px;
+    width: 120px;
   }
 
   .notes-cell {
     font-size: 10pt;
     color: #555;
     font-style: italic;
+    min-width: 140px;
   }
 
   .empty { color: #ccc; }
@@ -455,8 +450,7 @@ ${logoHTML}
         <th>LQ</th>
         <th>Action</th>
         <th>Character</th>
-        <th>Int</th>
-        <th>Iris</th>
+        <th>Int / Iris</th>
         <th>Color</th>
         <th>Time</th>
         <th>When</th>
@@ -926,6 +920,16 @@ async function generateCallerSheetPDF({ show, spots, colorSlotsBySpot, cues, spo
   return outputPath;
 }
 function buildColorLoadHTML({ show, spots, colorSlotsBySpot, label }) {
+  let logoBase64 = '';
+  if (show.logo_path) {
+    try {
+      const fs = require('fs');
+      const data = fs.readFileSync(show.logo_path);
+      const ext = show.logo_path.split('.').pop().toLowerCase();
+      const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
+      logoBase64 = `data:${mime};base64,${data.toString('base64')}`;
+    } catch(e) {}
+  }
   const isLandscape = spots.length > 2;
 
   const GEL_COLORS = {
@@ -1160,12 +1164,12 @@ function buildColorLoadHTML({ show, spots, colorSlotsBySpot, label }) {
   .header {
     display: flex;
     align-items: flex-start;
-    gap: 14px;
+    justify-content: space-between;
     margin-bottom: 16px;
     padding-bottom: 12px;
     border-bottom: 2.5px solid #1a1a1a;
   }
-  .header-logo-placeholder {
+  .${logoBase64 ? `<img style="width:56px;height:56px;object-fit:contain;border-radius:8px;flex-shrink:0;" src="${logoBase64}" />` : `<div style="width:56px;height:56px;background:#f0f0f0;border-radius:8px;flex-shrink:0;"></div>`}
     width: 60px; height: 60px; background: #f0f0f0;
     border-radius: 8px; display: flex; align-items: center;
     justify-content: center; font-size: 8pt; color: #999; flex-shrink: 0;
@@ -1229,9 +1233,9 @@ function buildColorLoadHTML({ show, spots, colorSlotsBySpot, label }) {
 </style>
 </head>
 <body>
-  <div class="header">
-    <div class="header-logo-placeholder">LOGO</div>
-    <div class="header-main">
+<div class="header">
+    ${logoBase64 ? `<img style="width:56px;height:56px;object-fit:contain;border-radius:8px;flex-shrink:0;" src="${logoBase64}" />` : ''}
+    <div class="header-left">
       <div class="show-title">${show.title}</div>
       <div class="header-team">${[show.designer ? 'LD: ' + show.designer : '', show.associate_ld ? 'Assoc: ' + show.associate_ld : '', show.assistant_ld ? 'Asst: ' + show.assistant_ld : ''].filter(Boolean).join(' · ')}</div>
     </div>
