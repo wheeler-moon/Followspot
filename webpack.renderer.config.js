@@ -37,5 +37,8 @@ module.exports = {
   },
   resolve: {
     extensions: ['.js', '.jsx']
-  }
+  },
+  output: {
+    charset: true,
+  },
 };

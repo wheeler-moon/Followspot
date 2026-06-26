@@ -555,9 +555,20 @@ function setupIPC() {
 ipcMain.on('get-app-icon', (event) => {
     try {
       const fs = require('fs');
-      const iconPath = path.join(__dirname, '../../src/icon.png');
-      const data = fs.readFileSync(iconPath);
-      event.returnValue = 'data:image/png;base64,' + data.toString('base64');
+      const iconPaths = [
+        path.join(__dirname, '../../src/icon.png'),
+        path.join(process.resourcesPath || '', 'icon.png'),
+        path.join(app.getAppPath(), 'src/icon.png'),
+        path.join(__dirname, 'icon.png'),
+      ];
+      for (const iconPath of iconPaths) {
+        if (fs.existsSync(iconPath)) {
+          const data = fs.readFileSync(iconPath);
+          event.returnValue = 'data:image/png;base64,' + data.toString('base64');
+          return;
+        }
+      }
+      event.returnValue = null;
     } catch(e) {
       console.error('Icon load error:', e);
       event.returnValue = null;
@@ -1029,6 +1040,7 @@ const createWindow = () => {
   const mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
+    title: 'SpotPlot',
     icon: path.join(__dirname, '../src/icons/mac/icon.icns'),
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
@@ -1037,17 +1049,21 @@ const createWindow = () => {
     },
   });
 
-  mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
     callback({
       responseHeaders: {
         ...details.responseHeaders,
-        'Content-Security-Policy': ["default-src 'self' 'unsafe-inline' 'unsafe-eval' data:; connect-src 'self' https://spotplot-server.onrender.com"]
+        'Content-Security-Policy': ["default-src 'self' 'unsafe-inline' 'unsafe-eval' data:; connect-src 'self' https://spotplot-server.onrender.com"],
+        'Content-Type': ['text/html; charset=utf-8'],
       }
     });
   });
 
-  mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
-  mainWindow.webContents.openDevTools();
+ mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
+  mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow.setTitle('SpotPlot');
+  });
+  if (!app.isPackaged) mainWindow.webContents.openDevTools();
 };
 
 app.whenReady().then(() => {

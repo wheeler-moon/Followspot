@@ -2,10 +2,11 @@ const { FusesPlugin } = require('@electron-forge/plugin-fuses');
 const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 
 module.exports = {
-  packagerConfig: {
+ packagerConfig: {
     asar: true,
-    icon: './src/icons/mac/icon',
+    icon: './src/icons/icons/mac/icon',
     name: 'SpotPlot',
+    extraResource: ['./src/icon.png'],
   },
   rebuildConfig: {},
   makers: [
@@ -25,6 +26,13 @@ module.exports = {
       name: '@electron-forge/maker-rpm',
       config: {},
     },
+    {
+    name: '@electron-forge/maker-dmg',
+    config: {
+      format: 'ULFO',
+      name: 'SpotPlot',
+    },
+  },
   ],
   plugins: [
     {
