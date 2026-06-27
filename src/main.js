@@ -4,6 +4,7 @@ const Database = require('better-sqlite3');
 const { generateSpotSheetPDF, generateCallerSheetPDF, generateColorLoadPDF } = require('./pdfGenerator');
 
 if (require('electron-squirrel-startup')) app.quit();
+const { updateElectronApp } = require('update-electron-app');
 
 let db;
 
@@ -1069,6 +1070,14 @@ mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) 
 app.whenReady().then(() => {
   getDb();
   setupIPC();
+  app.whenReady().then(() => {
+  updateElectronApp({
+    repo: 'wheeler-moon/followspot',
+    updateInterval: '1 hour',
+    notifyUser: true,
+  });
+  createWindow();
+});
   createWindow();
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
