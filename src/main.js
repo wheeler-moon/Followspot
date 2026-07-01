@@ -1067,23 +1067,34 @@ mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) 
   if (!app.isPackaged) mainWindow.webContents.openDevTools();
 };
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   getDb();
   setupIPC();
-  app.whenReady().then(() => {
   updateElectronApp({
     repo: 'wheeler-moon/followspot',
     updateInterval: '1 hour',
     notifyUser: true,
   });
-  createWindow();
-});
-  createWindow();
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
-});
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+ try {
+    const puppeteer = require('puppeteer');
+    const fs = require('fs');
+    const chromePath = puppeteer.executablePath();
+    if (!fs.existsSync(chromePath)) {
+      console.log('Downloading Chromium for PDF generation...');
+      const { install, detectBrowserPlatform } = require('@puppeteer/browsers');
+      const platform = detectBrowserPlatform();
+      await install({
+        browser: 'chrome',
+        buildId: '146.0.7680.76',
+        cacheDir: require('path').join(require('os').homedir(), '.cache', 'puppeteer'),
+        platform: platform,
+      });
+      console.log('Chromium ready');
+    }
+  } catch(e) {
+    console.log('Chromium setup error:', e.message);
+  }
+
+  createWindow();
 });
