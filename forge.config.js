@@ -2,11 +2,21 @@ const { FusesPlugin } = require('@electron-forge/plugin-fuses');
 const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 
 module.exports = {
- packagerConfig: {
+packagerConfig: {
     asar: true,
     icon: './src/icons/icons/mac/icon',
     name: 'SpotPlot',
     extraResource: ['./src/icon.png'],
+    osxSign: {
+      identity: 'Developer ID Application: WHEELER DAVID MOON (299TQ9H5QB)',
+      'hardened-runtime': true,
+      entitlements: 'entitlements.plist',
+      'entitlements-inherit': 'entitlements.plist',
+    },
+    osxNotarize: {
+      tool: 'notarytool',
+      keychainProfile: 'AC_PASSWORD',
+    },
   },
   rebuildConfig: {},
   makers: [
