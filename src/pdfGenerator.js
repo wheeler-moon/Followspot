@@ -49,7 +49,15 @@ function buildSpotSheetHTML({ show, spot, colorSlots, cues, spotCues, characters
   const charMap = {};
   characters.forEach(c => { charMap[c.id] = c; });
 
-  let sortedCues = [...cues].sort((a, b) => a.sort_order - b.sort_order);
+const sceneOrderMap = {};
+  scenes.forEach((s, i) => { sceneOrderMap[s.id] = i; });
+  
+  let sortedCues = [...cues].sort((a, b) => {
+    const sceneA = sceneOrderMap[a.scene_id] ?? 999;
+    const sceneB = sceneOrderMap[b.scene_id] ?? 999;
+    if (sceneA !== sceneB) return sceneA - sceneB;
+    return a.sort_order - b.sort_order;
+  });
 
   if (rangeStart !== null && rangeStart !== undefined) {
     sortedCues = sortedCues.filter(c => c.track_number >= rangeStart);
@@ -499,7 +507,15 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
   const charMap = {};
   characters.forEach(c => { charMap[c.id] = c; });
 
-  const sortedCues = [...cues].sort((a, b) => a.sort_order - b.sort_order);
+  const sceneOrderMap = {};
+  scenes.forEach((s, i) => { sceneOrderMap[s.id] = i; });
+  
+  const sortedCues = [...cues].sort((a, b) => {
+    const sceneA = sceneOrderMap[a.scene_id] ?? 999;
+    const sceneB = sceneOrderMap[b.scene_id] ?? 999;
+    if (sceneA !== sceneB) return sceneA - sceneB;
+    return a.sort_order - b.sort_order;
+  });
 
   const spotsHeaderHTML = spots.map(spot => {
     const slots = (colorSlotsBySpot[spot.id] || []).filter(s => !s.is_permanent);
