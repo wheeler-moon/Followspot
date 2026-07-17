@@ -708,12 +708,13 @@ const groupedCues = () => {
           </div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', position: 'relative' }}>
-            <thead>
+            <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
               <tr style={{ background: '#141414', borderBottom: '1px solid #2a2a2a' }}>
                 <th style={{ padding: '8px', textAlign: 'left', fontSize: '10px', color: '#444', fontWeight: '600', width: '90px', borderRight: '1px solid #1e1e1e' }}>CUE</th>
                 {(data?.spots || []).map(spot => (
-                  <th key={spot.id} style={{ padding: '8px 10px', textAlign: 'left', fontSize: '10px', color: '#534AB7', fontWeight: '600', borderRight: '1px solid #1e1e1e', minWidth: '200px' }}>
-                    SPOT {spot.spot_number}{spot.operator_name ? ' · ' + spot.operator_name.toUpperCase() : ''}
+                  <th key={spot.id} style={{ padding: '8px 10px', textAlign: 'left', borderRight: '1px solid #1e1e1e', minWidth: '200px' }}>
+                    <div style={{ fontSize: '13px', color: '#534AB7', fontWeight: '800' }}>SPOT {spot.spot_number}</div>
+                    {spot.operator_name && <div style={{ fontSize: '12px', color: '#888', fontWeight: '500', marginTop: '1px' }}>{spot.operator_name}</div>}
                   </th>
                 ))}
               </tr>
