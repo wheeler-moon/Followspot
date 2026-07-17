@@ -66,6 +66,7 @@ function newSpot(number) {
     operator_name: '',
     location: '',
     fixture_type: '',
+    fixture_other: '',
     gels: [1,2,3,4,5,6].map(slot => ({ slot, gel_number: '', gel_name: '' })),
     perm_gel_number: '',
     perm_gel_name: '',
@@ -101,11 +102,25 @@ function SpotSetup({ spot, spotNumber, onChange, onRemove }) {
       </div>
       <div style={{ marginBottom: '16px' }}>
         <label style={labelStyle}>Fixture type</label>
-        <select style={inputStyle} value={spot.fixture_type}
-          onChange={e => onChange({ ...spot, fixture_type: e.target.value })}>
-          <option value="">Select fixture...</option>
-          {FIXTURES.map(f => <option key={f} value={f}>{f}</option>)}
-        </select>
+        {spot.fixture_type === 'Other' ? (
+          <div>
+            <input style={inputStyle} value={spot.fixture_other || ''}
+              onChange={e => onChange({ ...spot, fixture_other: e.target.value })}
+              placeholder="Enter fixture type..."
+              autoFocus
+            />
+            <div onClick={() => onChange({ ...spot, fixture_type: '', fixture_other: '' })}
+              style={{ fontSize: '11px', color: '#534AB7', cursor: 'pointer', marginTop: '4px' }}>
+              Choose from list instead
+            </div>
+          </div>
+        ) : (
+          <select style={inputStyle} value={spot.fixture_type}
+            onChange={e => onChange({ ...spot, fixture_type: e.target.value, fixture_other: '' })}>
+            <option value="">Select fixture...</option>
+            {FIXTURES.map(f => <option key={f} value={f}>{f}</option>)}
+          </select>
+        )}
       </div>
       <label style={{ ...labelStyle, marginBottom: '8px', display: 'block' }}>Color frames</label>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '8px' }}>

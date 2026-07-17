@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import AppHeader from '../components/AppHeader';
 const { ipcRenderer } = window.require('electron');
 
-const FIXTURES = ['Strong Super Trouper','Strong Gladiator','Lycian 1290','Lycian Starklite','Robert Juliat Lancelot','Robert Juliat Merlin','Altman Comet','Robe BMFL','Robe Esprite','High End SolaSpot','Moving Light - Other','Other'];
+const FIXTURES = ['Strong Super Trouper','Strong Gladiator','Lycian 1290','Lycian Starklite','Robert Juliat Lancelot','Robert Juliat Merlin','Altman Comet','Robe BMFL','Robe Esprite','High End SolaSpot','Moving Light','Other'];
 
 const inputStyle = {
   width: '100%', background: '#111', border: '1px solid #2a2a2a',
@@ -60,9 +60,11 @@ function GelPicker({ value, onChange, placeholder }) {
 }
 
 function SpotCard({ spot, onUpdate, onRemove, canRemove }) {
+  const isCustomFixture = spot.fixture_type && !FIXTURES.includes(spot.fixture_type);
   const [form, setForm] = useState({
     operator_name: spot.operator_name || '',
-    fixture_type: spot.fixture_type || '',
+    fixture_type: isCustomFixture ? 'Other' : (spot.fixture_type || ''),
+    fixture_other: isCustomFixture ? spot.fixture_type : '',
     location: spot.location || '',
   });
   const [gels, setGels] = useState([]);
@@ -80,7 +82,8 @@ function SpotCard({ spot, onUpdate, onRemove, canRemove }) {
 
   const save = () => {
     setSaving(true);
-    ipcRenderer.sendSync('db-update-spot', { spotId: spot.id, ...form });
+    const saveForm = { ...form, fixture_type: form.fixture_type === 'Other' && form.fixture_other ? form.fixture_other : form.fixture_type };
+    ipcRenderer.sendSync('db-update-spot', { spotId: spot.id, ...saveForm });
     for (const gel of gels) {
       ipcRenderer.sendSync('db-update-color-slot', { slotId: gel.id, gelNumber: gel.gel_number || '', gelName: gel.gel_name || '' });
     }
@@ -123,11 +126,25 @@ function SpotCard({ spot, onUpdate, onRemove, canRemove }) {
         </div>
         <div style={{ gridColumn: '1 / -1' }}>
           <label style={{ fontSize: '11px', color: '#666', display: 'block', marginBottom: '4px' }}>Fixture type</label>
-          <select style={inputStyle} value={form.fixture_type}
-            onChange={e => setForm(f => ({ ...f, fixture_type: e.target.value }))}>
-            <option value="">Select fixture...</option>
-            {FIXTURES.map(f => <option key={f} value={f}>{f}</option>)}
-          </select>
+          {form.fixture_type === 'Other' ? (
+            <div>
+              <input style={inputStyle} value={form.fixture_other || ''}
+                onChange={e => setForm(f => ({ ...f, fixture_other: e.target.value }))}
+                placeholder="Enter fixture type..."
+                autoFocus
+              />
+              <div onClick={() => setForm(f => ({ ...f, fixture_type: '', fixture_other: '' }))}
+                style={{ fontSize: '11px', color: '#534AB7', cursor: 'pointer', marginTop: '4px' }}>
+                Choose from list instead
+              </div>
+            </div>
+          ) : (
+            <select style={inputStyle} value={form.fixture_type}
+              onChange={e => setForm(f => ({ ...f, fixture_type: e.target.value, fixture_other: '' }))}>
+              <option value="">Select fixture...</option>
+              {FIXTURES.map(f => <option key={f} value={f}>{f}</option>)}
+            </select>
+          )}
         </div>
       </div>
 
