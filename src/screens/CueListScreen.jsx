@@ -505,7 +505,7 @@ function CueRow({ cue, spots, spotCues, characters, colorSlotsBySpot, scenes, on
             <select value={cue.scene_id || ''} onChange={e => onUpdateCue(cue.id, 'scene_id', e.target.value ? parseInt(e.target.value) : null)}
               style={{ width: '72px', background: '#111', border: '1px solid #1e1e1e', borderRadius: '3px', color: '#444', padding: '2px 2px', fontSize: '9px', outline: 'none', marginTop: '2px' }}>
               <option value="">No scene</option>
-              {scenes.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+              {scenes.map(s => <option key={s.id} value={s.id}>{s.label}{s.song ? ' · ' + s.song : ''}</option>)}
             </select>
             <div onClick={() => { if (window.confirm('Delete this cue?')) onDelete(cue.id); }}
               style={{ fontSize: '10px', color: '#c44', cursor: 'pointer', marginTop: '2px', opacity: 0.4 }}
