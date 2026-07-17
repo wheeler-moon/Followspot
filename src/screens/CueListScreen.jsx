@@ -181,6 +181,7 @@ const ACTIONS = [
   { name: 'Roll Color', short: 'Roll Color', color: '#854F0B', intensityDefault: null, timeDefault: null },
   { name: 'Ballyhoo', short: 'Ballyhoo', color: '#D85A30', intensityDefault: null, timeDefault: null },
   { name: 'Off', short: 'Off', color: '#444', intensityDefault: 'Out', timeDefault: null },
+  { name: 'Tracked', short: 'TRK', color: '#555555' },
 ];
 
 const INTENSITIES = ['Full','90%','80%','75%','70%','60%','50%','40%','30%','25%','20%','10%','Glow','Out'];
@@ -217,6 +218,7 @@ function ActionIcon({ action, size = 20 }) {
     case 'Roll Color': return <svg width={s} height={s} viewBox="0 0 32 32"><rect x="9" y="8" width="14" height="16" rx="2" fill="none" stroke="#BA7517" strokeWidth="1.5"/><rect x="9" y="8" width="3.5" height="16" rx="1" fill="#E24B4A"/><rect x="12.5" y="8" width="3.5" height="16" fill="#EF9F27"/><rect x="16" y="8" width="3.5" height="16" fill="#639922"/><rect x="19.5" y="8" width="3.5" height="16" rx="1" fill="#185FA5"/></svg>;
     case 'Ballyhoo': return <svg width={s} height={s} viewBox="0 0 32 32"><path d="M8 16 C8 10 12 6 16 6 C20 6 24 10 24 16 C24 22 20 26 16 26 C12 26 8 22 8 16 Z" fill="none" stroke="#D85A30" strokeWidth="2.5"/><path d="M16 6 C16 6 20 16 16 26" fill="none" stroke="#D85A30" strokeWidth="2"/><path d="M16 6 C16 6 12 16 16 26" fill="none" stroke="#D85A30" strokeWidth="2"/></svg>;
     case 'Off': return <svg width={s} height={s} viewBox="0 0 32 32"><line x1="8" y1="8" x2="24" y2="24" stroke="#555" strokeWidth="2.5" strokeLinecap="round"/><line x1="24" y1="8" x2="8" y2="24" stroke="#555" strokeWidth="2.5" strokeLinecap="round"/></svg>;
+    case 'Tracked': return <svg width={s} height={s} viewBox="0 0 32 32"><line x1="6" y1="16" x2="26" y2="16" stroke="#555" strokeWidth="2.5" strokeLinecap="round"/><polygon points="20,10 26,16 20,22" fill="#555"/></svg>;
     default: return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="16" r="8" fill="#333"/></svg>;
   }
 }
@@ -263,6 +265,15 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
   const activeFrames = spotCue.active_frames ? spotCue.active_frames.split(',').filter(Boolean) : [];
 
   const handleActionSelect = (a) => {
+    if (a.name === 'Tracked') {
+      onUpdate(spotCue.id, 'action', '');
+      onUpdate(spotCue.id, 'intensity', '');
+      onUpdate(spotCue.id, 'fade_time', '');
+      onUpdate(spotCue.id, 'description', '');
+      onUpdate(spotCue.id, 'notes', '');
+      setShowActionPicker(false);
+      return;
+    }
     onUpdate(spotCue.id, 'action', a.name);
     if (a.intensityDefault) onUpdate(spotCue.id, 'intensity', a.intensityDefault);
     if (a.timeDefault !== null) onUpdate(spotCue.id, 'fade_time', a.timeDefault);
@@ -518,6 +529,7 @@ export default function CueListScreen({ show, navigate }) {
   const [newCharName, setNewCharName] = useState('');
   const [newCharActor, setNewCharActor] = useState('');
   const [selectedSceneId, setSelectedSceneId] = useState(null);
+  const scrollRef = useRef(null);
 
   const load = () => {
     const result = ipcRenderer.sendSync('db-get-cue-list', show.id);
@@ -531,9 +543,20 @@ export default function CueListScreen({ show, navigate }) {
       slotsBySpot[spot.id] = Array.isArray(slots) ? slots : [];
     }
     setColorSlotsBySpot(slotsBySpot);
-    if (safe.scenes && safe.scenes.length > 0 && !selectedSceneId) {
-      setSelectedSceneId(safe.scenes[safe.scenes.length - 1].id);
+    if (safe.scenes && safe.scenes.length > 0) {
+      const savedScene = sessionStorage.getItem(`cueScene_${show.id}`);
+      if (savedScene) {
+        setSelectedSceneId(parseInt(savedScene));
+      } else if (!selectedSceneId) {
+        setSelectedSceneId(safe.scenes[0].id);
+      }
     }
+    setTimeout(() => {
+      const savedScroll = sessionStorage.getItem(`cueScroll_${show.id}`);
+      if (savedScroll && scrollRef.current) {
+        scrollRef.current.scrollTop = parseInt(savedScroll);
+      }
+    }, 100);
   };
 
   useEffect(() => { load(); }, []);
@@ -628,7 +651,12 @@ const groupedCues = () => {
         <button onClick={addCue} style={{ padding: '6px 14px', background: '#534AB7', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>+ Cue</button>
       </AppHeader>
 
-      <div style={{ flex: 1, overflowY: 'auto', overflowX: 'auto' }}>
+      <div ref={scrollRef} onScroll={() => {
+        if (scrollRef.current) {
+          sessionStorage.setItem(`cueScroll_${show.id}`, scrollRef.current.scrollTop);
+          sessionStorage.setItem(`cueScene_${show.id}`, selectedSceneId);
+        }
+      }} style={{ flex: 1, overflowY: 'auto', overflowX: 'auto' }}>
         {(data?.cues || []).length === 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60%', gap: '12px', color: '#333' }}>
             <div style={{ fontSize: '36px' }}>✦</div>
@@ -668,6 +696,11 @@ const groupedCues = () => {
                   ))}
                 </React.Fragment>
               ))}
+              <tr>
+                <td colSpan={(data?.spots || []).length + 1} style={{ textAlign: 'center', padding: '24px', color: '#333', fontSize: '12px', fontWeight: '600', letterSpacing: '0.1em', textTransform: 'uppercase', borderTop: '1px solid #2a2a2a' }}>
+                  — End of Show —
+                </td>
+              </tr>
             </tbody>
           </table>
         )}
