@@ -5,6 +5,7 @@ import AppHeader from '../components/AppHeader';
 
 export default function HomeScreen({ navigate }) {
   const [shows, setShows] = useState([]);
+  const [search, setSearch] = useState('');
   const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
@@ -19,6 +20,12 @@ export default function HomeScreen({ navigate }) {
         <button onClick={() => setShowSettings(true)} style={{ padding: '8px 14px', background: 'none', border: '1px solid #2a2a2a', borderRadius: '8px', color: '#666', fontSize: '13px', cursor: 'pointer' }}>
           ⚙ Settings
         </button>
+        <input
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search shows..."
+          style={{ background: '#111', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#f0f0f0', padding: '6px 12px', fontSize: '13px', outline: 'none', width: '200px' }}
+        />
         <button onClick={() => {
           const result = ipcRenderer.sendSync('db-import-show');
           if (result.success) {
@@ -41,7 +48,7 @@ export default function HomeScreen({ navigate }) {
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-            {shows.map(show => (
+            {shows.filter(s => s.title.toLowerCase().includes(search.toLowerCase()) || (s.theatre || '').toLowerCase().includes(search.toLowerCase())).map(show => (
               <div key={show.id} onClick={() => navigate('show', show)}
                 style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '12px', padding: '20px', cursor: 'pointer' }}
                 onMouseEnter={e => e.currentTarget.style.borderColor = '#534AB7'}
