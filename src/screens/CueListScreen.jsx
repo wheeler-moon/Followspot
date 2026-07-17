@@ -239,7 +239,7 @@ function ActionPicker({ value, onChange, onClose, pos }) {
   );
 }
 
-function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqNumber }) {
+function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqNumber, onDragStart, onDragOver, onDragLeave, onDrop, isDragTarget }) {
   const [showActionPicker, setShowActionPicker] = useState(false);
   const [hoveredFrame, setHoveredFrame] = useState(null);
   const [showCustomTime, setShowCustomTime] = useState(false);
@@ -255,9 +255,15 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  if (!spotCue) return (
-    <td style={{ padding: '8px 10px', borderRight: '1px solid #1e1e1e', verticalAlign: 'top', minWidth: '200px', background: '#060606' }}>
-      <div style={{ fontSize: '11px', color: '#222' }}>—</div>
+ if (!spotCue) return (
+    <td
+      draggable
+      onDragStart={onDragStart}
+      onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); onDragOver(e); }}
+      onDragLeave={onDragLeave}
+      onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop(e); }}
+      style={{ padding: '8px 10px', borderRight: '1px solid #1e1e1e', verticalAlign: 'top', minWidth: '200px', minHeight: '60px', background: isDragTarget ? '#1a1a2e' : '#060606', outline: isDragTarget ? '2px solid #534AB7' : 'none' }}>
+      <div style={{ fontSize: '11px', color: '#222', minHeight: '40px', display: 'flex', alignItems: 'center' }}>—</div>
     </td>
   );
 
@@ -316,7 +322,13 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
   }
 
   return (
-    <td style={{ padding: '8px 10px', borderRight: '1px solid #1e1e1e', verticalAlign: 'top', minWidth: '200px' }}>
+    <td
+      draggable
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+      style={{ padding: '8px 10px', borderRight: '1px solid #1e1e1e', verticalAlign: 'top', minWidth: '200px', outline: isDragTarget ? '2px solid #534AB7' : 'none', background: isDragTarget ? '#1a1a2e' : 'transparent', cursor: 'grab' }}>
       <div ref={ref} style={{ position: 'relative', zIndex: showActionPicker ? 9999 : 'auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '5px' }}>
           <div ref={actionBtnRef} onClick={() => {
@@ -462,7 +474,7 @@ function InsertButton({ onInsert }) {
   );
 }
 
-function CueRow({ cue, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onDelete, onInsertAfter }) {
+function CueRow({ cue, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal }) {
   const [editingLQ, setEditingLQ] = useState(false);
   const [lqVal, setLqVal] = useState(cue.lq_number || '');
 
@@ -509,7 +521,20 @@ function CueRow({ cue, spots, spotCues, characters, colorSlotsBySpot, scenes, on
           return (
             <SpotCueCell key={spot.id} spotCue={sc} spot={spot} cue={cue}
               characters={characters} colorSlots={slots}
-              onUpdate={onUpdateSpotCue} lqNumber={lqVal} />
+              onUpdate={onUpdateSpotCue} lqNumber={lqVal}
+              onDragStart={() => setDragSource({ spotCue: sc, spot, cue })}
+              onDragOver={(e) => { e.preventDefault(); setDragTarget({ spotCue: sc, spot, cue }); }}
+              onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setDragTarget(null); }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (dragSource && !(dragSource.spot?.id === spot?.id && dragSource.cue?.id === cue?.id)) {
+                  setDragTarget({ spotCue: sc, spot, cue });
+                  setShowDragModal(true);
+                }
+              }}
+              isDragTarget={dragTarget?.cue?.id === cue?.id && dragTarget?.spot?.id === spot?.id}
+            />
           );
         })}
       </tr>
@@ -530,6 +555,10 @@ export default function CueListScreen({ show, navigate }) {
   const [newCharActor, setNewCharActor] = useState('');
   const [selectedSceneId, setSelectedSceneId] = useState(null);
   const scrollRef = useRef(null);
+  const [dragSource, setDragSource] = useState(null);
+  const [dragTarget, setDragTarget] = useState(null);
+  const [showDragModal, setShowDragModal] = useState(false);
+  const [dragModalStep, setDragModalStep] = useState('action');
 
   const load = () => {
     const result = ipcRenderer.sendSync('db-get-cue-list', show.id);
@@ -585,6 +614,19 @@ export default function CueListScreen({ show, navigate }) {
   const updateSpotCue = (spotCueId, field, value) => {
     ipcRenderer.sendSync('db-update-spot-cue', { spotCueId, field, value });
     setData(d => ({ ...d, spotCues: (d?.spotCues || []).map(sc => sc.id === spotCueId ? { ...sc, [field]: value } : sc) }));
+  };
+  const upsertSpotCue = (spotId, cueId, field, value) => {
+    const result = ipcRenderer.sendSync('db-upsert-spot-cue', { spotId, cueId, field, value });
+    if (result.success) {
+      setData(d => {
+        const existing = (d?.spotCues || []).find(sc => sc.spot_id === spotId && sc.cue_id === cueId);
+        if (existing) {
+          return { ...d, spotCues: d.spotCues.map(sc => sc.spot_id === spotId && sc.cue_id === cueId ? { ...sc, [field]: value } : sc) };
+        } else {
+          return { ...d, spotCues: [...(d.spotCues || []), { spot_id: spotId, cue_id: cueId, id: result.id, [field]: value }] };
+        }
+      });
+    }
   };
 
   const deleteCue = (cueId) => {
@@ -692,7 +734,10 @@ const groupedCues = () => {
                       spotCues={data?.spotCues || []} characters={characters}
                       colorSlotsBySpot={colorSlotsBySpot} scenes={data?.scenes || []}
                       onUpdateCue={updateCue} onUpdateSpotCue={updateSpotCue}
-                      onDelete={deleteCue} onInsertAfter={insertCueAfter} />
+                      onDelete={deleteCue} onInsertAfter={insertCueAfter}
+                      dragSource={dragSource} dragTarget={dragTarget}
+                      setDragSource={setDragSource} setDragTarget={setDragTarget}
+                      setShowDragModal={setShowDragModal} />
                   ))}
                 </React.Fragment>
               ))}
@@ -704,6 +749,98 @@ const groupedCues = () => {
             </tbody>
           </table>
         )}
+        {showDragModal && dragSource && dragTarget && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '16px', padding: '28px', width: '400px' }}>
+            {dragModalStep === 'action' ? (
+              <>
+                <div style={{ fontSize: '16px', fontWeight: '700', color: '#f0f0f0', marginBottom: '8px' }}>Move cue data</div>
+                <div style={{ fontSize: '13px', color: '#666', marginBottom: '24px' }}>
+                  What do you want to do with <span style={{ color: '#534AB7' }}>Spot {dragSource.spot.spot_number} / {dragSource.cue.lq_number || 'T·' + dragSource.cue.track_number}</span>?
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <button onClick={() => {
+                    const srcData = { ...dragSource.spotCue };
+                    const tgtData = dragTarget.spotCue ? { ...dragTarget.spotCue } : {};
+                    const fields = ['action','character_id','frame_size','intensity','fade_time','active_frames','description','notes'];
+                    if (dragSource.spotCue) {
+                      fields.forEach(f => updateSpotCue(dragSource.spotCue.id, f, tgtData[f] || ''));
+                    } else {
+                      fields.forEach(f => upsertSpotCue(dragSource.spot.id, dragSource.cue.id, f, tgtData[f] || ''));
+                    }
+                    if (dragTarget.spotCue) {
+                      fields.forEach(f => updateSpotCue(dragTarget.spotCue.id, f, srcData[f] || ''));
+                    } else {
+                      fields.forEach(f => upsertSpotCue(dragTarget.spot.id, dragTarget.cue.id, f, srcData[f] || ''));
+                    }
+                    setShowDragModal(false);
+                    setDragSource(null);
+                    setDragTarget(null);
+                    setDragModalStep('action');
+                  }} style={{ padding: '12px', background: '#534AB7', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '14px', fontWeight: '600', cursor: 'pointer', textAlign: 'left' }}>
+                    <div>Swap</div>
+                    <div style={{ fontSize: '11px', fontWeight: '400', opacity: 0.7, marginTop: '2px' }}>Exchange data between both spots</div>
+                  </button>
+                  <button onClick={() => setDragModalStep('character')}
+                    style={{ padding: '12px', background: '#1e1e1e', border: '1px solid #3a3a3a', borderRadius: '8px', color: '#f0f0f0', fontSize: '14px', fontWeight: '600', cursor: 'pointer', textAlign: 'left' }}>
+                    <div>Copy</div>
+                    <div style={{ fontSize: '11px', fontWeight: '400', opacity: 0.7, marginTop: '2px' }}>Copy source data into target spot</div>
+                  </button>
+                  <button onClick={() => { setShowDragModal(false); setDragSource(null); setDragTarget(null); setDragModalStep('action'); }}
+                    style={{ padding: '8px', background: 'none', border: 'none', color: '#555', fontSize: '13px', cursor: 'pointer' }}>
+                    Cancel
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: '16px', fontWeight: '700', color: '#f0f0f0', marginBottom: '8px' }}>Copy character?</div>
+                <div style={{ fontSize: '13px', color: '#666', marginBottom: '24px' }}>
+                  Should the character name also be copied, or keep the existing character in the target spot?
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <button onClick={() => {
+                    const srcData = { ...dragSource.spotCue };
+                    const fields = ['action','character_id','frame_size','intensity','fade_time','active_frames','description','notes'];
+                    if (dragTarget.spotCue) {
+                      fields.forEach(f => updateSpotCue(dragTarget.spotCue.id, f, srcData[f] || ''));
+                    } else {
+                      fields.forEach(f => upsertSpotCue(dragTarget.spot.id, dragTarget.cue.id, f, srcData[f] || ''));
+                    }
+                    setShowDragModal(false);
+                    setDragSource(null);
+                    setDragTarget(null);
+                    setDragModalStep('action');
+                  }} style={{ padding: '12px', background: '#534AB7', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '14px', fontWeight: '600', cursor: 'pointer', textAlign: 'left' }}>
+                    <div>Copy everything including character</div>
+                    <div style={{ fontSize: '11px', fontWeight: '400', opacity: 0.7, marginTop: '2px' }}>Target spot will have the same character</div>
+                  </button>
+                  <button onClick={() => {
+                    const srcData = { ...dragSource.spotCue };
+                    const fields = ['action','frame_size','intensity','fade_time','active_frames','description','notes'];
+                    if (dragTarget.spotCue) {
+                      fields.forEach(f => updateSpotCue(dragTarget.spotCue.id, f, srcData[f] || ''));
+                    } else {
+                      fields.forEach(f => upsertSpotCue(dragTarget.spot.id, dragTarget.cue.id, f, srcData[f] || ''));
+                    }
+                    setShowDragModal(false);
+                    setDragSource(null);
+                    setDragTarget(null);
+                    setDragModalStep('action');
+                  }} style={{ padding: '12px', background: '#1e1e1e', border: '1px solid #3a3a3a', borderRadius: '8px', color: '#f0f0f0', fontSize: '14px', fontWeight: '600', cursor: 'pointer', textAlign: 'left' }}>
+                    <div>Copy everything except character</div>
+                    <div style={{ fontSize: '11px', fontWeight: '400', opacity: 0.7, marginTop: '2px' }}>Keep the existing character in the target spot</div>
+                  </button>
+                  <button onClick={() => setDragModalStep('action')}
+                    style={{ padding: '8px', background: 'none', border: 'none', color: '#555', fontSize: '13px', cursor: 'pointer' }}>
+                    Back
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
       </div>
 
       {showSceneModal && (
