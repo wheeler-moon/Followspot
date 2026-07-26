@@ -1004,6 +1004,20 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
   });
 
   ipcMain.on('db-update-spot-cue', (event, { spotCueId, field, value }) => {
+    ipcMain.on('db-upsert-spot-cue', (event, { spotId, cueId, field, value }) => {
+    try {
+      const database = getDb();
+      let sc = database.prepare('SELECT * FROM spot_cues WHERE spot_id = ? AND cue_id = ?').get(spotId, cueId);
+      if (!sc) {
+        database.prepare('INSERT INTO spot_cues (spot_id, cue_id, action, character_id, frame_size, intensity, fade_time, active_frames, description, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(spotId, cueId, '', null, '', '', '', '', '', '');
+        sc = database.prepare('SELECT * FROM spot_cues WHERE spot_id = ? AND cue_id = ?').get(spotId, cueId);
+      }
+      database.prepare(`UPDATE spot_cues SET ${field} = ? WHERE id = ?`).run(value, sc.id);
+      event.returnValue = { success: true, id: sc.id };
+    } catch(e) {
+      event.returnValue = { success: false };
+    }
+  });
     try {
       const safe = ['action','character_id','frame_size','intensity','fade_time','location','active_frames','description','notes','ignore'];
       if (!safe.includes(field)) { event.returnValue = { success: false }; return; }
