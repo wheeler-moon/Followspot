@@ -3,6 +3,17 @@ const { ipcRenderer } = window.require('electron');
 import { getCachedLicense } from '../license';
 import AppHeader from '../components/AppHeader';
 
+const getImageSrc = (path) => {
+  if (!path) return null;
+  try {
+    const fs = window.require('fs');
+    const data = fs.readFileSync(path);
+    const ext = path.split('.').pop().toLowerCase();
+    const mime = ext === 'png' ? 'image/png' : ext === 'svg' ? 'image/svg+xml' : 'image/jpeg';
+    return `data:${mime};base64,${data.toString('base64')}`;
+  } catch(e) { return null; }
+};
+
 export default function HomeScreen({ navigate }) {
   const [shows, setShows] = useState([]);
   const [search, setSearch] = useState('');
@@ -53,7 +64,12 @@ export default function HomeScreen({ navigate }) {
                 style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '12px', padding: '20px', cursor: 'pointer' }}
                 onMouseEnter={e => e.currentTarget.style.borderColor = '#534AB7'}
                 onMouseLeave={e => e.currentTarget.style.borderColor = '#2a2a2a'}>
-                <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '6px' }}>{show.title}</div>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                  {show.logo_path && getImageSrc(show.logo_path) && (
+                    <img src={getImageSrc(show.logo_path)} style={{ height: '36px', maxWidth: '60px', objectFit: 'contain', borderRadius: '4px' }} />
+                  )}
+                  <div style={{ fontSize: '16px', fontWeight: '600' }}>{show.title}</div>
+                </div>
                 <div style={{ fontSize: '12px', color: '#666', marginBottom: '12px' }}>{show.theatre || 'No theatre set'}</div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: '11px', padding: '3px 8px', background: '#2a2a2a',

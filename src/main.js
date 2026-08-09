@@ -112,6 +112,10 @@ function initSchema() {
   seedGels();
   try { db.exec('ALTER TABLE characters ADD COLUMN photo_path TEXT'); } catch(e) {}
   try { db.exec('ALTER TABLE shows ADD COLUMN logo_path TEXT'); } catch(e) {}
+  try { db.exec('ALTER TABLE spot_cues ADD COLUMN ignored INTEGER DEFAULT 0'); } catch(e) {}
+  try { db.exec('ALTER TABLE spot_cues ADD COLUMN highlight TEXT DEFAULT NULL'); } catch(e) {}
+  try { db.exec('ALTER TABLE spot_cues ADD COLUMN spot_note TEXT DEFAULT NULL'); } catch(e) {}
+  try { db.exec('ALTER TABLE spot_cues ADD COLUMN no_color INTEGER DEFAULT 0'); } catch(e) {}
 }
 
 function seedGels() {

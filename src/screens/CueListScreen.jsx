@@ -393,7 +393,16 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
               </div>
             ))}
           </div>
-          <div style={{ display: 'flex', gap: '3px' }}>
+          <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
+            <div
+              onClick={() => {
+                const isNC = spotCue.no_color === 1;
+                onUpdate(spotCue.id, 'no_color', isNC ? 0 : 1);
+                if (!isNC) onUpdate(spotCue.id, 'active_frames', '');
+              }}
+              style={{ padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: spotCue.no_color ? '#854F0B' : '#1a1a1a', color: spotCue.no_color ? '#fff' : '#555', border: `1px solid ${spotCue.no_color ? '#854F0B' : '#2a2a2a'}` }}>
+              NC
+            </div>
             {colorSlots.map(slot => {
               const isActive = activeFrames.includes('F' + slot.slot_number);
               const isHovered = hoveredFrame === slot.id;
@@ -742,6 +751,25 @@ const groupedCues = () => {
                   ))}
                 </React.Fragment>
               ))}
+              <tr>
+                <td colSpan={(data?.spots || []).length + 1} style={{ padding: '8px', borderTop: '1px solid #1e1e1e' }}>
+                  <div
+                    onClick={() => {
+                      const cues = data?.cues || [];
+                      if (cues.length > 0) {
+                        const lastCue = [...cues].sort((a, b) => a.sort_order - b.sort_order)[cues.length - 1];
+                        insertCueAfter(lastCue.id, lastCue.scene_id);
+                      } else {
+                        addCue();
+                      }
+                    }}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '6px', borderRadius: '6px', cursor: 'pointer', color: '#333', fontSize: '11px', fontWeight: '600' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#1a1a2e'; e.currentTarget.style.color = '#534AB7'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#333'; }}>
+                    + Add cue at end
+                  </div>
+                </td>
+              </tr>
               <tr>
                 <td colSpan={(data?.spots || []).length + 1} style={{ textAlign: 'center', padding: '24px', color: '#333', fontSize: '12px', fontWeight: '600', letterSpacing: '0.1em', textTransform: 'uppercase', borderTop: '1px solid #2a2a2a' }}>
                   — End of Show —

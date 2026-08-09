@@ -133,73 +133,93 @@ export default function ScenesScreen({ show, navigate }) {
               No scenes yet — add your first scene above
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              {scenes.map((scene, index) => (
-                <div key={scene.id}
-                  draggable
-                  onDragStart={e => handleDragStart(e, index)}
-                  onDragOver={e => handleDragOver(e, index)}
-                  onDrop={e => handleDrop(e, index)}
-                  onDragLeave={() => setDragOverId(null)}
-                  style={{
-                    background: dragOverId === index ? '#1a1a2e' : '#1a1a1a',
-                    border: `1px solid ${dragOverId === index ? '#534AB7' : '#2a2a2a'}`,
-                    borderRadius: '10px', padding: '14px 16px',
-                    cursor: 'grab', transition: 'border-color 0.1s, background 0.1s',
-                  }}>
-                  {editingId === scene.id ? (
-                    <div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
-                        <div>
-                          <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>Scene label</div>
-                          <input style={{ ...inputStyle, width: '100%' }} value={editLabel}
-                            onChange={e => setEditLabel(e.target.value)}
-                            onKeyDown={e => e.key === 'Enter' && saveEdit()} />
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>Song</div>
-                          <input style={{ ...inputStyle, width: '100%' }} value={editSong}
-                            onChange={e => setEditSong(e.target.value)}
-                            onKeyDown={e => e.key === 'Enter' && saveEdit()} />
-                        </div>
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+              {(() => {
+                const columns = [];
+                let currentColumn = [];
+                scenes.forEach((scene, index) => {
+                  if (scene.act_break && currentColumn.length > 0) {
+                    columns.push(currentColumn);
+                    currentColumn = [];
+                  }
+                  currentColumn.push({ scene, index });
+                });
+                if (currentColumn.length > 0) columns.push(currentColumn);
+                return columns.map((col, colIndex) => (
+                  <div key={colIndex} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '200px' }}>
+                    {colIndex > 0 && <div style={{ fontSize: '10px', fontWeight: '700', color: '#534AB7', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>Act Break</div>}
+                    {col.map(({ scene, index }) => (
+                      <div key={scene.id}
+                        draggable
+                        onDragStart={e => handleDragStart(e, index)}
+                        onDragOver={e => handleDragOver(e, index)}
+                        onDrop={e => handleDrop(e, index)}
+                        onDragLeave={() => setDragOverId(null)}
+                        style={{
+                          background: dragOverId === index ? '#1a1a2e' : '#1a1a1a',
+                          border: `1px solid ${dragOverId === index ? '#534AB7' : '#2a2a2a'}`,
+                          borderRadius: '10px', padding: '14px 16px',
+                          cursor: 'grab', transition: 'border-color 0.1s, background 0.1s',
+                          minWidth: 0,
+                        }}>
+                        {editingId === scene.id ? (
+                          <div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                              <div>
+                                <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>Scene label</div>
+                                <input style={{ ...inputStyle, width: '100%' }} value={editLabel}
+                                  onChange={e => setEditLabel(e.target.value)}
+                                  onKeyDown={e => e.key === 'Enter' && saveEdit()} />
+                              </div>
+                              <div>
+                                <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>Song</div>
+                                <input style={{ ...inputStyle, width: '100%' }} value={editSong}
+                                  onChange={e => setEditSong(e.target.value)}
+                                  onKeyDown={e => e.key === 'Enter' && saveEdit()} />
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: '#888' }}>
+                                <input type="checkbox" checked={editActBreak} onChange={e => setEditActBreak(e.target.checked)}
+                                  style={{ accentColor: '#534AB7' }} />
+                                Act break
+                              </label>
+                              <div style={{ display: 'flex', gap: '8px' }}>
+                                <button onClick={() => setEditingId(null)} style={{ padding: '6px 14px', background: 'none', border: '1px solid #333', borderRadius: '6px', color: '#888', fontSize: '12px', cursor: 'pointer' }}>Cancel</button>
+                                <button onClick={saveEdit} style={{ padding: '6px 14px', background: '#534AB7', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}>Save</button>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', flexWrap: 'wrap' }}>
+                            <div style={{ color: '#333', fontSize: '18px', cursor: 'grab', flexShrink: 0 }}>⠿</div>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ fontSize: '11px', fontWeight: '600', color: '#555' }}>{index + 1}.</span>
+                                <span style={{ fontSize: '14px', fontWeight: '600', color: '#f0f0f0' }}>{scene.label}</span>
+                                {scene.act_break ? <span style={{ fontSize: '10px', padding: '2px 6px', background: '#2a1a3a', color: '#9070c0', borderRadius: '4px', fontWeight: '600' }}>ACT BREAK</span> : null}
+                              </div>
+                              {scene.song && <div style={{ fontSize: '12px', color: '#555', marginTop: '2px' }}>~ {scene.song}</div>}
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 }}>
+                              <div style={{ display: 'flex', gap: '4px' }}>
+                                <button onClick={() => moveScene(index, -1)} disabled={index === 0}
+                                  style={{ background: 'none', border: '1px solid #2a2a2a', borderRadius: '4px', color: index === 0 ? '#2a2a2a' : '#666', width: '26px', height: '26px', cursor: index === 0 ? 'default' : 'pointer', fontSize: '12px' }}>↑</button>
+                                <button onClick={() => moveScene(index, 1)} disabled={index === scenes.length - 1}
+                                  style={{ background: 'none', border: '1px solid #2a2a2a', borderRadius: '4px', color: index === scenes.length - 1 ? '#2a2a2a' : '#666', width: '26px', height: '26px', cursor: index === scenes.length - 1 ? 'default' : 'pointer', fontSize: '12px' }}>↓</button>
+                                <button onClick={() => startEdit(scene)}
+                                  style={{ background: 'none', border: '1px solid #2a2a2a', borderRadius: '4px', color: '#666', padding: '4px 10px', cursor: 'pointer', fontSize: '12px' }}>Edit</button>
+                                <button onClick={() => deleteScene(scene.id)}
+                                  style={{ background: 'none', border: '1px solid #2a2a2a', borderRadius: '4px', color: '#c44', padding: '4px 10px', cursor: 'pointer', fontSize: '12px' }}>Delete</button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: '#888' }}>
-                          <input type="checkbox" checked={editActBreak} onChange={e => setEditActBreak(e.target.checked)}
-                            style={{ accentColor: '#534AB7' }} />
-                          Act break
-                        </label>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <button onClick={() => setEditingId(null)} style={{ padding: '6px 14px', background: 'none', border: '1px solid #333', borderRadius: '6px', color: '#888', fontSize: '12px', cursor: 'pointer' }}>Cancel</button>
-                          <button onClick={saveEdit} style={{ padding: '6px 14px', background: '#534AB7', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}>Save</button>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ color: '#333', fontSize: '18px', cursor: 'grab', flexShrink: 0 }}>⠿</div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontSize: '11px', fontWeight: '600', color: '#555' }}>{index + 1}.</span>
-                          <span style={{ fontSize: '14px', fontWeight: '600', color: '#f0f0f0' }}>{scene.label}</span>
-                          {scene.act_break ? <span style={{ fontSize: '10px', padding: '2px 6px', background: '#2a1a3a', color: '#9070c0', borderRadius: '4px', fontWeight: '600' }}>ACT BREAK</span> : null}
-                        </div>
-                        {scene.song && <div style={{ fontSize: '12px', color: '#555', marginTop: '2px' }}>♪ {scene.song}</div>}
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-                        <button onClick={() => moveScene(index, -1)} disabled={index === 0}
-                          style={{ background: 'none', border: '1px solid #2a2a2a', borderRadius: '4px', color: index === 0 ? '#2a2a2a' : '#666', width: '26px', height: '26px', cursor: index === 0 ? 'default' : 'pointer', fontSize: '12px' }}>↑</button>
-                        <button onClick={() => moveScene(index, 1)} disabled={index === scenes.length - 1}
-                          style={{ background: 'none', border: '1px solid #2a2a2a', borderRadius: '4px', color: index === scenes.length - 1 ? '#2a2a2a' : '#666', width: '26px', height: '26px', cursor: index === scenes.length - 1 ? 'default' : 'pointer', fontSize: '12px' }}>↓</button>
-                        <button onClick={() => startEdit(scene)}
-                          style={{ background: 'none', border: '1px solid #2a2a2a', borderRadius: '4px', color: '#666', padding: '4px 10px', cursor: 'pointer', fontSize: '12px' }}>Edit</button>
-                        <button onClick={() => deleteScene(scene.id)}
-                          style={{ background: 'none', border: '1px solid #2a2a2a', borderRadius: '4px', color: '#c44', padding: '4px 10px', cursor: 'pointer', fontSize: '12px' }}>Delete</button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+                    ))}
+                  </div>
+                ));
+              })()}
             </div>
           )}
         </div>
