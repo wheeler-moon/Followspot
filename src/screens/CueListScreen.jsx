@@ -580,6 +580,7 @@ export default function CueListScreen({ show, navigate }) {
   const [showDragModal, setShowDragModal] = useState(false);
   const [dragModalStep, setDragModalStep] = useState('action');
   const [cuePopup, setCuePopup] = useState(null);
+  const [popupNote, setPopupNote] = useState('');
 
   const load = () => {
     const result = ipcRenderer.sendSync('db-get-cue-list', show.id);
@@ -760,7 +761,10 @@ const groupedCues = () => {
                       dragSource={dragSource} dragTarget={dragTarget}
                       setDragSource={setDragSource} setDragTarget={setDragTarget}
                       setShowDragModal={setShowDragModal}
-                      onCueDoubleClick={(cue, spot, spotCue) => setCuePopup({ cue, spot, spotCue })} />
+                      onCueDoubleClick={(cue, spot, spotCue) => {
+                      setCuePopup({ cue, spot, spotCue });
+                       setPopupNote(spotCue?.spot_note || '');
+               }}/>
                   ))}
                 </React.Fragment>
               ))}
@@ -793,7 +797,11 @@ const groupedCues = () => {
         )}
         {cuePopup && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          onClick={() => setCuePopup(null)}>
+          onClick={() => {
+            const ta = document.getElementById('popup-note-textarea');
+            if (ta && cuePopup.spotCue?.id) updateSpotCue(cuePopup.spotCue.id, 'spot_note', ta.value);
+            setCuePopup(null);
+          }}>
           <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '16px', padding: '28px', width: '420px' }}
             onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
@@ -803,10 +811,16 @@ const groupedCues = () => {
                 </div>
                 <div style={{ fontSize: '12px', color: '#555', marginTop: '2px' }}>
                   {cuePopup.spot.operator_name || 'No operator'}
+                  <div style={{ fontSize: '10px', color: '#333' }}>
+                  spotCue id: {cuePopup.spotCue?.id || 'NULL'}
+                </div>
                 </div>
               </div>
-              <button onClick={() => setCuePopup(null)}
-                style={{ background: 'none', border: 'none', color: '#555', fontSize: '20px', cursor: 'pointer' }}>×</button>
+              <button onClick={() => {
+                const ta = document.getElementById('popup-note-textarea');
+                if (ta && cuePopup.spotCue?.id) updateSpotCue(cuePopup.spotCue.id, 'spot_note', ta.value);
+                setCuePopup(null);
+              }} style={{ background: 'none', border: 'none', color: '#555', fontSize: '20px', cursor: 'pointer' }}>×</button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
@@ -815,9 +829,12 @@ const groupedCues = () => {
                   const newVal = cuePopup.spotCue?.ignored ? 0 : 1;
                   if (cuePopup.spotCue) {
                     updateSpotCue(cuePopup.spotCue.id, 'ignored', newVal);
-                    setCuePopup(p => ({ ...p, spotCue: { ...p.spotCue, ignored: newVal } }));
+                  } else {
+                    upsertSpotCue(cuePopup.spot.id, cuePopup.cue.id, 'ignored', newVal);
                   }
-                }} style={{ flex: 1, padding: '12px', background: cuePopup.spotCue?.ignored ? '#3a1a1a' : '#1e1e1e', border: `1px solid ${cuePopup.spotCue?.ignored ? '#c44' : '#3a3a3a'}`, borderRadius: '8px', color: cuePopup.spotCue?.ignored ? '#c44' : '#888', fontSize: '13px', fontWeight: '600', cursor: 'pointer', textAlign: 'left' }}>
+                  setCuePopup(p => ({ ...p, spotCue: { ...p.spotCue, ignored: newVal } }));
+                }}
+                style={{ flex: 1, padding: '12px', background: cuePopup.spotCue?.ignored ? '#3a1a1a' : '#1e1e1e', border: `1px solid ${cuePopup.spotCue?.ignored ? '#c44' : '#3a3a3a'}`, borderRadius: '8px', color: cuePopup.spotCue?.ignored ? '#c44' : '#888', fontSize: '13px', fontWeight: '600', cursor: 'pointer', textAlign: 'left' }}>
                   <div>{cuePopup.spotCue?.ignored ? 'Ignored' : 'Ignore cue'}</div>
                   <div style={{ fontSize: '11px', fontWeight: '400', marginTop: '2px', opacity: 0.7 }}>Cross out this cue without deleting</div>
                 </button>
@@ -829,6 +846,9 @@ const groupedCues = () => {
                   if (cuePopup.spotCue) {
                     updateSpotCue(cuePopup.spotCue.id, 'highlight', newVal);
                     setCuePopup(p => ({ ...p, spotCue: { ...p.spotCue, highlight: newVal } }));
+                  } else {
+                    upsertSpotCue(cuePopup.spot.id, cuePopup.cue.id, 'highlight', newVal);
+                    setCuePopup(p => ({ ...p, spotCue: { spot_id: cuePopup.spot.id, cue_id: cuePopup.cue.id, highlight: newVal } }));
                   }
                 }} style={{ flex: 1, padding: '10px', background: cuePopup.spotCue?.highlight === 'yellow' ? '#3a3000' : '#1e1e1e', border: `1px solid ${cuePopup.spotCue?.highlight === 'yellow' ? '#C8A000' : '#3a3a3a'}`, borderRadius: '8px', color: cuePopup.spotCue?.highlight === 'yellow' ? '#C8A000' : '#888', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
                   Yellow highlight
@@ -838,6 +858,9 @@ const groupedCues = () => {
                   if (cuePopup.spotCue) {
                     updateSpotCue(cuePopup.spotCue.id, 'highlight', newVal);
                     setCuePopup(p => ({ ...p, spotCue: { ...p.spotCue, highlight: newVal } }));
+                  } else {
+                    upsertSpotCue(cuePopup.spot.id, cuePopup.cue.id, 'highlight', newVal);
+                    setCuePopup(p => ({ ...p, spotCue: { spot_id: cuePopup.spot.id, cue_id: cuePopup.cue.id, highlight: newVal } }));
                   }
                 }} style={{ flex: 1, padding: '10px', background: cuePopup.spotCue?.highlight === 'red' ? '#3a1a1a' : '#1e1e1e', border: `1px solid ${cuePopup.spotCue?.highlight === 'red' ? '#c44' : '#3a3a3a'}`, borderRadius: '8px', color: cuePopup.spotCue?.highlight === 'red' ? '#c44' : '#888', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
                   Red highlight
@@ -848,20 +871,24 @@ const groupedCues = () => {
             <div>
               <div style={{ fontSize: '11px', fontWeight: '600', color: '#555', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Spot note</div>
               <textarea
-                value={cuePopup.spotCue?.spot_note || ''}
-                onChange={e => {
-                  const val = e.target.value;
-                  setCuePopup(p => ({ ...p, spotCue: { ...p.spotCue, spot_note: val } }));
-                }}
+                key={cuePopup.spotCue?.id}
+                defaultValue={cuePopup.spotCue?.spot_note || ''}
+                id="popup-note-textarea"
                 onBlur={e => {
-                  if (cuePopup.spotCue) {
+                  if (cuePopup.spotCue?.id) {
                     updateSpotCue(cuePopup.spotCue.id, 'spot_note', e.target.value);
                   }
                 }}
                 placeholder="Type a note for this spot operator..."
                 style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: '8px', color: '#f0f0f0', padding: '10px 12px', fontSize: '13px', outline: 'none', resize: 'vertical', minHeight: '80px', boxSizing: 'border-box', fontFamily: 'inherit' }}
               />
-              <div style={{ fontSize: '11px', color: '#444', marginTop: '4px' }}>Note saves automatically when you click away</div>
+              <button onClick={() => {
+                const ta = document.getElementById('popup-note-textarea');
+                if (ta && cuePopup.spotCue?.id) updateSpotCue(cuePopup.spotCue.id, 'spot_note', ta.value);
+                setCuePopup(null);
+              }} style={{ marginTop: '10px', width: '100%', padding: '10px', background: '#534AB7', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+                Done
+              </button>
             </div>
           </div>
         </div>

@@ -52,6 +52,7 @@ const startEdit = () => {
     { label: 'Scenes', icon: '◎', desc: 'Manage scenes and act breaks', dest: 'scenes', color: '#0F6E56' },
     { label: 'Characters', icon: '◈', desc: 'Characters and cast list', dest: 'characters', color: '#854F0B' },
     { label: 'Spot settings', icon: '⚙', desc: 'Edit spots, fixtures and gels', dest: 'spot-settings', color: '#185FA5' },
+    { label: 'Spot Notes', icon: '✎', desc: 'View and manage spot notes', dest: 'spot-notes', color: '#C8A000' },
     { label: 'Print options', icon: '⎙', desc: 'Generate PDF paperwork', dest: 'print', color: '#3B6D11' },
   ];
 

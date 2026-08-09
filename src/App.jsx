@@ -7,6 +7,7 @@ import PrintScreen from './screens/PrintScreen';
 import ScenesScreen from './screens/ScenesScreen';
 import CharactersScreen from './screens/CharactersScreen';
 import SpotSettingsScreen from './screens/SpotSettingsScreen';
+import SpotNotesScreen from './screens/SpotNotesScreen';
 import LicenseScreen from './screens/LicenseScreen';
 import ExpiredScreen from './screens/ExpiredScreen';
 import { getCachedLicense, isCacheValid, validateLicense, setCachedLicense } from './license';
@@ -63,7 +64,6 @@ export default function App() {
     setCurrentShow(data || null);
     setScreen(dest);
   };
-console.log('License status:', licenseStatus);
   if (licenseStatus === 'checking') {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#0f0f0f', color: '#555', fontSize: '14px' }}>
@@ -90,6 +90,7 @@ console.log('License status:', licenseStatus);
       {screen === 'scenes' && <ScenesScreen show={currentShow} navigate={navigate} />}
       {screen === 'characters' && <CharactersScreen show={currentShow} navigate={navigate} />}
       {screen === 'spot-settings' && <SpotSettingsScreen show={currentShow} navigate={navigate} />}
+      {screen === 'spot-notes' && <SpotNotesScreen show={currentShow} navigate={navigate} />}
     </div>
   );
 }
