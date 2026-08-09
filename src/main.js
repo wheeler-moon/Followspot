@@ -116,6 +116,7 @@ function initSchema() {
   try { db.exec('ALTER TABLE spot_cues ADD COLUMN highlight TEXT DEFAULT NULL'); } catch(e) {}
   try { db.exec('ALTER TABLE spot_cues ADD COLUMN spot_note TEXT DEFAULT NULL'); } catch(e) {}
   try { db.exec('ALTER TABLE spot_cues ADD COLUMN no_color INTEGER DEFAULT 0'); } catch(e) {}
+  try { db.exec('ALTER TABLE spot_cues ADD COLUMN note_checked INTEGER DEFAULT 0'); } catch(e) {}
 }
 
 function seedGels() {
