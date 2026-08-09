@@ -63,7 +63,7 @@ export default function App() {
     setCurrentShow(data || null);
     setScreen(dest);
   };
-
+console.log('License status:', licenseStatus);
   if (licenseStatus === 'checking') {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#0f0f0f', color: '#555', fontSize: '14px' }}>

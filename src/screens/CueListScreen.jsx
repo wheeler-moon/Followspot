@@ -188,7 +188,6 @@ const INTENSITIES = ['Full','90%','80%','75%','70%','60%','50%','40%','30%','25%
 const TIMES = ['0','1','2','3','4','5','6','7','8','9','10','Custom'];
 const IRIS_SIZES = ['Full Body', '3/4 Body', '1/2 Body', 'Head & Shoulders', 'Head', 'Custom'];
 
-
 const selectStyle = {
   width: '100%', background: '#111', border: '1px solid #2a2a2a',
   borderRadius: '4px', color: '#888', padding: '3px 4px',
@@ -239,7 +238,7 @@ function ActionPicker({ value, onChange, onClose, pos }) {
   );
 }
 
-function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqNumber, onDragStart, onDragOver, onDragLeave, onDrop, isDragTarget }) {
+function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqNumber, onDragStart, onDragOver, onDragLeave, onDrop, isDragTarget, onDoubleClick }) {
   const [showActionPicker, setShowActionPicker] = useState(false);
   const [hoveredFrame, setHoveredFrame] = useState(null);
   const [showCustomTime, setShowCustomTime] = useState(false);
@@ -328,7 +327,18 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
-      style={{ padding: '8px 10px', borderRight: '1px solid #1e1e1e', verticalAlign: 'top', minWidth: '200px', outline: isDragTarget ? '2px solid #534AB7' : 'none', background: isDragTarget ? '#1a1a2e' : 'transparent', cursor: 'grab' }}>
+      onDoubleClick={onDoubleClick}
+      style={{ 
+        padding: '8px 10px', 
+        borderRight: '1px solid #1e1e1e', 
+        verticalAlign: 'top', 
+        minWidth: '200px', 
+        outline: isDragTarget ? '2px solid #534AB7' : 'none', 
+        background: isDragTarget ? '#1a1a2e' : spotCue?.highlight === 'yellow' ? 'rgba(200,160,0,0.12)' : spotCue?.highlight === 'red' ? 'rgba(200,60,60,0.12)' : spotCue?.ignored ? 'rgba(180,40,40,0.08)' : 'transparent',
+        cursor: 'grab',
+        opacity: spotCue?.ignored ? 0.5 : 1,
+        textDecoration: spotCue?.ignored ? 'line-through' : 'none',
+      }}>
       <div ref={ref} style={{ position: 'relative', zIndex: showActionPicker ? 9999 : 'auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '5px' }}>
           <div ref={actionBtnRef} onClick={() => {
@@ -483,7 +493,7 @@ function InsertButton({ onInsert }) {
   );
 }
 
-function CueRow({ cue, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal }) {
+function CueRow({ cue, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal, onCueDoubleClick }) {
   const [editingLQ, setEditingLQ] = useState(false);
   const [lqVal, setLqVal] = useState(cue.lq_number || '');
 
@@ -543,6 +553,7 @@ function CueRow({ cue, spots, spotCues, characters, colorSlotsBySpot, scenes, on
                 }
               }}
               isDragTarget={dragTarget?.cue?.id === cue?.id && dragTarget?.spot?.id === spot?.id}
+              onDoubleClick={() => onCueDoubleClick(cue, spot, sc)}
             />
           );
         })}
@@ -568,6 +579,7 @@ export default function CueListScreen({ show, navigate }) {
   const [dragTarget, setDragTarget] = useState(null);
   const [showDragModal, setShowDragModal] = useState(false);
   const [dragModalStep, setDragModalStep] = useState('action');
+  const [cuePopup, setCuePopup] = useState(null);
 
   const load = () => {
     const result = ipcRenderer.sendSync('db-get-cue-list', show.id);
@@ -747,7 +759,8 @@ const groupedCues = () => {
                       onDelete={deleteCue} onInsertAfter={insertCueAfter}
                       dragSource={dragSource} dragTarget={dragTarget}
                       setDragSource={setDragSource} setDragTarget={setDragTarget}
-                      setShowDragModal={setShowDragModal} />
+                      setShowDragModal={setShowDragModal}
+                      onCueDoubleClick={(cue, spot, spotCue) => setCuePopup({ cue, spot, spotCue })} />
                   ))}
                 </React.Fragment>
               ))}
@@ -778,6 +791,81 @@ const groupedCues = () => {
             </tbody>
           </table>
         )}
+        {cuePopup && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={() => setCuePopup(null)}>
+          <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '16px', padding: '28px', width: '420px' }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <div>
+                <div style={{ fontSize: '16px', fontWeight: '700', color: '#f0f0f0' }}>
+                  LQ {cuePopup.cue.lq_number || '—'} · Spot {cuePopup.spot.spot_number}
+                </div>
+                <div style={{ fontSize: '12px', color: '#555', marginTop: '2px' }}>
+                  {cuePopup.spot.operator_name || 'No operator'}
+                </div>
+              </div>
+              <button onClick={() => setCuePopup(null)}
+                style={{ background: 'none', border: 'none', color: '#555', fontSize: '20px', cursor: 'pointer' }}>×</button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button onClick={() => {
+                  const newVal = cuePopup.spotCue?.ignored ? 0 : 1;
+                  if (cuePopup.spotCue) {
+                    updateSpotCue(cuePopup.spotCue.id, 'ignored', newVal);
+                    setCuePopup(p => ({ ...p, spotCue: { ...p.spotCue, ignored: newVal } }));
+                  }
+                }} style={{ flex: 1, padding: '12px', background: cuePopup.spotCue?.ignored ? '#3a1a1a' : '#1e1e1e', border: `1px solid ${cuePopup.spotCue?.ignored ? '#c44' : '#3a3a3a'}`, borderRadius: '8px', color: cuePopup.spotCue?.ignored ? '#c44' : '#888', fontSize: '13px', fontWeight: '600', cursor: 'pointer', textAlign: 'left' }}>
+                  <div>{cuePopup.spotCue?.ignored ? 'Ignored' : 'Ignore cue'}</div>
+                  <div style={{ fontSize: '11px', fontWeight: '400', marginTop: '2px', opacity: 0.7 }}>Cross out this cue without deleting</div>
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={() => {
+                  const newVal = cuePopup.spotCue?.highlight === 'yellow' ? null : 'yellow';
+                  if (cuePopup.spotCue) {
+                    updateSpotCue(cuePopup.spotCue.id, 'highlight', newVal);
+                    setCuePopup(p => ({ ...p, spotCue: { ...p.spotCue, highlight: newVal } }));
+                  }
+                }} style={{ flex: 1, padding: '10px', background: cuePopup.spotCue?.highlight === 'yellow' ? '#3a3000' : '#1e1e1e', border: `1px solid ${cuePopup.spotCue?.highlight === 'yellow' ? '#C8A000' : '#3a3a3a'}`, borderRadius: '8px', color: cuePopup.spotCue?.highlight === 'yellow' ? '#C8A000' : '#888', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+                  Yellow highlight
+                </button>
+                <button onClick={() => {
+                  const newVal = cuePopup.spotCue?.highlight === 'red' ? null : 'red';
+                  if (cuePopup.spotCue) {
+                    updateSpotCue(cuePopup.spotCue.id, 'highlight', newVal);
+                    setCuePopup(p => ({ ...p, spotCue: { ...p.spotCue, highlight: newVal } }));
+                  }
+                }} style={{ flex: 1, padding: '10px', background: cuePopup.spotCue?.highlight === 'red' ? '#3a1a1a' : '#1e1e1e', border: `1px solid ${cuePopup.spotCue?.highlight === 'red' ? '#c44' : '#3a3a3a'}`, borderRadius: '8px', color: cuePopup.spotCue?.highlight === 'red' ? '#c44' : '#888', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+                  Red highlight
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <div style={{ fontSize: '11px', fontWeight: '600', color: '#555', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Spot note</div>
+              <textarea
+                value={cuePopup.spotCue?.spot_note || ''}
+                onChange={e => {
+                  const val = e.target.value;
+                  setCuePopup(p => ({ ...p, spotCue: { ...p.spotCue, spot_note: val } }));
+                }}
+                onBlur={e => {
+                  if (cuePopup.spotCue) {
+                    updateSpotCue(cuePopup.spotCue.id, 'spot_note', e.target.value);
+                  }
+                }}
+                placeholder="Type a note for this spot operator..."
+                style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: '8px', color: '#f0f0f0', padding: '10px 12px', fontSize: '13px', outline: 'none', resize: 'vertical', minHeight: '80px', boxSizing: 'border-box', fontFamily: 'inherit' }}
+              />
+              <div style={{ fontSize: '11px', color: '#444', marginTop: '4px' }}>Note saves automatically when you click away</div>
+            </div>
+          </div>
+        </div>
+      )}
         {showDragModal && dragSource && dragTarget && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '16px', padding: '28px', width: '400px' }}>
