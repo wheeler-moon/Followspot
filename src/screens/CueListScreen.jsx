@@ -333,12 +333,16 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
         borderRight: '1px solid #1e1e1e', 
         verticalAlign: 'top', 
         minWidth: '200px', 
+        position: 'relative',
         outline: isDragTarget ? '2px solid #534AB7' : 'none', 
         background: isDragTarget ? '#1a1a2e' : spotCue?.highlight === 'yellow' ? 'rgba(200,160,0,0.12)' : spotCue?.highlight === 'red' ? 'rgba(200,60,60,0.12)' : spotCue?.ignored ? 'rgba(180,40,40,0.08)' : 'transparent',
         cursor: 'grab',
         opacity: spotCue?.ignored ? 0.5 : 1,
         textDecoration: spotCue?.ignored ? 'line-through' : 'none',
       }}>
+        {spotCue?.spot_note && (
+        <div style={{ position: 'absolute', top: '4px', right: '4px', width: '6px', height: '6px', borderRadius: '50%', background: '#C8A000' }} />
+      )}
       <div ref={ref} style={{ position: 'relative', zIndex: showActionPicker ? 9999 : 'auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '5px' }}>
           <div ref={actionBtnRef} onClick={() => {
