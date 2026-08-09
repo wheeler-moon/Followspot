@@ -7,6 +7,7 @@ export default function SpotNotesScreen({ show, navigate }) {
   const [cues, setCues] = useState([]);
   const [spotCues, setSpotCues] = useState([]);
   const [scenes, setScenes] = useState([]);
+  const [characters, setCharacters] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
 
@@ -17,11 +18,17 @@ export default function SpotNotesScreen({ show, navigate }) {
       setCues(result.cues || []);
       setSpotCues(result.spotCues || []);
       setScenes(result.scenes || []);
+      setScenes(result.scenes || []);
+      const chars = ipcRenderer.sendSync('db-get-characters', show.id);
+      setCharacters(Array.isArray(chars) ? chars : []);
     }
   }, []);
 
   const sceneMap = {};
   scenes.forEach(s => { sceneMap[s.id] = s; });
+
+  const charMap = {};
+  characters.forEach(c => { charMap[c.id] = c; });
 
   const sceneOrderMap = {};
   scenes.forEach((s, i) => { sceneOrderMap[s.id] = i; });
@@ -98,7 +105,7 @@ export default function SpotNotesScreen({ show, navigate }) {
                                   <span style={{ fontSize: '11px', color: '#555' }}>T·{cue.track_number}</span>
                                   {scene && <span style={{ fontSize: '11px', color: '#534AB7', fontWeight: '600' }}>{scene.label}</span>}
                                 </div>
-                                {sc.action && <div style={{ fontSize: '11px', color: '#666', marginTop: '2px' }}>{sc.action}{sc.character_id ? ' · ' + (cue.character_name || '') : ''}</div>}
+                                {sc.action && <div style={{ fontSize: '11px', color: '#666', marginTop: '2px' }}>{sc.action}{sc.character_id && charMap[sc.character_id] ? ' · ' + charMap[sc.character_id].name : ''}</div>}
                               </div>
                               <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
                                 <button onClick={() => toggleChecked(sc.id, isChecked)}

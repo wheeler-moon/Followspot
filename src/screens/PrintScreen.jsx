@@ -40,6 +40,15 @@ const generateColorLoadPDF = () => {
     if (result.success) setMessage('Color load sheet saved successfully!');
     else if (!result.cancelled) setMessage('Error generating PDF. Please try again.');
   };
+  const generateSpotNotesPDF = (spotId) => {
+    if (!label.trim()) { setMessage('Please enter a label first'); return; }
+    setGenerating(true);
+    setMessage('');
+    const result = ipcRenderer.sendSync('db-generate-spot-notes-pdf', { showId: show.id, spotId, label });
+    setGenerating(false);
+    if (result.success) setMessage('Spot notes PDF saved successfully!');
+    else if (!result.cancelled) setMessage('Error generating PDF. Please try again.');
+  };
   const generatePDF = (spotId) => {
     if (!label.trim()) { setMessage('Please enter a label first (e.g. "2-24 Dress Run")'); return; }
     setGenerating(true);
@@ -160,9 +169,34 @@ const generateColorLoadPDF = () => {
               </button>
             </div>
           </div>
+
+          <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '12px', padding: '20px', marginBottom: '20px' }}>
+            <div style={{ fontSize: '11px', fontWeight: '600', color: '#555', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Spot notes</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#111', borderRadius: '8px', padding: '12px 16px', marginBottom: '8px' }}>
+              <div>
+                <div style={{ fontSize: '13px', fontWeight: '600', color: '#f0f0f0' }}>All spots</div>
+                <div style={{ fontSize: '12px', color: '#666' }}>Print notes for every spot operator</div>
+              </div>
+              <button onClick={() => generateSpotNotesPDF(null)} disabled={generating}
+                style={{ padding: '7px 16px', background: '#185FA5', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '12px', fontWeight: '500', cursor: generating ? 'wait' : 'pointer', opacity: generating ? 0.6 : 1 }}>
+                {generating ? 'Generating...' : 'Generate PDF'}
+              </button>
+            </div>
+            {spots.map(spot => (
+              <div key={spot.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#111', borderRadius: '8px', padding: '12px 16px', marginBottom: '8px' }}>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#f0f0f0' }}>Spot {spot.spot_number} — {spot.operator_name || 'No operator'}</div>
+                  <div style={{ fontSize: '12px', color: '#666' }}>Notes for this operator only</div>
+                </div>
+                <button onClick={() => generateSpotNotesPDF(spot.id)} disabled={generating}
+                  style={{ padding: '7px 16px', background: '#185FA5', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '12px', fontWeight: '500', cursor: generating ? 'wait' : 'pointer', opacity: generating ? 0.6 : 1 }}>
+                  {generating ? 'Generating...' : 'Generate PDF'}
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
-  
 }

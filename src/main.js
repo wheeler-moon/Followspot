@@ -772,6 +772,31 @@ ipcMain.on('db-generate-caller-pdf', async (event, { showId, label, hideOff, hid
     });
     event.returnValue = result ? result[0] : null;
   });
+  ipcMain.on('db-generate-spot-notes-pdf', async (event, { showId, spotId, label }) => {
+    try {
+      const { generateSpotNotesPDF } = require('./pdfGenerator');
+      const { dialog } = require('electron');
+      const database = getDb();
+      const show = database.prepare('SELECT * FROM shows WHERE id = ?').get(showId);
+      const spots = spotId 
+        ? [database.prepare('SELECT * FROM spots WHERE id = ?').get(spotId)]
+        : database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY spot_number').all(showId);
+      const cues = database.prepare('SELECT * FROM cues WHERE show_id = ? ORDER BY sort_order').all(showId);
+      const scenes = database.prepare('SELECT * FROM scenes WHERE show_id = ? ORDER BY sort_order').all(showId);
+      const spotCues = database.prepare("SELECT sc.* FROM spot_cues sc JOIN cues c ON sc.cue_id = c.id WHERE c.show_id = ? AND sc.spot_note IS NOT NULL AND sc.spot_note != ''").all(showId);
+      const characters = database.prepare('SELECT * FROM characters WHERE show_id = ?').all(showId);
+      const { filePath } = await dialog.showSaveDialog({
+        defaultPath: `${show.title} - Spot Notes - ${label}.pdf`,
+        filters: [{ name: 'PDF', extensions: ['pdf'] }],
+      });
+      if (!filePath) { event.returnValue = { success: false, cancelled: true }; return; }
+      await generateSpotNotesPDF({ show, spots, cues, scenes, spotCues, characters, label, outputPath: filePath });
+      event.returnValue = { success: true };
+    } catch(e) {
+      console.error('Spot notes PDF error:', e);
+      event.returnValue = { success: false, error: e.message };
+    }
+  });
   ipcMain.on('db-create-show', (event, { form, spots }) => {
     try {
       const database = getDb();

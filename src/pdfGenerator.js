@@ -1284,5 +1284,127 @@ async function generateColorLoadPDF({ show, spots, colorSlotsBySpot, label, outp
   await browser.close();
   return outputPath;
 }
+function buildSpotNotesHTML({ show, spots, cues, scenes, spotCues, characters, label }) {
+  let logoBase64 = '';
+  if (show.logo_path) {
+    try {
+      const fs = require('fs');
+      const data = fs.readFileSync(show.logo_path);
+      const ext = show.logo_path.split('.').pop().toLowerCase();
+      const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
+      logoBase64 = `data:${mime};base64,${data.toString('base64')}`;
+    } catch(e) {}
+  }
+  const sceneMap = {};
+  scenes.forEach(s => { sceneMap[s.id] = s; });
+  const charMap = {};
+  characters.forEach(c => { charMap[c.id] = c; });
+  const sceneOrderMap = {};
+  scenes.forEach((s, i) => { sceneOrderMap[s.id] = i; });
 
-module.exports = { generateSpotSheetPDF, generateCallerSheetPDF, generateColorLoadPDF };
+  const notesForSpot = (spotId) => {
+    return spotCues
+      .filter(sc => sc.spot_id === spotId && sc.spot_note && sc.spot_note.trim())
+      .map(sc => {
+        const cue = cues.find(c => c.id === sc.cue_id);
+        return { sc, cue };
+      })
+      .filter(({ cue }) => cue)
+      .sort((a, b) => {
+        const sceneA = sceneOrderMap[a.cue?.scene_id] ?? 999;
+        const sceneB = sceneOrderMap[b.cue?.scene_id] ?? 999;
+        if (sceneA !== sceneB) return sceneA - sceneB;
+        return (a.cue?.sort_order || 0) - (b.cue?.sort_order || 0);
+      });
+  };
+
+  const spotsHTML = spots.map(spot => {
+    const notes = notesForSpot(spot.id);
+    if (notes.length === 0) return '';
+    return `
+      <div class="spot-section">
+        <div class="spot-header">SPOT ${spot.spot_number} · ${spot.operator_name || 'TBD'}</div>
+        ${notes.map(({ sc, cue }) => {
+          const scene = sceneMap[cue.scene_id];
+          const char = charMap[sc.character_id];
+          return `
+            <div class="note-card ${sc.note_checked ? 'checked' : ''}">
+              <div class="note-meta">
+                <span class="lq">LQ ${cue.lq_number || '—'}</span>
+                <span class="track">T·${cue.track_number}</span>
+                ${scene ? `<span class="scene">${scene.label}</span>` : ''}
+                ${sc.action ? `<span class="action">${sc.action}</span>` : ''}
+                ${char ? `<span class="char">${char.name}</span>` : ''}
+                ${sc.note_checked ? `<span class="done-badge">GIVEN</span>` : ''}
+              </div>
+              <div class="note-text">${sc.spot_note}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }).join('');
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  @page { size: 8.5in 11in; margin: 0.5in; }
+  body { font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif; font-size: 11pt; color: #1a1a1a; background: white; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2.5px solid #1a1a1a; }
+  .show-title { font-size: 20pt; font-weight: 800; }
+  .header-right { text-align: right; }
+  .print-label { font-size: 13pt; font-weight: 800; }
+  .print-date { font-size: 8pt; color: #888; margin-top: 2px; }
+  .spot-section { margin-bottom: 24px; }
+  .spot-header { font-size: 13pt; font-weight: 800; color: #534AB7; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 0; border-bottom: 2px solid #534AB7; margin-bottom: 10px; }
+  .note-card { padding: 12px 14px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 8px; }
+  .note-card.checked { background: #f9f9f9; opacity: 0.7; }
+  .note-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+  .lq { font-size: 14pt; font-weight: 800; }
+  .track { font-size: 9pt; color: #888; }
+  .scene { font-size: 9pt; font-weight: 700; color: #534AB7; }
+  .action { font-size: 9pt; color: #555; background: #f0f0f0; padding: 1px 6px; border-radius: 4px; }
+  .char { font-size: 10pt; font-weight: 700; }
+  .done-badge { font-size: 8pt; font-weight: 800; color: #1D9E75; background: #e8f8f0; padding: 1px 6px; border-radius: 4px; margin-left: auto; }
+  .note-text { font-size: 12pt; line-height: 1.5; color: #1a1a1a; white-space: pre-wrap; }
+  .note-card.checked .note-text { text-decoration: line-through; color: #888; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div style="display:flex;align-items:flex-start;gap:12px;flex:1;">
+      ${logoBase64 ? `<img style="width:52px;height:52px;object-fit:contain;border-radius:6px;flex-shrink:0;" src="${logoBase64}" />` : ''}
+      <div>
+        <div class="show-title">${show.title}</div>
+      <div style="font-size:8.5pt;color:#555;margin-top:3px;">${[show.designer ? 'LD: ' + show.designer : '', show.associate_ld ? 'Assoc: ' + show.associate_ld : '', show.assistant_ld ? 'Asst: ' + show.assistant_ld : ''].filter(Boolean).join(' · ')}</div>
+    </div>
+    </div>
+    <div class="header-right">
+      <div class="print-label">${label} — Spot Notes</div>
+      <div class="print-date">${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+    </div>
+  </div>
+  ${spotsHTML}
+</body>
+</html>`;
+}
+
+async function generateSpotNotesPDF({ show, spots, cues, scenes, spotCues, characters, label, outputPath }) {
+  const html = buildSpotNotesHTML({ show, spots, cues, scenes, spotCues, characters, label });
+  const browser = await puppeteer.launch({ headless: true });
+  const page = await browser.newPage();
+  await page.setContent(html, { waitUntil: 'networkidle0' });
+  await page.pdf({
+    path: outputPath,
+    width: '8.5in',
+    height: '11in',
+    printBackground: true,
+    margin: { top: '0.5in', right: '0.5in', bottom: '0.5in', left: '0.5in' },
+  });
+  await browser.close();
+  return outputPath;
+}
+module.exports = { generateSpotSheetPDF, generateCallerSheetPDF, generateColorLoadPDF, generateSpotNotesPDF };
