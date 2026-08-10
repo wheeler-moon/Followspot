@@ -141,7 +141,7 @@ const sceneOrderMap = {};
                   <div style="font-size:11pt;font-weight:700;">${sc.intensity || ''}</div>
                   <div style="font-size:10pt;">${sc.frame_size || ''}</div>
                 </td>
-                <td class="frames-cell">${activeFrames || ''}</td>
+                <td class="frames-cell">${sc.no_color ? 'NC' : (activeFrames || '')}</td>
                 <td class="time-cell">${sc.fade_time ? sc.fade_time + 's' : ''}</td>
                 <td class="when-cell">${sc.description || ''}</td>
                 <td class="notes-cell">${sc.notes || ''}</td>
@@ -163,7 +163,7 @@ const sceneOrderMap = {};
           <div style="font-size:11pt;font-weight:700;color:#1a1a1a;">${sc.intensity || '—'}</div>
           <div style="font-size:10pt;color:#333;">${sc.frame_size || '—'}</div>
         </td>
-        <td class="frames-cell">${activeFrames || '—'}</td>
+        <td class="frames-cell">${sc.no_color ? 'NC' : (activeFrames || '—')}</td>
         <td class="time-cell">${sc.fade_time ? sc.fade_time + 's' : '—'}</td>
         <td class="when-cell">${sc.description || ''}</td>
         <td class="notes-cell">${sc.notes || ''}</td>
@@ -626,7 +626,7 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
               </div>
               <div class="cue-details">
                 ${sc.frame_size ? `<span class="detail-badge iris">${sc.frame_size}</span>` : ''}
-                ${activeFrames ? `<span class="detail-badge color">${activeFrames}</span>` : ''}
+                ${sc.no_color ? `<span class="detail-badge color">NC</span>` : activeFrames ? `<span class="detail-badge color">${activeFrames}</span>` : ''}
                 ${sc.fade_time ? `<span class="detail-badge time">${sc.fade_time}s</span>` : ''}
               </div>
               ${sc.description ? `<div class="when-text">${sc.description}</div>` : ''}
