@@ -1148,16 +1148,37 @@ app.whenReady().then(async () => {
     const fs = require('fs');
     const chromePath = puppeteer.executablePath();
     if (!fs.existsSync(chromePath)) {
-      console.log('Downloading Chromium for PDF generation...');
-      const { install, detectBrowserPlatform } = require('@puppeteer/browsers');
+      console.log('Chromium not found, downloading...');
+      const { install, resolveBuildId, detectBrowserPlatform } = require('@puppeteer/browsers');
+      const os = require('os');
       const platform = detectBrowserPlatform();
+      const buildId = await resolveBuildId('chrome', platform, 'stable');
+      console.log('Downloading Chrome', buildId, 'for', platform);
       await install({
         browser: 'chrome',
-        buildId: '146.0.7680.76',
-        cacheDir: require('path').join(require('os').homedir(), '.cache', 'puppeteer'),
-        platform: platform,
+        buildId,
+        cacheDir: require('path').join(os.homedir(), '.cache', 'puppeteer'),
+        platform,
+        downloadProgressCallback: (downloaded, total) => {
+          const pct = Math.round((downloaded / total) * 100);
+          console.log('Download progress:', pct + '%');
+        },
       });
-      console.log('Chromium ready');
+      const installedBrowser = await install({
+        browser: 'chrome',
+        buildId,
+        cacheDir: require('path').join(os.homedir(), '.cache', 'puppeteer'),
+        platform,
+        downloadProgressCallback: (downloaded, total) => {
+          const pct = Math.round((downloaded / total) * 100);
+          console.log('Download progress:', pct + '%');
+        },
+      });
+      global.chromiumPath = installedBrowser.executablePath;
+      console.log('Chromium ready at:', global.chromiumPath);
+    } else {
+      global.chromiumPath = chromePath;
+      console.log('Chromium found at:', chromePath);
     }
   } catch(e) {
     console.log('Chromium setup error:', e.message);

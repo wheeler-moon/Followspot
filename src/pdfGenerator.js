@@ -506,7 +506,7 @@ async function generateSpotSheetPDF({ show, spot, colorSlots, cues, spotCues, ch
   const html = buildSpotSheetHTML({ show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, hideOff, hideTracked, rangeStart, rangeEnd });
   const isLandscape = numSpots > 2;
 
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ headless: true, executablePath: global.chromiumPath || puppeteer.executablePath() });
   const page = await browser.newPage();
   await page.setContent(html, { waitUntil: 'networkidle0' });
   await page.pdf({
@@ -961,7 +961,7 @@ async function generateCallerSheetPDF({ show, spots, colorSlotsBySpot, cues, spo
   const isLandscape = spots.length > 2;
   const html = buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label });
 
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ headless: true, executablePath: global.chromiumPath || puppeteer.executablePath() });
   const page = await browser.newPage();
   await page.setContent(html, { waitUntil: 'networkidle0' });
   await page.pdf({
@@ -1310,7 +1310,7 @@ function buildColorLoadHTML({ show, spots, colorSlotsBySpot, label }) {
 async function generateColorLoadPDF({ show, spots, colorSlotsBySpot, label, outputPath }) {
   const html = buildColorLoadHTML({ show, spots, colorSlotsBySpot, label });
   const isLandscape = spots.length > 2;
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ headless: true, executablePath: global.chromiumPath || puppeteer.executablePath() });
   const page = await browser.newPage();
   await page.setContent(html, { waitUntil: 'networkidle0' });
   await page.pdf({
@@ -1433,7 +1433,7 @@ function buildSpotNotesHTML({ show, spots, cues, scenes, spotCues, characters, l
 
 async function generateSpotNotesPDF({ show, spots, cues, scenes, spotCues, characters, label, outputPath }) {
   const html = buildSpotNotesHTML({ show, spots, cues, scenes, spotCues, characters, label });
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ headless: true, executablePath: global.chromiumPath || puppeteer.executablePath() });
   const page = await browser.newPage();
   await page.setContent(html, { waitUntil: 'networkidle0' });
   await page.pdf({
