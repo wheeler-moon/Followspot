@@ -1,7 +1,7 @@
 {
   "name": "spotplot",
   "productName": "spotplot",
-  "version": "0.1.2-beta",
+  "version": "0.1.4",
   "description": "My Electron application description",
   "main": ".webpack/main",
   "private": true,
@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "better-sqlite3": "^12.8.0",
+    "electron-log": "^5.4.4",
     "electron-squirrel-startup": "^1.0.1",
     "puppeteer": "^24.39.1",
     "react": "^19.2.4",

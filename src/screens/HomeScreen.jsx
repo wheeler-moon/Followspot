@@ -119,7 +119,7 @@ export default function HomeScreen({ navigate }) {
                 <div style={{ fontSize: '11px', fontWeight: '600', color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>About SpotPlot</div>
                 <div style={{ background: '#111', borderRadius: '10px', padding: '16px' }}>
                   {[
-                    ['Version', 'Beta 0.1.0'],
+                    ['Version', 'Beta 0.1.5'],
                     ['Built for', 'Broadway & theatre professionals'],
                     ['Support', 'wheeler@wheelermoon.com'],
                   ].map(([label, value]) => (

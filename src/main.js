@@ -4,7 +4,7 @@ const Database = require('better-sqlite3');
 const { generateSpotSheetPDF, generateCallerSheetPDF, generateColorLoadPDF } = require('./pdfGenerator');
 
 if (require('electron-squirrel-startup')) app.quit();
-const { updateElectronApp } = require('update-electron-app');
+const { autoUpdater } = require('electron');
 
 let db;
 
@@ -1111,11 +1111,37 @@ mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) 
 app.whenReady().then(async () => {
   getDb();
   setupIPC();
-  updateElectronApp({
-    repo: 'wheeler-moon/followspot',
-    updateInterval: '1 hour',
-    notifyUser: true,
-  });
+ if (app.isPackaged) {
+    autoUpdater.setFeedURL({
+      url: `https://update.electronjs.org/wheeler-moon/Followspot/${process.platform}-${process.arch}/${app.getVersion()}`,
+    });
+    autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
+      const { dialog } = require('electron');
+      dialog.showMessageBox({
+        type: 'info',
+        title: 'Update Available',
+        message: `SpotPlot ${releaseName} is ready to install.`,
+        buttons: ['Install Now', 'Later'],
+      }).then(({ response }) => {
+        if (response === 0) autoUpdater.quitAndInstall();
+      });
+    });
+    autoUpdater.on('checking-for-update', () => {
+      console.log('Checking for update...');
+    });
+    autoUpdater.on('update-available', () => {
+      console.log('Update available');
+    });
+    autoUpdater.on('update-not-available', () => {
+      console.log('No update available');
+    });
+    autoUpdater.on('error', (err) => {
+      console.error('Updater error:', err);
+    });
+    setTimeout(() => {
+      autoUpdater.checkForUpdates();
+    }, 10000);
+  }
 
  try {
     const puppeteer = require('puppeteer');

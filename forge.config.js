@@ -2,7 +2,7 @@ const { FusesPlugin } = require('@electron-forge/plugin-fuses');
 const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 
 module.exports = {
-packagerConfig: {
+  packagerConfig: {
     asar: true,
     icon: './src/icons/icons/mac/icon',
     name: 'SpotPlot',
@@ -19,6 +19,23 @@ packagerConfig: {
     },
   },
   rebuildConfig: {},
+  hooks: {
+    postPackage: async (forgeConfig, options) => {
+      if (process.platform !== 'darwin') return;
+      const { execSync } = require('child_process');
+      const path = require('path');
+      const appPath = options.outputPaths[0] + '/SpotPlot.app';
+      const zipPath = options.outputPaths[0] + '/SpotPlot.zip';
+      console.log('Signing:', appPath);
+      execSync(`codesign --deep --force --options runtime --entitlements entitlements.plist --sign "Developer ID Application: WHEELER DAVID MOON (299TQ9H5QB)" "${appPath}"`, { stdio: 'inherit' });
+      console.log('Zipping for notarization...');
+      execSync(`ditto -c -k --keepParent "${appPath}" "${zipPath}"`, { stdio: 'inherit' });
+      console.log('Notarizing...');
+      execSync(`xcrun notarytool submit "${zipPath}" --keychain-profile "AC_PASSWORD" --wait`, { stdio: 'inherit' });
+      console.log('Stapling...');
+      execSync(`xcrun stapler staple "${appPath}"`, { stdio: 'inherit' });
+    },
+  },
   makers: [
     {
       name: '@electron-forge/maker-squirrel',
