@@ -188,7 +188,7 @@ function seedGels() {
     ['Rosco','R318','Mayan Sun'],['Rosco','R321','Soft Golden Amber'],
     ['Rosco','R324','Cherry Red'],['Rosco','R331','Shell Pink'],
     ['Rosco','R332','Cherry Rose'],['Rosco','R333','Blush Pink'],
-    ['Rosco','R336','Billinton Pink'],['Rosco','R339','Broadway Pink'],
+    ['Rosco','R336','Billington Pink'],['Rosco','R339','Broadway Pink'],
     ['Rosco','R342','Rose Pink'],['Rosco','R343','Neon Pink'],
     ['Rosco','R344','Follies Pink'],['Rosco','R346','Tropical Magenta'],
     ['Rosco','R347','Belladonna Rose'],['Rosco','R348','Purple Jazz'],

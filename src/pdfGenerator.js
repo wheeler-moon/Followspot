@@ -119,9 +119,37 @@ const sceneOrderMap = {};
     const activeFrames = sc.active_frames ? sc.active_frames.split(',').filter(Boolean).join(' + ') : '';
     const isOff = sc.action === 'Off';
 
+    const isIgnored = sc.ignored === 1;
+    const highlight = sc.highlight;
+    let rowStyle = '';
+    if (isIgnored) rowStyle = 'background: rgba(180,40,40,0.08);';
+    if (highlight === 'yellow') rowStyle = 'background: rgba(200,160,0,0.15);';
+    if (highlight === 'red') rowStyle = 'background: rgba(200,60,60,0.15);';
+
     rowsHTML += `
-      <tr class="${isOff ? 'off-row' : ''}">
+      <tr class="${isOff ? 'off-row' : ''}" style="${rowStyle}">
         <td class="lq-cell">${cue.lq_number || '—'}</td>
+        ${isIgnored ? `
+          <td colspan="7" style="position:relative;padding:0;">
+            <table style="width:100%;opacity:0.2;">
+              <tr>
+                <td class="action-cell">
+                  ${sc.action ? `<div class="action-inner">${actionIconSVG(sc.action, 34)}<span class="action-name">${sc.action}</span></div>` : ''}
+                </td>
+                <td class="char-cell">${char ? char.name : ''}</td>
+                <td class="int-iris-cell">
+                  <div style="font-size:11pt;font-weight:700;">${sc.intensity || ''}</div>
+                  <div style="font-size:10pt;">${sc.frame_size || ''}</div>
+                </td>
+                <td class="frames-cell">${activeFrames || ''}</td>
+                <td class="time-cell">${sc.fade_time ? sc.fade_time + 's' : ''}</td>
+                <td class="when-cell">${sc.description || ''}</td>
+                <td class="notes-cell">${sc.notes || ''}</td>
+              </tr>
+            </table>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20pt;font-weight:900;color:#1a1a1a;letter-spacing:0.3em;">— IGNORE —</div>
+          </td>
+        ` : `
         <td class="action-cell">
           ${sc.action ? `
             <div class="action-inner">
@@ -131,7 +159,7 @@ const sceneOrderMap = {};
           ` : '<span class="empty">—</span>'}
         </td>
         <td class="char-cell">${char ? char.name : (isOff ? '' : '—')}</td>
-       <td class="int-iris-cell">
+        <td class="int-iris-cell">
           <div style="font-size:11pt;font-weight:700;color:#1a1a1a;">${sc.intensity || '—'}</div>
           <div style="font-size:10pt;color:#333;">${sc.frame_size || '—'}</div>
         </td>
@@ -139,6 +167,7 @@ const sceneOrderMap = {};
         <td class="time-cell">${sc.fade_time ? sc.fade_time + 's' : '—'}</td>
         <td class="when-cell">${sc.description || ''}</td>
         <td class="notes-cell">${sc.notes || ''}</td>
+        `}
       </tr>
     `;
   }
@@ -574,25 +603,35 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
           </td>
         `;
       } else {
+        const isIgnored = sc.ignored === 1;
+        const highlight = sc.highlight;
+        let cellStyle = '';
+        if (highlight === 'yellow') cellStyle = 'background:rgba(200,160,0,0.15);';
+        if (highlight === 'red') cellStyle = 'background:rgba(200,60,60,0.15);';
+        if (isIgnored) cellStyle = 'background:rgba(220,220,220,0.3);';
+
         spotCellsHTML += `
-          <td class="spot-cell">
-            <div class="cell-top">
-              <div class="action-char">
-                <div class="action-inner">
-                  ${actionIconSVG(sc.action, 22)}
-                  <span class="action-name">${sc.action || '—'}</span>
+          <td class="spot-cell" style="${cellStyle}position:relative;">
+            ${isIgnored ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14pt;font-weight:900;color:#1a1a1a;letter-spacing:0.2em;z-index:2;">— IGNORE —</div>` : ''}
+            <div style="${isIgnored ? 'opacity:0.2;' : ''}">
+              <div class="cell-top">
+                <div class="action-char">
+                  <div class="action-inner">
+                    ${actionIconSVG(sc.action, 22)}
+                    <span class="action-name">${sc.action || '—'}</span>
+                  </div>
+                  <div class="char-name">${char ? char.name : '—'}</div>
                 </div>
-                <div class="char-name">${char ? char.name : '—'}</div>
+                <div class="intensity-badge">${sc.intensity || ''}</div>
               </div>
-              <div class="intensity-badge">${sc.intensity || ''}</div>
+              <div class="cue-details">
+                ${sc.frame_size ? `<span class="detail-badge iris">${sc.frame_size}</span>` : ''}
+                ${activeFrames ? `<span class="detail-badge color">${activeFrames}</span>` : ''}
+                ${sc.fade_time ? `<span class="detail-badge time">${sc.fade_time}s</span>` : ''}
+              </div>
+              ${sc.description ? `<div class="when-text">${sc.description}</div>` : ''}
+              ${sc.notes ? `<div class="notes-text">${sc.notes}</div>` : ''}
             </div>
-            <div class="cue-details">
-              ${sc.frame_size ? `<span class="detail-badge iris">${sc.frame_size}</span>` : ''}
-              ${activeFrames ? `<span class="detail-badge color">${activeFrames}</span>` : ''}
-              ${sc.fade_time ? `<span class="detail-badge time">${sc.fade_time}s</span>` : ''}
-            </div>
-            ${sc.description ? `<div class="when-text">${sc.description}</div>` : ''}
-            ${sc.notes ? `<div class="notes-text">${sc.notes}</div>` : ''}
           </td>
         `;
       }
