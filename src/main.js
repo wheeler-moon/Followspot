@@ -981,7 +981,18 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
         prevCueId = allCues.length > 0 ? allCues[allCues.length - 1].id : null;
       }
 
-      const newSortOrder = (insertIndex + 1) * 1000 + 500;
+            let newSortOrder;
+      if (insertIndex >= 0 && insertIndex < allCues.length) {
+        const afterCue = allCues[insertIndex];
+        const nextCue = allCues[insertIndex + 1];
+        if (nextCue) {
+          newSortOrder = Math.round((afterCue.sort_order + nextCue.sort_order) / 2);
+        } else {
+          newSortOrder = afterCue.sort_order + 1000;
+        }
+      } else {
+        newSortOrder = (allCues.length + 1) * 1000;
+      }
 
       const result = database.prepare('INSERT INTO cues (show_id, scene_id, track_number, sort_order, lq_number) VALUES (?, ?, ?, ?, ?)').run(showId, sceneId || null, trackNum, newSortOrder, '');
       const newCueId = result.lastInsertRowid;
@@ -1146,39 +1157,41 @@ app.whenReady().then(async () => {
  try {
     const puppeteer = require('puppeteer');
     const fs = require('fs');
-    const chromePath = puppeteer.executablePath();
-    if (!fs.existsSync(chromePath)) {
-      console.log('Chromium not found, downloading...');
-      const { install, resolveBuildId, detectBrowserPlatform } = require('@puppeteer/browsers');
-      const os = require('os');
-      const platform = detectBrowserPlatform();
-      const buildId = await resolveBuildId('chrome', platform, 'stable');
-      console.log('Downloading Chrome', buildId, 'for', platform);
-      await install({
-        browser: 'chrome',
-        buildId,
-        cacheDir: require('path').join(os.homedir(), '.cache', 'puppeteer'),
-        platform,
-        downloadProgressCallback: (downloaded, total) => {
-          const pct = Math.round((downloaded / total) * 100);
-          console.log('Download progress:', pct + '%');
-        },
-      });
-      const installedBrowser = await install({
-        browser: 'chrome',
-        buildId,
-        cacheDir: require('path').join(os.homedir(), '.cache', 'puppeteer'),
-        platform,
-        downloadProgressCallback: (downloaded, total) => {
-          const pct = Math.round((downloaded / total) * 100);
-          console.log('Download progress:', pct + '%');
-        },
-      });
-      global.chromiumPath = installedBrowser.executablePath;
-      console.log('Chromium ready at:', global.chromiumPath);
+    const path = require('path');
+    
+    if (app.isPackaged) {
+      // Use bundled Chromium
+      const bundledChrome = path.join(process.resourcesPath, 'Google Chrome for Testing.app', 'Contents', 'MacOS', 'Google Chrome for Testing');
+      if (fs.existsSync(bundledChrome)) {
+        global.chromiumPath = bundledChrome;
+        console.log('Using bundled Chromium:', bundledChrome);
+      } else {
+        console.log('Bundled Chromium not found, falling back to download');
+        global.chromiumPath = puppeteer.executablePath();
+      }
     } else {
-      global.chromiumPath = chromePath;
-      console.log('Chromium found at:', chromePath);
+      // Dev mode - use cached Chromium or download
+      const chromePath = puppeteer.executablePath();
+      if (!fs.existsSync(chromePath)) {
+        console.log('Downloading Chromium...');
+        const { install, resolveBuildId, detectBrowserPlatform } = require('@puppeteer/browsers');
+        const os = require('os');
+        const platform = detectBrowserPlatform();
+        const buildId = await resolveBuildId('chrome', platform, 'stable');
+        const installedBrowser = await install({
+          browser: 'chrome',
+          buildId,
+          cacheDir: path.join(os.homedir(), '.cache', 'puppeteer'),
+          platform,
+          downloadProgressCallback: (downloaded, total) => {
+            const pct = Math.round((downloaded / total) * 100);
+            console.log('Download progress:', pct + '%');
+          },
+        });
+        global.chromiumPath = installedBrowser.executablePath;
+      } else {
+        global.chromiumPath = chromePath;
+      }
     }
   } catch(e) {
     console.log('Chromium setup error:', e.message);

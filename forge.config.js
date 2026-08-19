@@ -6,7 +6,10 @@ module.exports = {
     asar: true,
     icon: './src/icons/icons/mac/icon',
     name: 'SpotPlot',
-    extraResource: ['./src/icon.png'],
+    extraResource: [
+      './src/icon.png',
+      `${process.env.HOME}/.cache/puppeteer/chrome/mac_arm-151.0.7922.77/chrome-mac-arm64/Google Chrome for Testing.app`,
+    ],
     osxSign: {
       identity: 'Developer ID Application: WHEELER DAVID MOON (299TQ9H5QB)',
       'hardened-runtime': true,
