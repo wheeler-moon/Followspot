@@ -255,15 +255,22 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
- if (!spotCue) return (
+  if (!spotCue) return (
     <td
       draggable
       onDragStart={onDragStart}
-      onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); onDragOver(e); }}
-      onDragLeave={onDragLeave}
+      onDragOver={(e) => { 
+        e.preventDefault(); 
+        e.stopPropagation(); 
+        onDragOver(e);
+        return false;
+      }}
+      onDragEnter={(e) => { e.preventDefault(); onDragOver(e); }}
+      onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) onDragLeave(e); }}
       onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop(e); }}
-      style={{ padding: '8px 10px', borderRight: '1px solid #1e1e1e', verticalAlign: 'top', minWidth: '200px', minHeight: '60px', background: isDragTarget ? '#1a1a2e' : '#060606', outline: isDragTarget ? '2px solid #534AB7' : 'none' }}>
-      <div style={{ fontSize: '11px', color: '#222', minHeight: '40px', display: 'flex', alignItems: 'center' }}>—</div>
+      onDoubleClick={onDoubleClick}
+      style={{ padding: '8px 10px', borderRight: '1px solid #1e1e1e', verticalAlign: 'top', minWidth: '200px', minHeight: '80px', background: isDragTarget ? '#1a1a2e' : '#060606', outline: isDragTarget ? '2px solid #534AB7' : 'none', cursor: 'grab' }}>
+        <div style={{ fontSize: '11px', color: '#222', minHeight: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>—</div>
     </td>
   );
 
@@ -342,6 +349,9 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
         textDecoration: spotCue?.ignored ? 'line-through' : 'none',
       }}>
         {spotCue?.spot_note && (
+        <div style={{ position: 'absolute', top: '4px', right: '4px', width: '6px', height: '6px', borderRadius: '50%', background: '#C8A000' }} />
+      )}
+            {spotCue?.spot_note && (
         <div style={{ position: 'absolute', top: '4px', right: '4px', width: '6px', height: '6px', borderRadius: '50%', background: '#C8A000' }} />
       )}
       <div ref={ref} style={{ position: 'relative', zIndex: showActionPicker ? 9999 : 'auto' }}>
@@ -578,11 +588,18 @@ function CueRow({ cue, spots, spotCues, characters, colorSlotsBySpot, scenes, on
               characters={characters} colorSlots={slots}
               onUpdate={onUpdateSpotCue} lqNumber={lqVal}
               onDragStart={() => setDragSource({ spotCue: sc, spot, cue })}
-              onDragOver={(e) => { e.preventDefault(); setDragTarget({ spotCue: sc, spot, cue }); }}
-              onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setDragTarget(null); }}
+              onDragOver={(e) => { 
+                e.preventDefault(); 
+                e.stopPropagation();
+                setDragTarget({ spotCue: sc, spot, cue }); 
+              }}
+              onDragLeave={(e) => { 
+                if (!e.currentTarget.contains(e.relatedTarget)) setDragTarget(null); 
+              }}
               onDrop={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                console.log('drop fired', sc);
                 if (dragSource && !(dragSource.spot?.id === spot?.id && dragSource.cue?.id === cue?.id)) {
                   setDragTarget({ spotCue: sc, spot, cue });
                   setShowDragModal(true);
@@ -977,11 +994,11 @@ const groupedCues = () => {
                   What do you want to do with <span style={{ color: '#534AB7' }}>Spot {dragSource.spot.spot_number} / {dragSource.cue.lq_number || 'T·' + dragSource.cue.track_number}</span>?
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <button onClick={() => {
+                  <button onClick={async () => {
                     const srcData = { ...dragSource.spotCue };
                     const tgtData = dragTarget.spotCue ? { ...dragTarget.spotCue } : {};
-                    const fields = ['action','character_id','frame_size','intensity','fade_time','active_frames','description','notes'];
-                                        // Save undo state before swapping
+                    const fields = ['action','character_id','custom_character','frame_size','intensity','fade_time','active_frames','description','notes','no_color'];
+
                     const swapUndoEntries = [];
                     if (dragSource.spotCue) {
                       fields.forEach(f => swapUndoEntries.push({ type: 'spot-cue', spotCueId: dragSource.spotCue.id, field: f, oldValue: srcData[f] || '', newValue: tgtData[f] || '' }));
@@ -992,15 +1009,16 @@ const groupedCues = () => {
                     undoStackRef.current = [...undoStackRef.current.slice(-49), { type: 'batch', entries: swapUndoEntries }];
 
                     if (dragSource.spotCue) {
-                      fields.forEach(f => updateSpotCue(dragSource.spotCue.id, f, tgtData[f] || '', true));
+                      fields.forEach(f => updateSpotCue(dragSource.spotCue.id, f, tgtData[f] !== undefined ? tgtData[f] : '', true));
                     } else {
-                      fields.forEach(f => upsertSpotCue(dragSource.spot.id, dragSource.cue.id, f, tgtData[f] || ''));
+                      fields.forEach(f => upsertSpotCue(dragSource.spot.id, dragSource.cue.id, f, srcData[f] || ''));
                     }
                     if (dragTarget.spotCue) {
-                      fields.forEach(f => updateSpotCue(dragTarget.spotCue.id, f, srcData[f] || '', true));
+                      fields.forEach(f => updateSpotCue(dragTarget.spotCue.id, f, srcData[f] !== undefined ? srcData[f] : '', true));
                     } else {
                       fields.forEach(f => upsertSpotCue(dragTarget.spot.id, dragTarget.cue.id, f, srcData[f] || ''));
                     }
+                    load();
                     setShowDragModal(false);
                     setDragSource(null);
                     setDragTarget(null);
