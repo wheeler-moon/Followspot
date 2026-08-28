@@ -486,7 +486,16 @@ function setupIPC() {
       });
       if (!filePath) { event.returnValue = { success: false, cancelled: true }; return; }
       const fs = require('fs');
-      const exportData = { version: '1.0', exported_at: new Date().toISOString(), show, spots, colorSlots, scenes, characters, cues, spotCues };
+            let logoBase64 = null;
+      if (show.logo_path) {
+        try {
+          const fs = require('fs');
+          const logoData = fs.readFileSync(show.logo_path);
+          const ext = show.logo_path.split('.').pop().toLowerCase();
+          logoBase64 = { data: logoData.toString('base64'), ext };
+        } catch(e) {}
+      }
+      const exportData = { version: '1.0', exported_at: new Date().toISOString(), show, spots, colorSlots, scenes, characters, cues, spotCues, logoBase64 };
       fs.writeFileSync(filePath, JSON.stringify(exportData, null, 2));
       event.returnValue = { success: true, path: filePath };
     } catch(e) {
@@ -509,6 +518,17 @@ function setupIPC() {
       const insertShow = database.prepare(`INSERT INTO shows (title, theatre, producer, designer, associate_ld, assistant_ld, production_electrician, programmer, num_spots) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`);
       const showResult = insertShow.run(data.show.title + ' (imported)', data.show.theatre, data.show.producer, data.show.designer, data.show.associate_ld, data.show.assistant_ld, data.show.production_electrician, data.show.programmer, data.show.num_spots);
       const newShowId = showResult.lastInsertRowid;
+            if (data.logoBase64) {
+        try {
+          const logoDir = require('path').join(app.getPath('userData'), 'logos');
+          if (!fs.existsSync(logoDir)) fs.mkdirSync(logoDir, { recursive: true });
+          const logoPath = require('path').join(logoDir, `show_${newShowId}.${data.logoBase64.ext}`);
+          fs.writeFileSync(logoPath, Buffer.from(data.logoBase64.data, 'base64'));
+          database.prepare('UPDATE shows SET logo_path = ? WHERE id = ?').run(logoPath, newShowId);
+        } catch(e) {
+          console.error('Logo restore error:', e);
+        }
+      }
       const spotIdMap = {};
       for (const spot of data.spots) {
         const r = database.prepare('INSERT INTO spots (show_id, spot_number, operator_name, fixture_type, location) VALUES (?, ?, ?, ?, ?)').run(newShowId, spot.spot_number, spot.operator_name, spot.fixture_type, spot.location);

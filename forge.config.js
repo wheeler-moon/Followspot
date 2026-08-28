@@ -20,6 +20,21 @@ module.exports = {
       tool: 'notarytool',
       keychainProfile: 'AC_PASSWORD',
     },
+        protocols: [
+      {
+        name: 'SpotPlot Show File',
+        schemes: ['spotplot'],
+      },
+    ],
+    fileAssociations: [
+      {
+        ext: 'spotplot',
+        name: 'SpotPlot Show File',
+        description: 'SpotPlot Show File',
+        icon: './src/icons/icons/mac/icon',
+        role: 'Editor',
+      },
+    ],
   },
   rebuildConfig: {},
   hooks: {

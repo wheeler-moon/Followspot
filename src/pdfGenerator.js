@@ -126,7 +126,7 @@ const sceneOrderMap = {};
     if (highlight === 'yellow') rowStyle = 'background: rgba(200,160,0,0.15);';
     if (highlight === 'red') rowStyle = 'background: rgba(200,60,60,0.15);';
 
-    rowsHTML += `
+        rowsHTML += `
       <tr class="${isOff ? 'off-row' : ''}" style="${rowStyle}">
         <td class="lq-cell">${cue.lq_number || '—'}</td>
         ${isIgnored ? `
@@ -149,6 +149,8 @@ const sceneOrderMap = {};
             </table>
             <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20pt;font-weight:900;color:#1a1a1a;letter-spacing:0.3em;">— IGNORE —</div>
           </td>
+        ` : isOff ? `
+          <td colspan="7" style="text-align:center;vertical-align:middle;padding:8px;font-size:11pt;font-weight:600;color:#aaa;">Off</td>
         ` : `
         <td class="action-cell">
           ${sc.action ? `
@@ -158,7 +160,7 @@ const sceneOrderMap = {};
             </div>
           ` : '<span class="empty">—</span>'}
         </td>
-        <td class="char-cell">${char ? char.name : (isOff ? '' : '—')}</td>
+        <td class="char-cell">${char ? char.name : '—'}</td>
         <td class="int-iris-cell">
           <div style="font-size:11pt;font-weight:700;color:#1a1a1a;">${sc.intensity || '—'}</div>
           <div style="font-size:10pt;color:#333;">${sc.frame_size || '—'}</div>
