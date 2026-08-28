@@ -485,10 +485,12 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
         </div>
 
         <div style={{ display: 'flex', gap: '4px', alignItems: 'center', marginBottom: '3px' }}>
-          <input value={spotCue.description || ''} onChange={e => onUpdate(spotCue.id, 'description', e.target.value)}
+          <input defaultValue={spotCue.description || ''}
+            onBlur={e => onUpdate(spotCue.id, 'description', e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); }}
             placeholder="When..."
             style={{ flex: 1, background: 'transparent', border: 'none', borderBottom: '1px solid #1e1e1e', color: '#888', padding: '2px 0', fontSize: '12px', outline: 'none' }} />
-              <div onClick={handleWLQ} title="Auto-fill w/ LQ number"
+          <div onClick={handleWLQ} title="Auto-fill w/ LQ number"
             style={{ fontSize: '9px', color: '#534AB7', cursor: 'pointer', padding: '2px 6px', borderRadius: '3px', border: '1px solid #534AB7', whiteSpace: 'nowrap', lineHeight: 1.3, fontWeight: '700' }}
             onMouseEnter={e => { e.currentTarget.style.background = '#534AB7'; e.currentTarget.style.color = '#fff'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#534AB7'; }}>
@@ -496,7 +498,9 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
           </div>
         </div>
 
-        <input value={spotCue.notes || ''} onChange={e => onUpdate(spotCue.id, 'notes', e.target.value)}
+        <input defaultValue={spotCue.notes || ''}
+          onBlur={e => onUpdate(spotCue.id, 'notes', e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); }}
           placeholder="Notes..."
           style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid #1e1e1e', color: '#666', padding: '2px 0', fontSize: '12px', outline: 'none', fontStyle: 'italic' }} />
       </div>
@@ -612,7 +616,7 @@ export default function CueListScreen({ show, navigate }) {
   const [showDragModal, setShowDragModal] = useState(false);
   const [dragModalStep, setDragModalStep] = useState('action');
   const [cuePopup, setCuePopup] = useState(null);
-  const [undoStack, setUndoStack] = useState([]);
+  const undoStackRef = useRef([]);
   const [popupNote, setPopupNote] = useState('');
 
   const load = () => {
@@ -649,18 +653,25 @@ export default function CueListScreen({ show, navigate }) {
     const handleKeyDown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
-        setUndoStack(s => {
-          if (s.length === 0) return s;
-          const last = s[s.length - 1];
+        (() => {
+          if (undoStackRef.current.length === 0) return;
+          const last = undoStackRef.current[undoStackRef.current.length - 1];
                     if (last.type === 'spot-cue') {
             ipcRenderer.sendSync('db-update-spot-cue', { spotCueId: last.spotCueId, field: last.field, value: last.oldValue });
             setData(d => ({ ...d, spotCues: (d?.spotCues || []).map(sc => sc.id === last.spotCueId ? { ...sc, [last.field]: last.oldValue } : sc) }));
-          } else if (last.type === 'cue') {
+            } else if (last.type === 'cue') {
             ipcRenderer.sendSync('db-update-cue', { cueId: last.cueId, field: last.field, value: last.oldValue });
             setData(d => ({ ...d, cues: (d?.cues || []).map(c => c.id === last.cueId ? { ...c, [last.field]: last.oldValue } : c) }));
+          } else if (last.type === 'batch') {
+            last.entries.forEach(entry => {
+              if (entry.type === 'spot-cue') {
+                ipcRenderer.sendSync('db-update-spot-cue', { spotCueId: entry.spotCueId, field: entry.field, value: entry.oldValue });
+                setData(d => ({ ...d, spotCues: (d?.spotCues || []).map(sc => sc.id === entry.spotCueId ? { ...sc, [entry.field]: entry.oldValue } : sc) }));
+              }
+            });
           }
-          return s.slice(0, -1);
-        });
+                    undoStackRef.current = undoStackRef.current.slice(0, -1);
+        })();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -683,7 +694,7 @@ export default function CueListScreen({ show, navigate }) {
     const oldCue = (data?.cues || []).find(c => c.id === cueId);
     const oldValue = oldCue ? oldCue[field] : null;
     ipcRenderer.sendSync('db-update-cue', { cueId, field, value });
-    setUndoStack(s => [...s.slice(-49), { type: 'cue', cueId, field, oldValue, newValue: value }]);
+      undoStackRef.current = [...undoStackRef.current.slice(-49), { type: 'cue', cueId, field, oldValue, newValue: value }];
     if (field === 'scene_id') {
       load();
     } else {
@@ -691,12 +702,14 @@ export default function CueListScreen({ show, navigate }) {
     }
   };
 
-    const updateSpotCue = (spotCueId, field, value) => {
+      const updateSpotCue = (spotCueId, field, value, skipUndo = false) => {
     const oldSpotCue = (data?.spotCues || []).find(sc => sc.id === spotCueId);
     const oldValue = oldSpotCue ? oldSpotCue[field] : null;
     ipcRenderer.sendSync('db-update-spot-cue', { spotCueId, field, value });
     setData(d => ({ ...d, spotCues: (d?.spotCues || []).map(sc => sc.id === spotCueId ? { ...sc, [field]: value } : sc) }));
-    setUndoStack(s => [...s.slice(-49), { type: 'spot-cue', spotCueId, field, oldValue, newValue: value }]);
+    if (!skipUndo) {
+      undoStackRef.current = [...undoStackRef.current.slice(-49), { type: 'spot-cue', spotCueId, field, oldValue, newValue: value }];
+    }
   };
   const upsertSpotCue = (spotId, cueId, field, value) => {
     const result = ipcRenderer.sendSync('db-upsert-spot-cue', { spotId, cueId, field, value });
@@ -968,13 +981,23 @@ const groupedCues = () => {
                     const srcData = { ...dragSource.spotCue };
                     const tgtData = dragTarget.spotCue ? { ...dragTarget.spotCue } : {};
                     const fields = ['action','character_id','frame_size','intensity','fade_time','active_frames','description','notes'];
+                                        // Save undo state before swapping
+                    const swapUndoEntries = [];
                     if (dragSource.spotCue) {
-                      fields.forEach(f => updateSpotCue(dragSource.spotCue.id, f, tgtData[f] || ''));
+                      fields.forEach(f => swapUndoEntries.push({ type: 'spot-cue', spotCueId: dragSource.spotCue.id, field: f, oldValue: srcData[f] || '', newValue: tgtData[f] || '' }));
+                    }
+                    if (dragTarget.spotCue) {
+                      fields.forEach(f => swapUndoEntries.push({ type: 'spot-cue', spotCueId: dragTarget.spotCue.id, field: f, oldValue: tgtData[f] || '', newValue: srcData[f] || '' }));
+                    }
+                    undoStackRef.current = [...undoStackRef.current.slice(-49), { type: 'batch', entries: swapUndoEntries }];
+
+                    if (dragSource.spotCue) {
+                      fields.forEach(f => updateSpotCue(dragSource.spotCue.id, f, tgtData[f] || '', true));
                     } else {
                       fields.forEach(f => upsertSpotCue(dragSource.spot.id, dragSource.cue.id, f, tgtData[f] || ''));
                     }
                     if (dragTarget.spotCue) {
-                      fields.forEach(f => updateSpotCue(dragTarget.spotCue.id, f, srcData[f] || ''));
+                      fields.forEach(f => updateSpotCue(dragTarget.spotCue.id, f, srcData[f] || '', true));
                     } else {
                       fields.forEach(f => upsertSpotCue(dragTarget.spot.id, dragTarget.cue.id, f, srcData[f] || ''));
                     }
