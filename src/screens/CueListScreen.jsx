@@ -315,7 +315,7 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
             <span style={{ fontSize: '11px', color: '#444', fontWeight: '500' }}>Off</span>
           </div>
           {showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} pos={pickerPos} />}
-          <div style={{ fontSize: '10px', color: '#2a2a2a', marginTop: '6px', fontStyle: 'italic', textAlign: 'center' }}>spot inactive</div>
+                    <div style={{ fontSize: '13px', color: '#444', marginTop: '6px', fontStyle: 'italic', textAlign: 'center', fontWeight: '600' }}>spot inactive</div>
         </div>
       </td>
     );
