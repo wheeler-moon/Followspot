@@ -460,10 +460,10 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
           <input value={spotCue.description || ''} onChange={e => onUpdate(spotCue.id, 'description', e.target.value)}
             placeholder="When..."
             style={{ flex: 1, background: 'transparent', border: 'none', borderBottom: '1px solid #1e1e1e', color: '#888', padding: '2px 0', fontSize: '12px', outline: 'none' }} />
-          <div onClick={handleWLQ} title="Auto-fill w/ LQ number"
-            style={{ fontSize: '9px', color: '#333', cursor: 'pointer', padding: '2px 4px', borderRadius: '3px', border: '1px solid #222', whiteSpace: 'nowrap', lineHeight: 1.3 }}
-            onMouseEnter={e => { e.currentTarget.style.color = '#888'; e.currentTarget.style.borderColor = '#444'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = '#333'; e.currentTarget.style.borderColor = '#222'; }}>
+              <div onClick={handleWLQ} title="Auto-fill w/ LQ number"
+            style={{ fontSize: '9px', color: '#534AB7', cursor: 'pointer', padding: '2px 6px', borderRadius: '3px', border: '1px solid #534AB7', whiteSpace: 'nowrap', lineHeight: 1.3, fontWeight: '700' }}
+            onMouseEnter={e => { e.currentTarget.style.background = '#534AB7'; e.currentTarget.style.color = '#fff'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#534AB7'; }}>
             w/LQ
           </div>
         </div>
