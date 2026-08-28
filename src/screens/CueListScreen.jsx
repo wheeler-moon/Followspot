@@ -612,6 +612,7 @@ export default function CueListScreen({ show, navigate }) {
   const [showDragModal, setShowDragModal] = useState(false);
   const [dragModalStep, setDragModalStep] = useState('action');
   const [cuePopup, setCuePopup] = useState(null);
+  const [undoStack, setUndoStack] = useState([]);
   const [popupNote, setPopupNote] = useState('');
 
   const load = () => {
@@ -644,6 +645,28 @@ export default function CueListScreen({ show, navigate }) {
 
   useEffect(() => { load(); }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        setUndoStack(s => {
+          if (s.length === 0) return s;
+          const last = s[s.length - 1];
+                    if (last.type === 'spot-cue') {
+            ipcRenderer.sendSync('db-update-spot-cue', { spotCueId: last.spotCueId, field: last.field, value: last.oldValue });
+            setData(d => ({ ...d, spotCues: (d?.spotCues || []).map(sc => sc.id === last.spotCueId ? { ...sc, [last.field]: last.oldValue } : sc) }));
+          } else if (last.type === 'cue') {
+            ipcRenderer.sendSync('db-update-cue', { cueId: last.cueId, field: last.field, value: last.oldValue });
+            setData(d => ({ ...d, cues: (d?.cues || []).map(c => c.id === last.cueId ? { ...c, [last.field]: last.oldValue } : c) }));
+          }
+          return s.slice(0, -1);
+        });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const addCue = () => {
     const lastCue = (data?.cues || [])[(data?.cues || []).length - 1];
     const sceneId = selectedSceneId || (lastCue ? lastCue.scene_id : null);
@@ -656,8 +679,11 @@ export default function CueListScreen({ show, navigate }) {
     load();
   };
 
-  const updateCue = (cueId, field, value) => {
+    const updateCue = (cueId, field, value) => {
+    const oldCue = (data?.cues || []).find(c => c.id === cueId);
+    const oldValue = oldCue ? oldCue[field] : null;
     ipcRenderer.sendSync('db-update-cue', { cueId, field, value });
+    setUndoStack(s => [...s.slice(-49), { type: 'cue', cueId, field, oldValue, newValue: value }]);
     if (field === 'scene_id') {
       load();
     } else {
@@ -665,9 +691,12 @@ export default function CueListScreen({ show, navigate }) {
     }
   };
 
-  const updateSpotCue = (spotCueId, field, value) => {
+    const updateSpotCue = (spotCueId, field, value) => {
+    const oldSpotCue = (data?.spotCues || []).find(sc => sc.id === spotCueId);
+    const oldValue = oldSpotCue ? oldSpotCue[field] : null;
     ipcRenderer.sendSync('db-update-spot-cue', { spotCueId, field, value });
     setData(d => ({ ...d, spotCues: (d?.spotCues || []).map(sc => sc.id === spotCueId ? { ...sc, [field]: value } : sc) }));
+    setUndoStack(s => [...s.slice(-49), { type: 'spot-cue', spotCueId, field, oldValue, newValue: value }]);
   };
   const upsertSpotCue = (spotId, cueId, field, value) => {
     const result = ipcRenderer.sendSync('db-upsert-spot-cue', { spotId, cueId, field, value });
