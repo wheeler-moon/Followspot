@@ -136,7 +136,7 @@ const sceneOrderMap = {};
                 <td class="action-cell">
                   ${sc.action ? `<div class="action-inner">${actionIconSVG(sc.action, 34)}<span class="action-name">${sc.action}</span></div>` : ''}
                 </td>
-                <td class="char-cell">${char ? char.name : ''}</td>
+                <td class="char-cell">${char ? char.name : sc.custom_character ? sc.custom_character : ''}</td>
                 <td class="int-iris-cell">
                   <div style="font-size:11pt;font-weight:700;">${sc.intensity || ''}</div>
                   <div style="font-size:10pt;">${sc.frame_size || ''}</div>
@@ -160,7 +160,7 @@ const sceneOrderMap = {};
             </div>
           ` : '<span class="empty">—</span>'}
         </td>
-        <td class="char-cell">${char ? char.name : '—'}</td>
+        <td class="char-cell">${char ? char.name : sc.custom_character ? sc.custom_character : '—'}</td>
         <td class="int-iris-cell">
           <div style="font-size:11pt;font-weight:700;color:#1a1a1a;">${sc.intensity || '—'}</div>
           <div style="font-size:10pt;color:#333;">${sc.frame_size || '—'}</div>
@@ -622,7 +622,7 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
                     ${actionIconSVG(sc.action, 22)}
                     <span class="action-name">${sc.action || '—'}</span>
                   </div>
-                  <div class="char-name">${char ? char.name : '—'}</div>
+                  <div class="char-name">${char ? char.name : sc.custom_character ? sc.custom_character : '—'}</div>
                 </div>
                 <div class="intensity-badge">${sc.intensity || ''}</div>
               </div>

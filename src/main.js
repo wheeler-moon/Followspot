@@ -117,6 +117,7 @@ function initSchema() {
   try { db.exec('ALTER TABLE spot_cues ADD COLUMN spot_note TEXT DEFAULT NULL'); } catch(e) {}
   try { db.exec('ALTER TABLE spot_cues ADD COLUMN no_color INTEGER DEFAULT 0'); } catch(e) {}
   try { db.exec('ALTER TABLE spot_cues ADD COLUMN note_checked INTEGER DEFAULT 0'); } catch(e) {}
+  try { db.exec('ALTER TABLE spot_cues ADD COLUMN custom_character TEXT DEFAULT NULL'); } catch(e) {}
 }
 
 function seedGels() {
@@ -1035,11 +1036,12 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
         const wasOff = prevAction === 'Off';
         const startsOff = endsInOff || wasOff;
 
-        database.prepare('INSERT INTO spot_cues (cue_id, spot_id, action, character_id, intensity, fade_time, active_frames, description, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run(
+                database.prepare('INSERT INTO spot_cues (cue_id, spot_id, action, character_id, custom_character, intensity, fade_time, active_frames, description, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(
           newCueId,
           spot.id,
           startsOff ? 'Off' : '',
           startsOff ? null : (prevSpotCue ? prevSpotCue.character_id : null),
+          startsOff ? null : (prevSpotCue ? prevSpotCue.custom_character : null),
           '',
           '',
           startsOff ? '' : (prevSpotCue ? prevSpotCue.active_frames : ''),

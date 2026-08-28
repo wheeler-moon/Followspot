@@ -242,6 +242,7 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
   const [showActionPicker, setShowActionPicker] = useState(false);
   const [hoveredFrame, setHoveredFrame] = useState(null);
   const [showCustomTime, setShowCustomTime] = useState(false);
+  const [showCustomChar, setShowCustomChar] = useState(!!spotCue?.custom_character);
   const [customTimeVal, setCustomTimeVal] = useState('');
   const [pickerPos, setPickerPos] = useState({ top: 0, left: 0 });
   const ref = useRef();
@@ -368,11 +369,38 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
           {showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} pos={pickerPos} />} 
         </div>
 
-        <select value={spotCue.character_id || ''} onChange={e => onUpdate(spotCue.id, 'character_id', e.target.value ? parseInt(e.target.value) : null)}
-          style={{ ...selectStyle, color: spotCue.character_id ? '#f0f0f0' : '#444', marginBottom: '5px' }}>
-          <option value="">Character...</option>
-          {characters.map(c => <option key={c.id} value={c.id}>{c.name}{c.actor_name ? ' (' + c.actor_name + ')' : ''}</option>)}
-        </select>
+                {showCustomChar ? (
+                    <input
+            autoFocus
+            defaultValue={spotCue.custom_character || ''}
+            onBlur={e => {
+              onUpdate(spotCue.id, 'custom_character', e.target.value);
+              setShowCustomChar(false);
+            }}
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                onUpdate(spotCue.id, 'custom_character', e.target.value);
+                setShowCustomChar(false);
+              }
+            }}
+            placeholder="Type character name..."
+            style={{ ...selectStyle, color: '#f0f0f0', marginBottom: '5px' }}
+          />
+        ) : (
+          <select value={spotCue.character_id || ''} onChange={e => {
+            if (e.target.value === 'custom') {
+              onUpdate(spotCue.id, 'character_id', null);
+              setShowCustomChar(true);
+            } else {
+              onUpdate(spotCue.id, 'character_id', e.target.value ? parseInt(e.target.value) : null);
+              onUpdate(spotCue.id, 'custom_character', null);
+            }
+          }} style={{ ...selectStyle, color: (spotCue.character_id || spotCue.custom_character) ? '#f0f0f0' : '#444', marginBottom: '5px' }}>
+            <option value="">{spotCue.custom_character || 'Character...'}</option>
+            {characters.map(c => <option key={c.id} value={c.id}>{c.name}{c.actor_name ? ' (' + c.actor_name + ')' : ''}</option>)}
+            <option value="custom">+ Type custom name...</option>
+          </select>
+        )}
 
         <div style={{ display: 'flex', gap: '4px', marginBottom: '5px' }}>
           <select value={spotCue.intensity || ''} onChange={e => onUpdate(spotCue.id, 'intensity', e.target.value)}
