@@ -118,6 +118,7 @@ function initSchema() {
   try { db.exec('ALTER TABLE spot_cues ADD COLUMN no_color INTEGER DEFAULT 0'); } catch(e) {}
   try { db.exec('ALTER TABLE spot_cues ADD COLUMN note_checked INTEGER DEFAULT 0'); } catch(e) {}
   try { db.exec('ALTER TABLE spot_cues ADD COLUMN custom_character TEXT DEFAULT NULL'); } catch(e) {}
+  try { db.exec("UPDATE gels SET gel_name = REPLACE(gel_name, 'Billinton', 'Billington') WHERE gel_name LIKE '%Billinton%'"); } catch(e) {}
 }
 
 function seedGels() {
