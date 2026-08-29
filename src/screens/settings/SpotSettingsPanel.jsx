@@ -59,7 +59,7 @@ function GelPicker({ value, onChange, placeholder }) {
   );
 }
 
-function SpotCard({ spot, colorSlots, onUpdateSpot, onUpdateGel }) {
+function SpotCard({ spot, colorSlots, onUpdateSpot, onUpdateGel, onDelete }) {
   const isCustomFixture = spot.fixture_type && !FIXTURES.includes(spot.fixture_type);
   const [showCustomFixture, setShowCustomFixture] = useState(isCustomFixture);
   const slots = colorSlots || [];
@@ -68,8 +68,19 @@ function SpotCard({ spot, colorSlots, onUpdateSpot, onUpdateGel }) {
 
   return (
     <div style={{ background: '#111', border: '1px solid #2a2a2a', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
-      <div style={{ fontSize: '14px', fontWeight: '700', color: '#534AB7', marginBottom: '14px' }}>
-        Spot {spot.spot_number}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+        <div style={{ fontSize: '14px', fontWeight: '700', color: '#534AB7' }}>
+          Spot {spot.spot_number}
+        </div>
+        <button onClick={() => {
+          if (window.confirm('Delete Spot ' + spot.spot_number + '? All cues and data for this spot will be permanently deleted and cannot be recovered.')) {
+            ipcRenderer.sendSync('db-remove-spot', spot.id);
+            onDelete();
+            onUpdateSpot(spot.id, '_deleted', true);
+          }
+        }} style={{ background: 'none', border: '1px solid #3a2a2a', borderRadius: '6px', color: '#c44', padding: '4px 10px', fontSize: '11px', cursor: 'pointer' }}>
+          Delete spot
+        </button>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
         <div>
@@ -172,8 +183,18 @@ export default function SpotSettingsPanel({ show }) {
           colorSlots={colorSlots[spot.id]}
           onUpdateSpot={updateSpot}
           onUpdateGel={updateGel}
+          onDelete={() => load()}
         />
       ))}
+            {spots.length < 4 && (
+        <button onClick={() => {
+          const newSpotNumber = spots.length + 1;
+          const result = ipcRenderer.sendSync('db-add-spot', { showId: show.id, spotNumber: newSpotNumber });
+          if (result.success) load();
+        }} style={{ width: '100%', padding: '10px', background: 'none', border: '1px dashed #2a2a2a', borderRadius: '10px', color: '#534AB7', fontSize: '13px', fontWeight: '600', cursor: 'pointer', marginTop: '8px' }}>
+          + Add Spot
+        </button>
+      )}
     </div>
   );
 }

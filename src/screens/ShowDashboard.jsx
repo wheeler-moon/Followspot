@@ -187,7 +187,7 @@ const startEdit = () => {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '32px' }}>
             {[
-              { label: 'Spots', value: show.num_spots },
+              { label: 'Spots', value: stats.spots.length },
               { label: 'Cues', value: stats.cues },
               { label: 'Scenes', value: stats.scenes },
               { label: 'Characters', value: stats.characters },
