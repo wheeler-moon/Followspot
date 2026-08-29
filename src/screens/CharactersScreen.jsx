@@ -25,6 +25,7 @@ export default function CharactersScreen({ show, navigate }) {
   const [newPhoto, setNewPhoto] = useState('');
   const [dragOverId, setDragOverId] = useState(null);
   const dragItem = useRef(null);
+  const nameInputRef = useRef(null);
 
   const load = () => {
     const result = ipcRenderer.sendSync('db-get-characters', show.id);
@@ -35,7 +36,7 @@ export default function CharactersScreen({ show, navigate }) {
 
   const addCharacter = () => {
     if (!newName.trim()) return;
-ipcRenderer.sendSync('db-create-character', { showId: show.id, name: newName, actorName: newActor });
+    ipcRenderer.sendSync('db-create-character', { showId: show.id, name: newName, actorName: newActor });
     if (newNotes.trim() || newPhoto) {
       const chars = ipcRenderer.sendSync('db-get-characters', show.id);
       const newest = chars[chars.length - 1];
@@ -43,6 +44,7 @@ ipcRenderer.sendSync('db-create-character', { showId: show.id, name: newName, ac
     }
     setNewName(''); setNewActor(''); setNewNotes(''); setNewPhoto('');
     load();
+    setTimeout(() => nameInputRef.current?.focus(), 50);
   };
 
   const startEdit = (char) => {
@@ -122,7 +124,7 @@ ipcRenderer.sendSync('db-create-character', { showId: show.id, name: newName, ac
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
               <div>
                 <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>Character name *</div>
-                <input style={inputStyle} value={newName} onChange={e => setNewName(e.target.value)}
+                  <input ref={nameInputRef} style={inputStyle} value={newName} onChange={e => setNewName(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addCharacter()} placeholder="e.g. MARIO" />
               </div>
               <div>
@@ -134,6 +136,7 @@ ipcRenderer.sendSync('db-create-character', { showId: show.id, name: newName, ac
 <div style={{ marginBottom: '12px' }}>
               <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>Costume notes</div>
               <input style={inputStyle} value={newNotes} onChange={e => setNewNotes(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && addCharacter()}
                 placeholder="e.g. Red jacket, black hat" />
             </div>
             <div style={{ marginBottom: '14px' }}>
