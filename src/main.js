@@ -119,6 +119,9 @@ function initSchema() {
   try { db.exec('ALTER TABLE spot_cues ADD COLUMN note_checked INTEGER DEFAULT 0'); } catch(e) {}
   try { db.exec('ALTER TABLE spot_cues ADD COLUMN custom_character TEXT DEFAULT NULL'); } catch(e) {}
   try { db.exec("UPDATE gels SET gel_name = REPLACE(gel_name, 'Billinton', 'Billington') WHERE gel_name LIKE '%Billinton%'"); } catch(e) {}
+  try { db.exec("ALTER TABLE shows ADD COLUMN iris_sizes TEXT DEFAULT NULL"); } catch(e) {}
+  try { db.exec('ALTER TABLE spots ADD COLUMN display_order INTEGER DEFAULT NULL'); } catch(e) {}
+  try { db.exec('ALTER TABLE shows ADD COLUMN custom_actions TEXT DEFAULT NULL'); } catch(e) {}
 }
 
 function seedGels() {
@@ -569,6 +572,12 @@ function setupIPC() {
     }
   });
   ipcMain.on('db-get-shows', (event) => {
+     ipcMain.on('db-get-show', (event, showId) => {
+    try {
+      const show = getDb().prepare('SELECT * FROM shows WHERE id = ?').get(showId);
+      event.returnValue = show || null;
+    } catch(e) { event.returnValue = null; }
+  });
     try {
       const shows = getDb().prepare('SELECT * FROM shows ORDER BY created_at DESC').all();
       event.returnValue = shows;
@@ -609,16 +618,24 @@ ipcMain.on('get-app-icon', (event) => {
     } catch(e) { event.returnValue = []; }
   });
 
-  ipcMain.on('db-update-spot', (event, { spotId, operator_name, fixture_type, location }) => {
+  ipcMain.on('db-update-spot', (event, data) => {
     try {
-      getDb().prepare('UPDATE spots SET operator_name = ?, fixture_type = ?, location = ? WHERE id = ?').run(operator_name || '', fixture_type || '', location || '', spotId);
+      const { spotId, ...fields } = data;
+      const allowed = ['operator_name', 'fixture_type', 'location', 'display_order'];
+      for (const [key, value] of Object.entries(fields)) {
+        if (allowed.includes(key)) {
+          getDb().prepare(`UPDATE spots SET ${key} = ? WHERE id = ?`).run(value || '', spotId);
+        }
+      }
       event.returnValue = { success: true };
     } catch(e) { event.returnValue = { success: false }; }
   });
 
-  ipcMain.on('db-update-color-slot', (event, { slotId, gelNumber, gelName }) => {
+  ipcMain.on('db-update-color-slot', (event, { slotId, gel_number, gel_name, gelNumber, gelName }) => {
     try {
-      getDb().prepare('UPDATE color_slots SET gel_number = ?, gel_name = ? WHERE id = ?').run(gelNumber || '', gelName || '', slotId);
+      const gNum = gel_number !== undefined ? gel_number : gelNumber;
+      const gName = gel_name !== undefined ? gel_name : gelName;
+      getDb().prepare('UPDATE color_slots SET gel_number = ?, gel_name = ? WHERE id = ?').run(gNum || '', gName || '', slotId);
       event.returnValue = { success: true };
     } catch(e) { event.returnValue = { success: false }; }
   });
@@ -650,17 +667,34 @@ ipcMain.on('get-app-icon', (event) => {
       event.returnValue = { success: true };
     } catch(e) { event.returnValue = { success: false }; }
   });
-    ipcMain.on('db-update-show', (event, { showId, form }) => {
+  ipcMain.on('db-update-show', (event, data) => {
     try {
-      getDb().prepare(`
-        UPDATE shows SET title = ?, theatre = ?, producer = ?, designer = ?,
-        associate_ld = ?, assistant_ld = ?, production_electrician = ?, programmer = ?,
-        logo_path = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
-      `).run(form.title, form.theatre || '', form.producer || '', form.designer || '',
-        form.associate_ld || '', form.assistant_ld || '', form.production_electrician || '',
-        form.programmer || '', form.logo_path || '', showId);
+      const database = getDb();
+      const { showId, form, ...fields } = data;
+      
+      if (form) {
+        // Legacy form-based update
+        database.prepare(`
+          UPDATE shows SET title = ?, theatre = ?, producer = ?, designer = ?,
+          associate_ld = ?, assistant_ld = ?, production_electrician = ?, programmer = ?,
+          logo_path = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
+        `).run(form.title, form.theatre || '', form.producer || '', form.designer || '',
+          form.associate_ld || '', form.assistant_ld || '', form.production_electrician || '',
+          form.programmer || '', form.logo_path || '', showId);
+      } else {
+        // Field-by-field update
+        const allowed = ['title','theatre','producer','designer','associate_ld','assistant_ld','production_electrician','programmer','logo_path','iris_sizes','custom_actions'];
+        for (const [key, value] of Object.entries(fields)) {
+          if (allowed.includes(key)) {
+            database.prepare(`UPDATE shows SET ${key} = ? WHERE id = ?`).run(value, showId);
+          }
+        }
+      }
       event.returnValue = { success: true };
-    } catch(e) { event.returnValue = { success: false }; }
+    } catch(e) { 
+      console.error('db-update-show error:', e);
+      event.returnValue = { success: false }; 
+    }
   });
   ipcMain.on('db-delete-show', (event, showId) => {
     try {
@@ -876,7 +910,15 @@ ipcMain.on('db-generate-caller-pdf', async (event, { showId, label, hideOff, hid
       event.returnValue = { success: false, error: e.message };
     }
   });
-
+  ipcMain.on('db-reorder-spots', (event, updates) => {
+    try {
+      const database = getDb();
+      for (const u of updates) {
+        database.prepare('UPDATE spots SET display_order = ? WHERE id = ?').run(u.display_order, u.id);
+      }
+      event.returnValue = { success: true };
+    } catch(e) { event.returnValue = { success: false }; }
+  });
   ipcMain.on('db-search-gels', (event, query) => {
     try {
       const q = '%' + query + '%';

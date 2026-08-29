@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 const { ipcRenderer } = window.require('electron');
 import AppHeader from '../components/AppHeader';
+import ShowSettingsModal from './ShowSettingsModal';
 const getImageSrc = (path) => {
   if (!path) return null;
   try {
@@ -12,15 +13,27 @@ const getImageSrc = (path) => {
   } catch(e) { return null; }
 };
 
-export default function ShowDashboard({ show, navigate }) {
+export default function ShowDashboard({ show: initialShow, navigate }) {
+  const [currentShow, setCurrentShow] = React.useState(initialShow);
+  const show = currentShow;
+
+  const reloadShow = () => {
+    const updated = ipcRenderer.sendSync('db-get-show', initialShow.id);
+    if (updated) setCurrentShow(updated);
+  };
   const [stats, setStats] = useState({ cues: 0, scenes: 0, characters: 0, spots: [] });
   const [editing, setEditing] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [editForm, setEditForm] = useState({});
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
+  const reloadStats = () => {
     const result = ipcRenderer.sendSync('db-get-show-stats', show.id);
     if (result) setStats(result);
+  };
+
+  useEffect(() => {
+    reloadStats();
   }, [show.id]);
 const startEdit = () => {
     setEditForm({
@@ -51,7 +64,6 @@ const startEdit = () => {
     { label: 'Cue list', icon: '≡', desc: 'Enter and edit followspot cues', dest: 'cue-list', color: '#534AB7' },
     { label: 'Scenes', icon: '◎', desc: 'Manage scenes and act breaks', dest: 'scenes', color: '#0F6E56' },
     { label: 'Characters', icon: '◈', desc: 'Characters and cast list', dest: 'characters', color: '#854F0B' },
-    { label: 'Spot settings', icon: '⚙', desc: 'Edit spots, fixtures and gels', dest: 'spot-settings', color: '#185FA5' },
     { label: 'Spot Notes', icon: '✎', desc: 'View and manage spot notes', dest: 'spot-notes', color: '#C8A000' },
     { label: 'Print options', icon: '⎙', desc: 'Generate PDF paperwork', dest: 'print', color: '#3B6D11' },
   ];
@@ -166,9 +178,9 @@ const startEdit = () => {
                     <div style={{ fontSize: '14px', color: '#666' }}>{show.theatre}{show.producer ? ` · ${show.producer}` : ''}</div>
                   </div>
                 </div>
-                <button onClick={startEdit} style={{ padding: '6px 14px', background: 'none', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#666', fontSize: '12px', cursor: 'pointer', marginTop: '4px' }}>
-                  Edit show info
-                </button>
+                  <button onClick={() => setShowSettings(true)} style={{ padding: '6px 14px', background: 'none', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#666', fontSize: '12px', cursor: 'pointer', marginTop: '4px' }}>
+                    Show Settings
+                  </button>
               </div>
             )}
           </div>
@@ -232,10 +244,18 @@ const startEdit = () => {
                   <div style={{ fontSize: '11px', color: '#555' }}>{card.desc}</div>
                 </div>
               ))}
+
             </div>
           </div>
         </div>
       </div>
+      {showSettings && (
+        <ShowSettingsModal
+          show={show}
+          onClose={() => { setShowSettings(false); reloadStats(); }}
+          onShowUpdate={(updated) => { setCurrentShow(updated); }}
+        />
+      )}
     </div>
   );
 }
