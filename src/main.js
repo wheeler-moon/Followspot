@@ -585,7 +585,7 @@ function setupIPC() {
   });
   ipcMain.on('db-get-spots', (event, showId) => {
     try {
-      const spots = getDb().prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY spot_number').all(showId);
+      const spots = getDb().prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY COALESCE(display_order, spot_number * 1000)').all(showId);
       event.returnValue = spots;
     } catch(e) { event.returnValue = []; }
   });
@@ -661,7 +661,7 @@ ipcMain.on('get-app-icon', (event) => {
       database.prepare('DELETE FROM spot_cues WHERE spot_id = ?').run(spotId);
       database.prepare('DELETE FROM color_slots WHERE spot_id = ?').run(spotId);
       database.prepare('DELETE FROM spots WHERE id = ?').run(spotId);
-      const remaining = database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY spot_number').all(spot.show_id);
+      const remaining = database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY COALESCE(display_order, spot_number * 1000)').all(spot.show_id);
       remaining.forEach((s, i) => database.prepare('UPDATE spots SET spot_number = ? WHERE id = ?').run(i + 1, s.id));
       database.prepare('UPDATE shows SET num_spots = ? WHERE id = ?').run(remaining.length, spot.show_id);
       event.returnValue = { success: true };
@@ -768,7 +768,7 @@ ipcMain.on('db-generate-caller-pdf', async (event, { showId, label, hideOff, hid
       const { dialog } = require('electron');
       const database = getDb();
       const show = database.prepare('SELECT * FROM shows WHERE id = ?').get(showId);
-      const spots = database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY spot_number').all(showId);
+      const spots = database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY COALESCE(display_order, spot_number * 1000)').all(showId);
       const cues = database.prepare('SELECT * FROM cues WHERE show_id = ? ORDER BY sort_order').all(showId);
       const characters = database.prepare('SELECT * FROM characters WHERE show_id = ?').all(showId);
       const scenes = database.prepare('SELECT * FROM scenes WHERE show_id = ? ORDER BY sort_order').all(showId);
@@ -803,7 +803,7 @@ ipcMain.on('db-generate-caller-pdf', async (event, { showId, label, hideOff, hid
       const { dialog } = require('electron');
       const database = getDb();
       const show = database.prepare('SELECT * FROM shows WHERE id = ?').get(showId);
-      const spots = database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY spot_number').all(showId);
+      const spots = database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY COALESCE(display_order, spot_number * 1000)').all(showId);
       const colorSlotsBySpot = {};
       for (const spot of spots) {
         colorSlotsBySpot[spot.id] = database.prepare('SELECT * FROM color_slots WHERE spot_id = ? ORDER BY is_permanent, slot_number').all(spot.id);
@@ -836,7 +836,7 @@ ipcMain.on('db-generate-caller-pdf', async (event, { showId, label, hideOff, hid
       const show = database.prepare('SELECT * FROM shows WHERE id = ?').get(showId);
       const spots = spotId 
         ? [database.prepare('SELECT * FROM spots WHERE id = ?').get(spotId)]
-        : database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY spot_number').all(showId);
+        : database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY COALESCE(display_order, spot_number * 1000)').all(showId);
       const cues = database.prepare('SELECT * FROM cues WHERE show_id = ? ORDER BY sort_order').all(showId);
       const scenes = database.prepare('SELECT * FROM scenes WHERE show_id = ? ORDER BY sort_order').all(showId);
       const spotCues = database.prepare("SELECT sc.* FROM spot_cues sc JOIN cues c ON sc.cue_id = c.id WHERE c.show_id = ? AND sc.spot_note IS NOT NULL AND sc.spot_note != ''").all(showId);
@@ -976,14 +976,14 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
       const cues = database.prepare('SELECT COUNT(*) as c FROM cues WHERE show_id = ?').get(showId);
       const scenes = database.prepare('SELECT COUNT(*) as c FROM scenes WHERE show_id = ?').get(showId);
       const characters = database.prepare('SELECT COUNT(*) as c FROM characters WHERE show_id = ?').get(showId);
-      const spots = database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY spot_number').all(showId);
+      const spots = database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY COALESCE(display_order, spot_number * 1000)').all(showId);
       event.returnValue = { cues: cues.c, scenes: scenes.c, characters: characters.c, spots };
     } catch(e) { event.returnValue = { cues: 0, scenes: 0, characters: 0, spots: [] }; }
   });
  ipcMain.on('db-get-cue-list', (event, showId) => {
     try {
       const database = getDb();
-      const spots = database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY spot_number').all(showId);
+      const spots = database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY COALESCE(display_order, spot_number * 1000)').all(showId);
       const scenes = database.prepare('SELECT * FROM scenes WHERE show_id = ? ORDER BY sort_order').all(showId);
       const cues = database.prepare(`
         SELECT c.*, s.label as scene_label, s.song as scene_song
@@ -1030,7 +1030,7 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
       const database = getDb();
       const maxTrack = database.prepare('SELECT MAX(track_number) as m FROM cues WHERE show_id = ?').get(showId);
       const trackNum = (maxTrack.m || 0) + 1;
-      const spots = database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY spot_number').all(showId);
+      const spots = database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY COALESCE(display_order, spot_number * 1000)').all(showId);
 
       const allCues = database.prepare('SELECT * FROM cues WHERE show_id = ? ORDER BY sort_order ASC, id ASC').all(showId);
 

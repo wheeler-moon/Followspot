@@ -15,7 +15,8 @@ export default function IrisSizesPanel({ show }) {
   const [newValue, setNewValue] = useState('');
 
   useEffect(() => {
-    const sizes = show.iris_sizes ? JSON.parse(show.iris_sizes) : [];
+    const updated = ipcRenderer.sendSync('db-get-show', show.id);
+    const sizes = updated?.iris_sizes ? JSON.parse(updated.iris_sizes) : [];
     setCustomSizes(sizes);
   }, []);
 

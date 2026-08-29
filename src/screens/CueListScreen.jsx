@@ -238,7 +238,7 @@ function ActionPicker({ value, onChange, onClose, pos }) {
   );
 }
 
-function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqNumber, onDragStart, onDragOver, onDragLeave, onDrop, isDragTarget, onDoubleClick }) {
+function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqNumber, onDragStart, onDragOver, onDragLeave, onDrop, isDragTarget, onDoubleClick, customIrisSizes }) {
   const [showActionPicker, setShowActionPicker] = useState(false);
   const [hoveredFrame, setHoveredFrame] = useState(null);
   const [showCustomTime, setShowCustomTime] = useState(false);
@@ -437,7 +437,7 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
 
 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '3px', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', gap: '3px' }}>
-            {[{label:'FB',value:'Full Body'},{label:'3/4',value:'3/4 Body'},{label:'1/2',value:'1/2 Body'},{label:'H&S',value:'Head & Shoulders'},{label:'Hd',value:'Head'}].map(iris => (
+              {[{label:'FB',value:'Full Body'},{label:'3/4',value:'3/4 Body'},{label:'1/2',value:'1/2 Body'},{label:'H&S',value:'Head & Shoulders'},{label:'Hd',value:'Head'}, ...(customIrisSizes || [])].map(iris => (
               <div key={iris.value}
                 onClick={() => onUpdate(spotCue.id, 'frame_size', spotCue.frame_size === iris.value ? '' : iris.value)}
                 style={{ padding: '2px 6px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: spotCue.frame_size === iris.value ? '#185FA5' : '#1a1a1a', color: spotCue.frame_size === iris.value ? '#fff' : '#444', border: `1px solid ${spotCue.frame_size === iris.value ? '#185FA5' : '#2a2a2a'}` }}>
@@ -539,7 +539,7 @@ function InsertButton({ onInsert }) {
   );
 }
 
-function CueRow({ cue, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal, onCueDoubleClick }) {
+function CueRow({ cue, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal, onCueDoubleClick, customIrisSizes }) {
   const [editingLQ, setEditingLQ] = useState(false);
   const [lqVal, setLqVal] = useState(cue.lq_number || '');
 
@@ -606,6 +606,7 @@ function CueRow({ cue, spots, spotCues, characters, colorSlotsBySpot, scenes, on
                 }
               }}
               isDragTarget={dragTarget?.cue?.id === cue?.id && dragTarget?.spot?.id === spot?.id}
+              customIrisSizes={customIrisSizes}
               onDoubleClick={() => onCueDoubleClick(cue, spot, sc)}
             />
           );
@@ -628,6 +629,7 @@ export default function CueListScreen({ show, navigate }) {
   const [newCharActor, setNewCharActor] = useState('');
   const [selectedSceneId, setSelectedSceneId] = useState(null);
   const scrollRef = useRef(null);
+  const [customIrisSizes, setCustomIrisSizes] = useState([]);
   const [dragSource, setDragSource] = useState(null);
   const [dragTarget, setDragTarget] = useState(null);
   const [showDragModal, setShowDragModal] = useState(false);
@@ -648,6 +650,9 @@ export default function CueListScreen({ show, navigate }) {
       slotsBySpot[spot.id] = Array.isArray(slots) ? slots : [];
     }
     setColorSlotsBySpot(slotsBySpot);
+    const updatedShow = ipcRenderer.sendSync('db-get-show', show.id);
+    const customSizes = updatedShow?.iris_sizes ? JSON.parse(updatedShow.iris_sizes) : [];
+    setCustomIrisSizes(customSizes);
     if (safe.scenes && safe.scenes.length > 0) {
       const savedScene = sessionStorage.getItem(`cueScene_${show.id}`);
       if (savedScene) {
@@ -852,6 +857,7 @@ const groupedCues = () => {
                       dragSource={dragSource} dragTarget={dragTarget}
                       setDragSource={setDragSource} setDragTarget={setDragTarget}
                       setShowDragModal={setShowDragModal}
+                      customIrisSizes={customIrisSizes}
                       onCueDoubleClick={(cue, spot, spotCue) => {
                       setCuePopup({ cue, spot, spotCue });
                        setPopupNote(spotCue?.spot_note || '');
