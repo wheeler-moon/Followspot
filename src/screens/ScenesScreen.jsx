@@ -13,6 +13,7 @@ export default function ScenesScreen({ show, navigate }) {
   const [newActBreak, setNewActBreak] = useState(false);
   const [dragOverId, setDragOverId] = useState(null);
   const dragItem = useRef(null);
+  const labelInputRef = useRef(null);
 
   const load = () => {
     const result = ipcRenderer.sendSync('db-get-scenes', show.id);
@@ -26,6 +27,7 @@ export default function ScenesScreen({ show, navigate }) {
     ipcRenderer.sendSync('db-create-scene', { showId: show.id, label: newLabel, song: newSong, actBreak: newActBreak });
     setNewLabel(''); setNewSong(''); setNewActBreak(false);
     load();
+    setTimeout(() => labelInputRef.current?.focus(), 50);
   };
 
   const startEdit = (scene) => {
@@ -99,7 +101,7 @@ export default function ScenesScreen({ show, navigate }) {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
               <div>
                 <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>Scene label *</div>
-                <input style={{ ...inputStyle, width: '100%' }} value={newLabel}
+                <input ref={labelInputRef} style={{ ...inputStyle, width: '100%' }} value={newLabel}
                   onChange={e => setNewLabel(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addScene()}
                   placeholder="e.g. Scene 1 - The Road" />
