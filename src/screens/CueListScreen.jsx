@@ -801,14 +801,26 @@ const groupedCues = () => {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#0a0a0a' }}>
     <AppHeader title="Cue List" onBack={() => navigate('show', show)} backLabel={show.title}>
         <div style={{ flex: 1 }} />
-        <select value={selectedSceneId || ''} onChange={e => setSelectedSceneId(e.target.value ? parseInt(e.target.value) : null)}
+         <span style={{ fontSize: '12px', color: '#555' }}>Jump to:</span>
+        <select value={selectedSceneId || ''} onChange={e => {
+          const sceneId = e.target.value ? parseInt(e.target.value) : null;
+          setSelectedSceneId(sceneId);
+          if (sceneId && scrollRef.current) {
+            const sceneRow = document.querySelector(`[data-scene-id="${sceneId}"]`);
+            if (sceneRow && scrollRef.current) {
+              const containerTop = scrollRef.current.getBoundingClientRect().top;
+              const rowTop = sceneRow.getBoundingClientRect().top;
+              const offset = rowTop - containerTop;
+              scrollRef.current.scrollBy({ top: offset - 48, behavior: 'smooth' });
+            }
+          }
+        }}
           style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#ccc', padding: '5px 8px', fontSize: '12px', outline: 'none' }}>
-          <option value="">No scene</option>
+          <option value="">Jump to scene...</option>
           {(data?.scenes || []).map(s => <option key={s.id} value={s.id}>{s.label}{s.song ? ' · ' + s.song : ''}</option>)}
         </select>
         <button onClick={() => setShowSceneModal(true)} style={{ padding: '5px 10px', background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#888', fontSize: '12px', cursor: 'pointer' }}>+ Scene</button>
         <button onClick={() => setShowCharModal(true)} style={{ padding: '5px 10px', background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#888', fontSize: '12px', cursor: 'pointer' }}>+ Character</button>
-        <button onClick={addCue} style={{ padding: '6px 14px', background: '#534AB7', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>+ Cue</button>
       </AppHeader>
 
       <div ref={scrollRef} onScroll={() => {
@@ -840,8 +852,8 @@ const groupedCues = () => {
             <tbody>
               {groupedCues().map(group => (
                 <React.Fragment key={group.sceneId || 'unassigned'}>
-                  <tr>
-                    <td colSpan={(data?.spots || []).length + 1} style={{ padding: '5px 12px', background: group.actBreak ? '#1a0a2e' : '#0a1a10', borderTop: `1px solid ${group.actBreak ? '#3a1a5a' : '#1a3a24'}`, borderBottom: `1px solid ${group.actBreak ? '#3a1a5a' : '#1a3a24'}` }}>
+                  <tr data-scene-id={group.sceneId}>
+                    <td colSpan={(data?.spots || []).length + 1} style={{ padding: '5px 12px', background: group.actBreak ? '#1a0a2e' : '#0a1a10',borderTop: `1px solid ${group.actBreak ? '#3a1a5a' : '#1a3a24'}`, borderBottom: `1px solid ${group.actBreak ? '#3a1a5a' : '#1a3a24'}` }}>
                       <span style={{ fontSize: '11px', fontWeight: '600', color: group.actBreak ? '#9060c0' : '#1D9E75', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                         {group.sceneLabel}
                       </span>
