@@ -650,6 +650,11 @@ ipcMain.on('get-app-icon', (event) => {
       }
       database.prepare('INSERT INTO color_slots (spot_id, slot_number, is_permanent, gel_number, gel_name) VALUES (?, NULL, 1, ?, ?)').run(spotId, '', '');
       database.prepare('UPDATE shows SET num_spots = ? WHERE id = ?').run(spotNumber, showId);
+      // Create spot_cue records for all existing cues
+      const existingCues = database.prepare('SELECT * FROM cues WHERE show_id = ?').all(showId);
+      for (const cue of existingCues) {
+        database.prepare('INSERT OR IGNORE INTO spot_cues (cue_id, spot_id, action, character_id, frame_size, intensity, fade_time, active_frames, description, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(cue.id, spotId, 'Off', null, '', '', '', '', '', '');
+      }
       event.returnValue = { success: true };
     } catch(e) { event.returnValue = { success: false }; }
   });
