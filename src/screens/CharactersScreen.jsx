@@ -220,16 +220,16 @@ export default function CharactersScreen({ show, navigate }) {
                         <div style={{ fontSize: '11px', color: '#666', marginBottom: '6px' }}>Photo (optional)</div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div
-                    onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = '#534AB7'; }}
-                    onDragLeave={e => { e.currentTarget.style.borderColor = '#2a2a2a'; }}
-                    onDrop={e => {
-                      e.preventDefault();
+                    onDragEnter={e => { e.preventDefault(); e.stopPropagation(); e.currentTarget.style.borderColor = '#534AB7'; }}
+                    onDragOver={e => { e.preventDefault(); e.stopPropagation(); e.currentTarget.style.borderColor = '#534AB7'; }}
+                    onDragLeave={e => { e.preventDefault(); e.stopPropagation(); e.currentTarget.style.borderColor = '#2a2a2a'; }}
+                    onDrop={e => { 
+                      e.preventDefault(); 
+                      e.stopPropagation();
                       e.currentTarget.style.borderColor = '#2a2a2a';
                       const file = e.dataTransfer.files[0];
-                      if (file && file.type.startsWith('image/')) {
-                        const result = ipcRenderer.sendSync('dialog-get-dropped-path', file.name);
-                        if (result) setEditPhoto(result);
-                      }
+                      console.log('drop fired', file?.path, file?.name);
+                      if (file && file.path) setNewPhoto(file.path);
                     }}
                     style={{ width: '60px', height: '60px', background: '#111', borderRadius: '6px', border: '2px dashed #2a2a2a', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, cursor: 'pointer' }}
                     onClick={() => { const result = ipcRenderer.sendSync('dialog-open-image'); if (result) setEditPhoto(result); }}>

@@ -14,6 +14,10 @@
       }
     </style>
   </head>
+  <script>
+  document.addEventListener('dragover', e => e.preventDefault());
+  document.addEventListener('drop', e => e.preventDefault());
+</script>
   <body>
     <div id="root"></div>
   </body>
