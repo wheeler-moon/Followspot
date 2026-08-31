@@ -793,8 +793,9 @@ ipcMain.on('db-generate-caller-pdf', async (event, { showId, label, hideOff, hid
       if (!filePath) { event.returnValue = { success: false, cancelled: true }; return; }
 
       await generateCallerSheetPDF({
-        show, spots, colorSlotsBySpot, cues, spotCuesBySpot,
-        characters, scenes, label, outputPath: filePath,
+        show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes,
+        label, outputPath: filePath,
+        customActions: show.custom_actions ? JSON.parse(show.custom_actions) : [],
       });
 
       event.returnValue = { success: true, path: filePath };
@@ -966,6 +967,7 @@ ipcMain.on('db-generate-caller-pdf', async (event, { showId, label, hideOff, hid
         show, spot, colorSlots, cues, spotCues, characters, scenes,
         label, numSpots: spots.length, outputPath: filePath,
         hideOff, hideTracked, rangeStart, rangeEnd,
+        customActions: show.custom_actions ? JSON.parse(show.custom_actions) : [],
       });
 
       event.returnValue = { success: true, path: filePath };

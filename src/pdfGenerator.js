@@ -29,9 +29,22 @@ function actionIconSVG(action, size = 28) {
   };
   return icons[action] || `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><circle cx="16" cy="16" r="8" fill="#ccc"/></svg>`;
 }
+function getActionIconHTML(action, size, customActions) {
+  const custom = (customActions || []).find(a => a.name === action);
+  if (custom?.icon) {
+    try {
+      const fs = require('fs');
+      const data = fs.readFileSync(custom.icon);
+      const ext = custom.icon.split('.').pop().toLowerCase();
+      const src = `data:image/${ext};base64,${data.toString('base64')}`;
+      return `<img src="${src}" style="width:${size}px;height:${size}px;object-fit:contain;" />`;
+    } catch(e) {}
+  }
+  return actionIconSVG(action, size);
+}
 
-function buildSpotSheetHTML({ show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, hideOff, hideTracked, rangeStart, rangeEnd }) {
-  const isLandscape = numSpots > 2;
+function buildSpotSheetHTML({ show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, hideOff, hideTracked, rangeStart, rangeEnd, customActions }) {
+  const isLandscape = false;
   let logoHTML = '<div class="header-logo-placeholder">LOGO</div>';
   if (show.logo_path) {
     try {
@@ -134,7 +147,7 @@ const sceneOrderMap = {};
             <table style="width:100%;opacity:0.2;">
               <tr>
                 <td class="action-cell">
-                  ${sc.action ? `<div class="action-inner">${actionIconSVG(sc.action, 34)}<span class="action-name">${sc.action}</span></div>` : ''}
+                  ${sc.action ? `<div class="action-inner">${getActionIconHTML(sc.action, 34, customActions)}<span class="action-name">${sc.action}</span></div>` : ''}
                 </td>
                 <td class="char-cell">${char ? char.name : sc.custom_character ? sc.custom_character : ''}</td>
                 <td class="int-iris-cell">
@@ -155,7 +168,7 @@ const sceneOrderMap = {};
         <td class="action-cell">
           ${sc.action ? `
             <div class="action-inner">
-              ${actionIconSVG(sc.action, 34)}
+              ${getActionIconHTML(sc.action, 34, customActions)}
               <span class="action-name">${sc.action}</span>
             </div>
           ` : '<span class="empty">—</span>'}
@@ -504,8 +517,8 @@ ${logoHTML}
 </html>`;
 }
 
-async function generateSpotSheetPDF({ show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, outputPath, hideOff, hideTracked, rangeStart, rangeEnd }) {
-  const html = buildSpotSheetHTML({ show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, hideOff, hideTracked, rangeStart, rangeEnd });
+async function generateSpotSheetPDF({ show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, outputPath, hideOff, hideTracked, rangeStart, rangeEnd, customActions }) {
+  const html = buildSpotSheetHTML({ show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, hideOff, hideTracked, rangeStart, rangeEnd, customActions });
   const isLandscape = numSpots > 2;
 
   const browser = await puppeteer.launch({ headless: true, executablePath: global.chromiumPath || puppeteer.executablePath() });
@@ -521,7 +534,7 @@ async function generateSpotSheetPDF({ show, spot, colorSlots, cues, spotCues, ch
   await browser.close();
   return outputPath;
 }
-function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label }) {
+function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions }) {
   let logoBase64 = '';
   if (show.logo_path) {
     try {
@@ -619,7 +632,7 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
               <div class="cell-top">
                 <div class="action-char">
                   <div class="action-inner">
-                    ${actionIconSVG(sc.action, 22)}
+                    ${getActionIconHTML(sc.action, 22, customActions)}
                     <span class="action-name">${sc.action || '—'}</span>
                   </div>
                   <div class="char-name">${char ? char.name : sc.custom_character ? sc.custom_character : '—'}</div>
@@ -959,9 +972,9 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
 </html>`;
 }
 
-async function generateCallerSheetPDF({ show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, outputPath }) {
+async function generateCallerSheetPDF({ show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, outputPath, customActions }) {
   const isLandscape = spots.length > 2;
-  const html = buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label });
+  const html = buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions });
 
   const browser = await puppeteer.launch({ headless: true, executablePath: global.chromiumPath || puppeteer.executablePath() });
   const page = await browser.newPage();
