@@ -222,23 +222,22 @@ function ActionIcon({ action, size = 20 }) {
   }
 }
 
-function ActionPicker({ value, onChange, onClose, pos }) {
+function ActionPicker({ value, onChange, onClose, pos, customActions }) {
   return (
     <div style={{ position: 'fixed', top: pos ? pos.top : 0, left: pos ? pos.left : 0, zIndex: 99999, background: '#1a1a1a', border: '1px solid #3a3a3a', borderRadius: '10px', padding: '8px', width: '280px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', marginTop: '4px' }}>
-      {ACTIONS.map(a => (
+      {[...ACTIONS, ...(customActions || []).map(a => ({ name: a.name, short: a.name.substring(0, 4), color: a.color || '#888', icon: a.icon || null }))].map(a => (
         <div key={a.name} onClick={() => { onChange(a); onClose(); }}
           style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', padding: '6px 4px', borderRadius: '6px', cursor: 'pointer', background: value === a.name ? '#2a2a3a' : 'transparent', border: value === a.name ? '1px solid #534AB7' : '1px solid transparent' }}
           onMouseEnter={e => e.currentTarget.style.background = '#2a2a2a'}
           onMouseLeave={e => e.currentTarget.style.background = value === a.name ? '#2a2a3a' : 'transparent'}>
-          <ActionIcon action={a.name} size={28} />
-          <span style={{ fontSize: '11px', color: '#888', textAlign: 'center', lineHeight: 1.2 }}>{a.short}</span>
+          {a.icon ? <img src={(() => { try { const fs = window.require('fs'); const d = fs.readFileSync(a.icon); const ext = a.icon.split('.').pop().toLowerCase(); return `data:image/${ext};base64,${d.toString('base64')}`; } catch(e) { return ''; } })()} style={{ width: 28, height: 28, objectFit: 'contain' }} /> : <ActionIcon action={a.name} size={28} />}
+          <span style={{ fontSize: '10px', color: '#888', textAlign: 'center', lineHeight: 1.2, wordBreak: 'break-word' }}>{a.name}</span>
         </div>
       ))}
     </div>
   );
 }
-
-function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqNumber, onDragStart, onDragOver, onDragLeave, onDrop, isDragTarget, onDoubleClick, customIrisSizes }) {
+function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqNumber, onDragStart, onDragOver, onDragLeave, onDrop, isDragTarget, onDoubleClick, customIrisSizes, customActions }) {
   const [showActionPicker, setShowActionPicker] = useState(false);
   const [hoveredFrame, setHoveredFrame] = useState(null);
   const [showCustomTime, setShowCustomTime] = useState(false);
@@ -274,7 +273,7 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
     </td>
   );
 
-  const actionDef = ACTIONS.find(a => a.name === spotCue.action);
+const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customActions || []).find(a => a.name === spotCue?.action);
   const activeFrames = spotCue.active_frames ? spotCue.active_frames.split(',').filter(Boolean) : [];
 
   const handleActionSelect = (a) => {
@@ -321,7 +320,7 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
             <ActionIcon action="Off" size={16} />
             <span style={{ fontSize: '11px', color: '#444', fontWeight: '500' }}>Off</span>
           </div>
-          {showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} pos={pickerPos} />}
+{showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} pos={pickerPos} customActions={customActions} />}
                     <div style={{ fontSize: '13px', color: '#444', marginTop: '6px', fontStyle: 'italic', textAlign: 'center', fontWeight: '600' }}>spot inactive</div>
         </div>
       </td>
@@ -369,14 +368,26 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
             style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '3px 7px', borderRadius: '5px', background: actionDef ? '#1e1e2e' : '#1a1a1a', border: `1px solid ${actionDef ? actionDef.color + '55' : '#2a2a2a'}`, cursor: 'pointer', flex: 1 }}>
             {spotCue.action ? (
               <>
-                <ActionIcon action={spotCue.action} size={16} />
+                {(() => {
+                  const customAction = (customActions || []).find(a => a.name === spotCue.action);
+                  if (customAction?.icon) {
+                    try {
+                      const fs = window.require('fs');
+                      const d = fs.readFileSync(customAction.icon);
+                      const ext = customAction.icon.split('.').pop().toLowerCase();
+                      const src = `data:image/${ext};base64,${d.toString('base64')}`;
+                      return <img src={src} style={{ width: 16, height: 16, objectFit: 'contain' }} />;
+                    } catch(e) {}
+                  }
+                  return <ActionIcon action={spotCue.action} size={16} />;
+                })()}
                 <span style={{ fontSize: '13px', color: actionDef ? actionDef.color : '#888', fontWeight: '500' }}>{spotCue.action}</span>
               </>
             ) : (
               <span style={{ fontSize: '13px', color: '#333' }}>Select action...</span>
             )}
           </div>
-          {showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} pos={pickerPos} />} 
+{showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} pos={pickerPos} customActions={customActions} />}
         </div>
 
                 {showCustomChar ? (
@@ -539,7 +550,7 @@ function InsertButton({ onInsert }) {
   );
 }
 
-function CueRow({ cue, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal, onCueDoubleClick, customIrisSizes }) {
+function CueRow({ cue, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal, onCueDoubleClick, customIrisSizes, customActions }) {
   const [editingLQ, setEditingLQ] = useState(false);
   const [lqVal, setLqVal] = useState(cue.lq_number || '');
 
@@ -607,6 +618,7 @@ function CueRow({ cue, spots, spotCues, characters, colorSlotsBySpot, scenes, on
               }}
               isDragTarget={dragTarget?.cue?.id === cue?.id && dragTarget?.spot?.id === spot?.id}
               customIrisSizes={customIrisSizes}
+              customActions={customActions}
               onDoubleClick={() => onCueDoubleClick(cue, spot, sc)}
             />
           );
@@ -630,6 +642,7 @@ export default function CueListScreen({ show, navigate }) {
   const [selectedSceneId, setSelectedSceneId] = useState(null);
   const scrollRef = useRef(null);
   const [customIrisSizes, setCustomIrisSizes] = useState([]);
+  const [customActions, setCustomActions] = useState([]);
   const [dragSource, setDragSource] = useState(null);
   const [dragTarget, setDragTarget] = useState(null);
   const [showDragModal, setShowDragModal] = useState(false);
@@ -653,6 +666,8 @@ export default function CueListScreen({ show, navigate }) {
     const updatedShow = ipcRenderer.sendSync('db-get-show', show.id);
     const customSizes = updatedShow?.iris_sizes ? JSON.parse(updatedShow.iris_sizes) : [];
     setCustomIrisSizes(customSizes);
+    const customActionData = updatedShow?.custom_actions ? JSON.parse(updatedShow.custom_actions) : [];
+    setCustomActions(customActionData);
     if (safe.scenes && safe.scenes.length > 0) {
       const savedScene = sessionStorage.getItem(`cueScene_${show.id}`);
       if (savedScene) {
@@ -870,6 +885,7 @@ const groupedCues = () => {
                       setDragSource={setDragSource} setDragTarget={setDragTarget}
                       setShowDragModal={setShowDragModal}
                       customIrisSizes={customIrisSizes}
+                      customActions={customActions}
                       onCueDoubleClick={(cue, spot, spotCue) => {
                       setCuePopup({ cue, spot, spotCue });
                        setPopupNote(spotCue?.spot_note || '');
