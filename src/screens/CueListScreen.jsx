@@ -321,7 +321,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
             <span style={{ fontSize: '11px', color: '#444', fontWeight: '500' }}>Off</span>
           </div>
 {showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} pos={pickerPos} customActions={customActions} />}
-                    <div style={{ fontSize: '13px', color: '#444', marginTop: '6px', fontStyle: 'italic', textAlign: 'center', fontWeight: '600' }}>spot inactive</div>
+          <div style={{ fontSize: '13px', color: '#444', marginTop: '6px', fontStyle: 'italic', textAlign: 'center', fontWeight: '600', pointerEvents: 'none' }}>spot inactive</div>
         </div>
       </td>
     );
@@ -350,9 +350,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
         {spotCue?.spot_note && (
         <div style={{ position: 'absolute', top: '4px', right: '4px', width: '6px', height: '6px', borderRadius: '50%', background: '#C8A000' }} />
       )}
-            {spotCue?.spot_note && (
-        <div style={{ position: 'absolute', top: '4px', right: '4px', width: '6px', height: '6px', borderRadius: '50%', background: '#C8A000' }} />
-      )}
+      {isDragTarget && <div style={{ position: 'absolute', inset: 0, background: 'rgba(83,74,183,0.3)', pointerEvents: 'none', zIndex: 5 }} />}
       <div ref={ref} style={{ position: 'relative', zIndex: showActionPicker ? 9999 : 'auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '5px' }}>
           <div ref={actionBtnRef} onClick={() => {
@@ -602,6 +600,7 @@ function CueRow({ cue, spots, spotCues, characters, colorSlotsBySpot, scenes, on
               onDragOver={(e) => { 
                 e.preventDefault(); 
                 e.stopPropagation();
+                console.log('dragover', spot.spot_number, cue.lq_number);
                 setDragTarget({ spotCue: sc, spot, cue }); 
               }}
               onDragLeave={(e) => { 
