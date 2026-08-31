@@ -1196,7 +1196,7 @@ app.whenReady().then(async () => {
   setupIPC();
  if (app.isPackaged) {
     autoUpdater.setFeedURL({
-      url: `https://update.electronjs.org/wheeler-moon/Followspot/${process.platform}-${process.arch}/${app.getVersion()}`,
+      url: `https://update.electronjs.org/wheeler-moon/Followspot/${process.platform}/${app.getVersion()}`,
     });
     autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
       const { dialog } = require('electron');

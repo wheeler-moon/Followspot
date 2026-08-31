@@ -52,6 +52,8 @@ module.exports = {
       execSync(`xcrun notarytool submit "${zipPath}" --keychain-profile "AC_PASSWORD" --wait`, { stdio: 'inherit' });
       console.log('Stapling...');
       execSync(`xcrun stapler staple "${appPath}"`, { stdio: 'inherit' });
+      console.log('Creating release zip...');
+      execSync(`ditto -c -k --keepParent "${appPath}" "${path.join(options.outputPaths[0], '..', '..', 'make', 'zip', 'darwin', 'arm64', 'SpotPlot-darwin.zip')}"`, { stdio: 'inherit' });
     },
   },
   makers: [
