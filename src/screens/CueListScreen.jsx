@@ -304,7 +304,13 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
 
   if (spotCue.action === 'Off') {
     return (
-      <td style={{ padding: '8px 10px', borderRight: '1px solid #1e1e1e', verticalAlign: 'top', minWidth: '200px', background: '#080808' }}>
+      <td
+        draggable
+        onDragStart={onDragStart}
+        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); onDragOver(e); }}
+        onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) onDragLeave(e); }}
+        onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop(e); }}
+        style={{ padding: '8px 10px', borderRight: '1px solid #1e1e1e', verticalAlign: 'top', minWidth: '200px', background: isDragTarget ? '#1a1a2e' : '#080808', outline: isDragTarget ? '2px solid #534AB7' : 'none', position: 'relative' }}>
         <div ref={ref} style={{ position: 'relative', zIndex: showActionPicker ? 99999 : 'auto' }}>
           <div ref={actionBtnRef} onClick={() => {
             if (actionBtnRef.current) {
@@ -331,9 +337,9 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
     <td
       draggable
       onDragStart={onDragStart}
-      onDragOver={onDragOver}
-      onDragLeave={onDragLeave}
-      onDrop={onDrop}
+      onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); onDragOver(e); }}
+      onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) onDragLeave(e); }}
+      onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop(e); }}
       onDoubleClick={onDoubleClick}
       style={{ 
         padding: '8px 10px', 
