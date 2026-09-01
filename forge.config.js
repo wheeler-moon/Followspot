@@ -31,7 +31,7 @@ module.exports = {
         ext: 'spotplot',
         name: 'SpotPlot Show File',
         description: 'SpotPlot Show File',
-        icon: './src/icons/icons/mac/icon',
+        icon: './src/icons/icons/mac/icon.icns',
         role: 'Editor',
       },
     ],
@@ -54,6 +54,26 @@ module.exports = {
       execSync(`xcrun stapler staple "${appPath}"`, { stdio: 'inherit' });
       console.log('Creating release zip...');
       execSync(`ditto -c -k --keepParent "${appPath}" "${path.join(options.outputPaths[0], '..', '..', 'make', 'zip', 'darwin', 'arm64', 'SpotPlot-darwin.zip')}"`, { stdio: 'inherit' });
+    },
+    postMake: async (forgeConfig, makeResults) => {
+      if (process.platform !== 'darwin') return makeResults;
+      const { execSync } = require('child_process');
+      const path = require('path');
+      const allArtifacts = makeResults.flatMap(r => r.artifacts);
+      const dmgArtifact = allArtifacts.find(a => a.endsWith('.dmg'));
+      if (!dmgArtifact) return makeResults;
+      const appPath = dmgArtifact.replace('/make/SpotPlot.dmg', '/SpotPlot-darwin-arm64/SpotPlot.app');
+      const settingsPath = path.join(__dirname, 'dmgbuild_settings.py');
+      const newDmgPath = dmgArtifact.replace('.dmg', '_licensed.dmg');
+      try {
+        execSync(`dmgbuild -s "${settingsPath}" -D app="${appPath}" "SpotPlot" "${newDmgPath}"`, { stdio: 'inherit' });
+        const fs = require('fs');
+        fs.renameSync(newDmgPath, dmgArtifact);
+        console.log('License added to DMG successfully');
+      } catch(e) {
+        console.warn('Could not add license to DMG:', e.message);
+      }
+      return makeResults;
     },
   },
   makers: [
