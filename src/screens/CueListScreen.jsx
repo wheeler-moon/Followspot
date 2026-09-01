@@ -535,6 +535,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
 
 function InsertButton({ onInsert }) {
   const [hover, setHover] = useState(false);
+  const insertRef = useRef(false);
   return (
     <tr style={{ height: hover ? '24px' : '4px', transition: 'height 0.1s' }}>
       <td colSpan={99}
@@ -542,7 +543,13 @@ function InsertButton({ onInsert }) {
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}>
         {hover ? (
-          <div onClick={onInsert}
+          <div onClick={e => { 
+            e.stopPropagation(); 
+            if (insertRef.current) return;
+            insertRef.current = true;
+            onInsert();
+            setTimeout(() => { insertRef.current = false; }, 500);
+          }}
             style={{ fontSize: '10px', color: '#534AB7', cursor: 'pointer', padding: '2px 6px', background: '#1a1a2a', borderRadius: '3px', display: 'inline-block', position: 'relative', zIndex: 1 }}>
             + insert cue here
           </div>

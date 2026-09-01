@@ -48,6 +48,17 @@ const startEdit = () => {
     });
     setEditing(true);
   };
+    useEffect(() => {
+    const { ipcRenderer } = window.require('electron');
+    ipcRenderer.on('menu-export-show', () => {
+      const result = ipcRenderer.sendSync('db-export-show', show.id);
+      if (result.success) alert('Show exported successfully!');
+      else if (!result.cancelled) alert('Export failed: ' + result.error);
+    });
+    return () => {
+      ipcRenderer.removeAllListeners('menu-export-show');
+    };
+  }, []);
 
   const saveEdit = () => {
     setSaving(true);

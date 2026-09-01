@@ -1161,8 +1161,9 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
   });
 }
 
+let mainWindow;
 const createWindow = () => {
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
     title: 'SpotPlot',
@@ -1194,6 +1195,83 @@ mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) 
 app.whenReady().then(async () => {
   getDb();
   setupIPC();
+    getDb();
+
+  const { Menu, shell } = require('electron');
+  const template = [
+    {
+      label: 'SpotPlot',
+      submenu: [
+        { label: 'About SpotPlot', role: 'about' },
+        { type: 'separator' },
+        { label: 'Check for Updates...', click: () => { if (app.isPackaged) autoUpdater.checkForUpdates(); } },
+        { type: 'separator' },
+        { label: 'Hide SpotPlot', role: 'hide' },
+        { label: 'Hide Others', role: 'hideOthers' },
+        { label: 'Show All', role: 'unhide' },
+        { type: 'separator' },
+        { label: 'Quit SpotPlot', role: 'quit' },
+      ],
+    },
+    {
+      label: 'File',
+      submenu: [
+        { label: 'New Show', accelerator: 'CmdOrCtrl+N', click: () => { mainWindow.webContents.send('menu-new-show'); } },
+        { label: 'Export Show', accelerator: 'CmdOrCtrl+E', click: () => { mainWindow.webContents.send('menu-export-show'); } },
+        { label: 'Import Show', accelerator: 'CmdOrCtrl+I', click: () => { mainWindow.webContents.send('menu-import-show'); } },
+        { type: 'separator' },
+        { label: 'Close Window', role: 'close' },
+      ],
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        { label: 'Undo', accelerator: 'CmdOrCtrl+Z', role: 'undo' },
+        { label: 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', role: 'redo' },
+        { type: 'separator' },
+        { label: 'Cut', role: 'cut' },
+        { label: 'Copy', role: 'copy' },
+        { label: 'Paste', role: 'paste' },
+        { label: 'Select All', role: 'selectAll' },
+        { type: 'separator' },
+        { label: 'Add Cue', accelerator: 'CmdOrCtrl+=', click: () => { mainWindow.webContents.send('menu-add-cue'); } },
+      ],
+    },
+    {
+      label: 'View',
+      submenu: [
+        ...(!app.isPackaged ? [
+          { label: 'Reload', role: 'reload' },
+          { label: 'Toggle Developer Tools', role: 'toggleDevTools' },
+          { type: 'separator' },
+        ] : []),
+        { label: 'Actual Size', role: 'resetZoom' },
+        { label: 'Zoom In', role: 'zoomIn' },
+        { label: 'Zoom Out', role: 'zoomOut' },
+        { type: 'separator' },
+        { label: 'Toggle Full Screen', role: 'togglefullscreen' },
+      ],
+    },
+    {
+      label: 'Window',
+      submenu: [
+        { label: 'Minimize', role: 'minimize' },
+        { label: 'Zoom', role: 'zoom' },
+        { type: 'separator' },
+        { label: 'Bring All to Front', role: 'front' },
+      ],
+    },
+    {
+      label: 'Help',
+      submenu: [
+        { label: 'SpotPlot Website', click: () => { shell.openExternal('https://wheelermoon.com'); } },
+        { label: 'Contact Support', click: () => { shell.openExternal('mailto:wheeler@wheelermoon.com'); } },
+      ],
+    },
+  ];
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
  if (app.isPackaged) {
     autoUpdater.setFeedURL({
       url: `https://update.electronjs.org/wheeler-moon/Followspot/${process.platform}/${app.getVersion()}`,

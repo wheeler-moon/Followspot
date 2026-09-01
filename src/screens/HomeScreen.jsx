@@ -23,6 +23,18 @@ export default function HomeScreen({ navigate }) {
     const result = ipcRenderer.sendSync('db-get-shows');
     if (result) setShows(result);
   }, []);
+    useEffect(() => {
+    const { ipcRenderer } = window.require('electron');
+    ipcRenderer.on('menu-new-show', () => navigate('new-show'));
+    ipcRenderer.on('menu-import-show', () => {
+      const result = ipcRenderer.sendSync('db-import-show');
+      if (result.success) load();
+    });
+    return () => {
+      ipcRenderer.removeAllListeners('menu-new-show');
+      ipcRenderer.removeAllListeners('menu-import-show');
+    };
+  }, []);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
@@ -119,7 +131,7 @@ export default function HomeScreen({ navigate }) {
                 <div style={{ fontSize: '11px', fontWeight: '600', color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>About SpotPlot</div>
                 <div style={{ background: '#111', borderRadius: '10px', padding: '16px' }}>
                   {[
-                    ['Version', 'Beta 0.1.5'],
+                    ['Version', 'Beta 0.1.4'],
                     ['Built for', 'Broadway & theatre professionals'],
                     ['Support', 'wheeler@wheelermoon.com'],
                   ].map(([label, value]) => (
