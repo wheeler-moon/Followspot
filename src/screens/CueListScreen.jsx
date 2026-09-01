@@ -698,6 +698,25 @@ export default function CueListScreen({ show, navigate }) {
 
   useEffect(() => { load(); }, []);
 
+    const dataRef = useRef(data);
+  useEffect(() => { dataRef.current = data; }, [data]);
+
+  useEffect(() => {
+    const handler = () => {
+      const cues = dataRef.current?.cues || [];
+      if (cues.length > 0) {
+        const lastCue = [...cues].sort((a, b) => a.sort_order - b.sort_order)[cues.length - 1];
+        insertCueAfter(lastCue.id, lastCue.scene_id);
+      } else {
+        addCue();
+      }
+    };
+    ipcRenderer.on('menu-add-cue', handler);
+    return () => {
+      ipcRenderer.removeListener('menu-add-cue', handler);
+    };
+  }, []);
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
