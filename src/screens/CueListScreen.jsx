@@ -176,7 +176,7 @@ const ACTIONS = [
   { name: 'Iris/Fade Up', short: 'Iris/Fade Up', color: '#534AB7', intensityDefault: null, timeDefault: null },
   { name: 'Iris/Fade Down', short: 'Iris/Fade Dn', color: '#534AB7', intensityDefault: null, timeDefault: null },
   { name: 'Iris/Fade Out', short: 'Iris/Fade Out', color: '#534AB7', intensityDefault: 'Out', timeDefault: null },
-  { name: 'Up & Out', short: 'Up & Out', color: '#854F0B', intensityDefault: 'Out', timeDefault: null },
+  { name: 'Up & Out', short: 'Up & Out', color: '#854F0B', intensityDefault: 'Full', timeDefault: null },
   { name: 'Bump Color', short: 'Bump Color', color: '#854F0B', intensityDefault: null, timeDefault: '0' },
   { name: 'Roll Color', short: 'Roll Color', color: '#854F0B', intensityDefault: null, timeDefault: null },
   { name: 'Ballyhoo', short: 'Ballyhoo', color: '#D85A30', intensityDefault: null, timeDefault: null },

@@ -52,7 +52,7 @@ function buildSpotSheetHTML({ show, spot, colorSlots, cues, spotCues, characters
       const ext = show.logo_path.split('.').pop().toLowerCase();
       const mimeType = ext === 'png' ? 'image/png' : ext === 'svg' ? 'image/svg+xml' : 'image/jpeg';
       const base64 = logoData.toString('base64');
-      logoHTML = `<img src="data:${mimeType};base64,${base64}" style="width:64px;height:64px;object-fit:contain;border-radius:8px;flex-shrink:0;align-self:center;" />`;
+      logoHTML = `<img src="data:${mimeType};base64,${base64}" style="width:64px;height:64px;object-fit:contain;border-radius:8px;flex-shrink:0;align-self:flex-start;" />`;
     } catch(e) {
       console.error('Could not load logo:', e);
     }
@@ -208,7 +208,7 @@ const sceneOrderMap = {};
 
   .header {
     display: flex;
-    align-items: stretch;
+    align-items: flex-start;
     gap: 14px;
     margin-bottom: 14px;
     padding-bottom: 12px;
@@ -226,14 +226,14 @@ const sceneOrderMap = {};
     font-size: 8pt;
     color: #999;
     flex-shrink: 0;
-    align-self: center;
+    align-self: flex-start;
   }
 
   .header-main {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 2px;
   }
 
   .show-title {
@@ -289,7 +289,6 @@ const sceneOrderMap = {};
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    justify-content: space-between;
     flex-shrink: 0;
   }
 
@@ -320,6 +319,8 @@ const sceneOrderMap = {};
     border-radius: 5px;
     padding: 3px 7px;
     min-width: 46px;
+    max-width: 80px;
+    overflow: hidden;
   }
 
   .gel-slot.perm {
@@ -346,6 +347,9 @@ const sceneOrderMap = {};
     color: #555;
     text-align: center;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 74px;
   }
 
   table {
@@ -466,35 +470,37 @@ const sceneOrderMap = {};
 </head>
 <body>
 <div class="header">
-${logoHTML}
-<div class="header-main">
-      <div class="show-title">${show.title}</div>
-      <div class="header-team">
-        ${[
-          show.designer ? `LD: ${show.designer}` : '',
-          show.associate_ld ? `Assoc: ${show.associate_ld}` : '',
-          show.assistant_ld ? `Asst: ${show.assistant_ld}` : '',
-        ].filter(Boolean).join(' &nbsp;·&nbsp; ')}
+  ${logoHTML}
+  <div class="header-main">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;">
+      <div class="show-title" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;">${show.title}</div>
+      <div class="header-right" style="flex-shrink:0;">
+        <div class="print-label">${label || 'Spot Sheet'}</div>
+        <div class="print-date">${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
       </div>
-      <div class="spot-card">
+    </div>
+    <div class="header-team" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;">
+      ${[
+        show.designer ? `LD: ${show.designer}` : '',
+        show.associate_ld ? `Assoc: ${show.associate_ld}` : '',
+        show.assistant_ld ? `Asst: ${show.assistant_ld}` : '',
+      ].filter(Boolean).join(' &nbsp;·&nbsp; ')}
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="spot-card" style="flex-shrink:0;">
         <div class="spot-number">SPOT ${spot.spot_number}</div>
         <div class="spot-details">
           <div class="spot-operator">${spot.operator_name || 'Operator TBD'}</div>
           <div class="spot-meta">${[spot.location, spot.fixture_type].filter(Boolean).join(' · ')}</div>
         </div>
       </div>
-    </div>
-    <div class="header-right">
-      <div>
-        <div class="print-label">${label || 'Spot Sheet'}</div>
-        <div class="print-date">${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
-      </div>
-      <div class="gel-frames">
+      <div class="gel-frames" style="flex:1;flex-wrap:nowrap;overflow:hidden;">
         ${gelFramesHTML}
         ${permHTML}
       </div>
     </div>
   </div>
+</div>
 
   <table>
     <thead>
@@ -567,7 +573,6 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
       <div class="gel-slot">
         <span class="gel-label">F${slot.slot_number}</span>
         <span class="gel-num">${slot.gel_number || '—'}</span>
-        <span class="gel-name">${slot.gel_name || 'Empty'}</span>
       </div>
     `).join('');
     return `
@@ -629,20 +634,16 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
           <td class="spot-cell" style="${cellStyle}position:relative;">
             ${isIgnored ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14pt;font-weight:900;color:#1a1a1a;letter-spacing:0.2em;z-index:2;">— IGNORE —</div>` : ''}
             <div style="${isIgnored ? 'opacity:0.2;' : ''}">
-              <div class="cell-top">
-                <div class="action-char">
-                  <div class="action-inner">
-                    ${getActionIconHTML(sc.action, 22, customActions)}
-                    <span class="action-name">${sc.action || '—'}</span>
-                  </div>
-                  <div class="char-name">${char ? char.name : sc.custom_character ? sc.custom_character : '—'}</div>
-                </div>
-                <div class="intensity-badge">${sc.intensity || ''}</div>
+              <div class="action-inner" style="margin-bottom:3px;align-items:center;">
+                ${getActionIconHTML(sc.action, 30, customActions)}
+                <span class="action-name">${sc.action || '—'}</span>
+                <span class="char-name" style="margin-left:4px;">${char ? char.name : sc.custom_character ? sc.custom_character : '—'}</span>
+                <div class="intensity-badge" style="margin-left:auto;">${sc.intensity ? `<span style="font-size:11pt;font-weight:400;color:#666;">@</span>${sc.intensity}` : ''}</div>
               </div>
-              <div class="cue-details">
-                ${sc.frame_size ? `<span class="detail-badge iris">${sc.frame_size}</span>` : ''}
-                ${sc.no_color ? `<span class="detail-badge color">NC</span>` : activeFrames ? `<span class="detail-badge color">${activeFrames}</span>` : ''}
-                ${sc.fade_time ? `<span class="detail-badge time">${sc.fade_time}s</span>` : ''}
+              <div class="cue-details" style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:2px;">
+                ${sc.frame_size ? `<span class="detail-badge iris" style="padding:1px 5px;">${sc.frame_size}</span>` : ''}
+                ${sc.no_color ? `<span class="detail-badge color" style="padding:1px 5px;">NC</span>` : activeFrames ? `<span class="detail-badge color" style="padding:1px 5px;">${activeFrames}</span>` : ''}
+                ${sc.fade_time ? `<span class="detail-badge time" style="padding:1px 5px;">${sc.fade_time}s</span>` : ''}
               </div>
               ${sc.description ? `<div class="when-text">${sc.description}</div>` : ''}
               ${sc.notes ? `<div class="notes-text">${sc.notes}</div>` : ''}
@@ -685,7 +686,7 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
 
   .header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
     margin-bottom: 8px;
     padding-bottom: 8px;
@@ -698,6 +699,7 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
     object-fit: contain;
     border-radius: 6px;
     flex-shrink: 0;
+    align-self: flex-start;
   }
 
   .header-logo-placeholder {
@@ -772,20 +774,29 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
   tbody tr:nth-child(even) { background: #f8f8f8; }
 
   .lq-cell {
-    font-size: 20pt;
+    font-size: 13pt;
     font-weight: 900;
     color: #1a1a1a;
-    width: 48px;
+    width: 56px;
+    min-width: 56px;
+    max-width: 56px;
     padding: 8px 4px;
     vertical-align: middle;
     text-align: center;
     border-right: 2px solid #1a1a1a;
+    white-space: nowrap;
+    overflow: hidden;
   }
 
   .spot-cell {
     padding: 8px 10px;
     vertical-align: top;
     border-left: 2px solid #ddd;
+  }
+
+  tr.cue-row {
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 
   .off-cell {
@@ -821,30 +832,35 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
   .action-inner {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     margin-bottom: 2px;
   }
 
   .action-name {
-    font-size: 13pt;
+    font-size: 11pt;
     font-weight: 800;
     color: #1a1a1a;
+    line-height: 1;
   }
 
   .char-name {
-    font-size: 16pt;
+    font-size: 13pt;
     font-weight: 900;
     color: #1a1a1a;
-    line-height: 1.1;
+    line-height: 1;
+    vertical-align: middle;
   }
 
   .intensity-badge {
-    font-size: 18pt;
+    font-size: 16pt;
     font-weight: 900;
     color: #1a1a1a;
     white-space: nowrap;
     padding-left: 4px;
     line-height: 1;
+    display: flex;
+    align-items: center;
+    gap: 2px;
   }
 
   .cue-details {
@@ -940,7 +956,7 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
     ${show.logo_path ? `<img class="header-logo" src="${logoBase64}" />` : `<div class="header-logo-placeholder"></div>`}
     <div class="header-main">
       <div class="show-title">${show.title}</div>
-      <div class="header-team">
+      <div class="header-team" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
         ${[
           show.designer ? `LD: ${show.designer}` : '',
           show.associate_ld ? `Assoc: ${show.associate_ld}` : '',
