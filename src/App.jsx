@@ -77,7 +77,13 @@ export default function App() {
   }
 
   if (licenseStatus === 'expired') {
-    return <ExpiredScreen onRetry={checkLicense} />;
+    return <ExpiredScreen 
+      onRetry={checkLicense} 
+      onNewLicense={() => {
+        localStorage.removeItem('spotplot_license');
+        setLicenseStatus('unlicensed');
+      }} 
+    />;
   }
 
   return (
