@@ -28,7 +28,10 @@ export default function HomeScreen({ navigate }) {
     ipcRenderer.on('menu-new-show', () => navigate('new-show'));
     ipcRenderer.on('menu-import-show', () => {
       const result = ipcRenderer.sendSync('db-import-show');
-      if (result.success) load();
+      if (result.success) {
+        const shows = ipcRenderer.sendSync('db-get-shows');
+        if (shows) setShows(shows);
+      }
     });
     return () => {
       ipcRenderer.removeAllListeners('menu-new-show');

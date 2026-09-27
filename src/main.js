@@ -494,7 +494,6 @@ function setupIPC() {
             let logoBase64 = null;
       if (show.logo_path) {
         try {
-          const fs = require('fs');
           const logoData = fs.readFileSync(show.logo_path);
           const ext = show.logo_path.split('.').pop().toLowerCase();
           logoBase64 = { data: logoData.toString('base64'), ext };
