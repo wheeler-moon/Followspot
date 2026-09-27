@@ -1,0 +1,65 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## What this is
+
+**SpotPlot**: a macOS desktop app (Electron + React) for theatrical followspot paperwork. A lighting designer builds a show's spots, color frames (gels), scenes, characters and a cue list, then prints spot sheets, caller sheets, color load sheets and spot notes as PDFs. It's sold with license keys. The repo/folder is named "followspot"; the product name everywhere user-facing is "SpotPlot".
+
+The owner is a lighting designer, not a professional developer, and built the app through conversations with Claude. Explain changes in plain terms and keep them focused.
+
+## Commands
+
+```bash
+npm start          # dev run (electron-forge start, DevTools open automatically)
+npm run make       # signed + notarized DMG and release zip (macOS, needs signing setup below)
+```
+
+There are no tests and no linter (`npm run lint` is a no-op). To verify a change, run the app.
+
+## Architecture
+
+- **`src/main.js`**: Electron main process. Owns everything with side effects: the SQLite database, all IPC handlers, file dialogs, PDF generation, menu bar, auto-updater and Chromium setup.
+- **`src/App.jsx`**: renderer root. Gates on license status, then does screen routing through a `screen` string in state plus `navigate(dest, show)`. There is no router library. Screens live in `src/screens/`, and show-settings sub-panels are in `src/screens/settings/`.
+- **`src/pdfGenerator.js`**: builds each PDF as an HTML string (`build*HTML`) and renders it with Puppeteer (`generate*PDF`). PDF layout changes happen in these HTML/CSS template strings.
+- **`src/license.js`**: activation/validation against `https://spotplot-server.onrender.com` (a separate server, not in this repo). The result is cached in `localStorage` under `spotplot_license` and trusted for 7 days, and it falls back to the cache when offline.
+
+### IPC pattern (important)
+
+`nodeIntegration: true`, `contextIsolation: false`, so renderer code calls `window.require('electron').ipcRenderer` directly and `preload.js` is empty. Almost every call is **synchronous**: the renderer calls `ipcRenderer.sendSync('db-…', args)` and the handler in `main.js` sets `event.returnValue`. Even the async handlers (PDF export, show export/import) end by setting `event.returnValue`. To add a feature, add an `ipcMain.on('db-…')` handler inside `setupIPC()` and call it with `sendSync` from the screen.
+
+Main → renderer messages come from the menu bar: `menu-new-show`, `menu-export-show`, `menu-import-show`, `menu-add-cue` (Cmd+=). Screens subscribe with `ipcRenderer.on` and must remove the listener on unmount. `setupIPC()` must only run once, because running it twice caused double cue inserts.
+
+### Data model
+
+The SQLite file lives at `app.getPath('userData')/followspot.db`, with the schema in `initSchema()` in `main.js`. Core relations:
+
+- `shows` → `spots` → `color_slots` (gel frames per spot; `is_permanent` marks permanent frames)
+- `shows` → `scenes`, `characters`, `cues` (ordered by `sort_order`)
+- `spot_cues`: one row per (cue, spot), holding what that spot does in that cue (action, character, frame size, intensity, fade, highlight, notes, …). Adding a spot to a show with existing cues creates "Off" `spot_cues` rows for every cue, and new cues get rows for every spot.
+- `gels`: gel catalog, seeded by `seedGels()`.
+- `shows.iris_sizes` and `shows.custom_actions` are **JSON strings**. Parse them before use.
+
+**Migrations**: new columns are added as `try { db.exec('ALTER TABLE … ADD COLUMN …') } catch(e) {}` lines at the end of `initSchema()`, which fail silently if the column already exists. Follow this pattern and never edit the `CREATE TABLE` statements alone, because existing users' databases won't pick those up. `db-update-show` only writes columns in its `allowed` whitelist, so add new show fields there too.
+
+**Show files** (`.spotplot`): JSON exports of all of a show's rows plus a base64 logo (`db-export-show` / `db-import-show`). Import remaps IDs. If you add a table or a foreign-key column, update both export and import.
+
+## Build, signing and release
+
+- `forge.config.js` signs with the owner's Developer ID and notarizes with the keychain profile `AC_PASSWORD`. The `postPackage` hook re-signs, notarizes, staples and writes `make/zip/darwin/arm64/SpotPlot-darwin.zip`. The `postMake` hook rebuilds the DMG with `dmgbuild` (Python) and `dmgbuild_settings.py` to embed the EULA (`LICENSE.rtf`/`LICENSE.txt`).
+- PDFs need Chromium. The packaged app bundles "Google Chrome for Testing.app" from a **hard-coded** version path under `~/.cache/puppeteer` in `forge.config.js` `extraResource`. If Puppeteer is upgraded, that path must be updated or the build breaks. In dev, `main.js` downloads Chromium if it's missing. The path is passed through `global.chromiumPath`.
+- Auto-update uses `update.electronjs.org` against the GitHub repo `wheeler-moon/Followspot` (public). It only runs when `app.isPackaged`.
+- Build output (`out/`, `make/`, `.webpack/`, `*.zip`, `*.dmg`) is gitignored.
+
+**Release steps:**
+1. Bump the version in `package.json` **and** the hard-coded display string in `src/screens/HomeScreen.jsx` (currently `'Beta 0.2.0'`).
+2. `npm run make`
+3. Create a GitHub Release tagged `vX.X.X` and upload the DMG plus `make/zip/darwin/arm64/SpotPlot-darwin.zip`. That's the one the postPackage hook writes, at the **project root** `make/`. `out/make/zip/darwin/arm64/SpotPlot-darwin.zip` is a stale leftover from an older hook, so don't upload it.
+
+## Secrets
+
+The GitHub repo is public. Never put the license-server admin password, license keys, or signing credentials in any committed file (including this one). The license server (`spotplot-server.onrender.com`, admin UI at `/admin`) is a separate project.
+
+## Roadmap
+
+The to-do list and roadmap live in `TODO.md`. Check it when starting new work and tick items off when they're done.
