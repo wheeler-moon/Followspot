@@ -11,6 +11,10 @@ Current version: Beta 0.2.0
 - [ ] PDF preview before export
 - [ ] Onboarding walkthrough for new users (tooltip-style popups on first launch)
 - [ ] Update default fixture types list in Spot Settings
+- [ ] Cue list: make "w/ LQ" a toggle that stays linked to the cue's LQ number, so renumbering the cue updates it automatically (no re-pressing the button)
+- [x] Cue list: don't show the hover "insert cue" button on the last cue, since the permanent add button at the bottom covers it
+- [ ] Cue list: iris sizes and gel frames get crowded with custom iris sizes and as spots are added; make that area less cramped
+- [ ] Spot Settings: option to copy Spot 1's colors (gel frames) to the other spots, so identical color loads don't have to be typed for each spot
 
 ## Print / paperwork
 - [ ] Caller sheet design v2: easier to read, more compact

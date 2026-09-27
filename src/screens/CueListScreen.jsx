@@ -561,7 +561,7 @@ function InsertButton({ onInsert }) {
   );
 }
 
-function CueRow({ cue, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal, onCueDoubleClick, customIrisSizes, customActions }) {
+function CueRow({ cue, isLastCue, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal, onCueDoubleClick, customIrisSizes, customActions }) {
   const [editingLQ, setEditingLQ] = useState(false);
   const [lqVal, setLqVal] = useState(cue.lq_number || '');
 
@@ -636,7 +636,7 @@ function CueRow({ cue, spots, spotCues, characters, colorSlotsBySpot, scenes, on
           );
         })}
       </tr>
-      <InsertButton onInsert={() => onInsertAfter(cue.id, cue.scene_id)} />
+      {!isLastCue && <InsertButton onInsert={() => onInsertAfter(cue.id, cue.scene_id)} />}
     </>
   );
 }
@@ -896,7 +896,7 @@ const groupedCues = () => {
               </tr>
             </thead>
             <tbody>
-              {groupedCues().map(group => (
+              {groupedCues().map((group, groupIndex, groups) => (
                 <React.Fragment key={group.sceneId || 'unassigned'}>
                   <tr data-scene-id={group.sceneId}>
                     <td colSpan={(data?.spots || []).length + 1} style={{ padding: '5px 12px', background: group.actBreak ? '#1a0a2e' : '#0a1a10',borderTop: `1px solid ${group.actBreak ? '#3a1a5a' : '#1a3a24'}`, borderBottom: `1px solid ${group.actBreak ? '#3a1a5a' : '#1a3a24'}` }}>
@@ -906,8 +906,10 @@ const groupedCues = () => {
                       {group.sceneSong && <span style={{ fontSize: '11px', color: group.actBreak ? '#6040a0' : '#0F6E56', marginLeft: '8px' }}>· {group.sceneSong}</span>}
                     </td>
                   </tr>
-                  {group.cues.map(cue => (
-                    <CueRow key={cue.id} cue={cue} spots={data?.spots || []}
+                  {group.cues.map((cue, cueIndex) => (
+                    <CueRow key={cue.id} cue={cue}
+                      isLastCue={groupIndex === groups.length - 1 && cueIndex === group.cues.length - 1}
+                      spots={data?.spots || []}
                       spotCues={data?.spotCues || []} characters={characters}
                       colorSlotsBySpot={colorSlotsBySpot} scenes={data?.scenes || []}
                       onUpdateCue={updateCue} onUpdateSpotCue={updateSpotCue}
