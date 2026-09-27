@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AppHeader from '../components/AppHeader';
-const { ipcRenderer } = window.require('electron');
+const { ipcRenderer, webUtils } = window.require('electron');
+const getDroppedImagePath = (e) => {
+  const file = e.dataTransfer.files[0];
+  if (!file || !file.type.startsWith('image/')) return null;
+  return webUtils.getPathForFile(file) || null;
+};
 const getImageSrc = (path) => {
   if (!path) return null;
   try {
@@ -148,11 +153,8 @@ export default function CharactersScreen({ show, navigate }) {
                   onDrop={e => {
                     e.preventDefault();
                     e.currentTarget.style.borderColor = '#2a2a2a';
-                    const file = e.dataTransfer.files[0];
-                    if (file && file.type.startsWith('image/')) {
-                      const result = ipcRenderer.sendSync('dialog-get-dropped-path', file.name);
-                      if (result) setNewPhoto(result);
-                    }
+                    const droppedPath = getDroppedImagePath(e);
+                    if (droppedPath) setNewPhoto(droppedPath);
                   }}
                   style={{ width: '70px', height: '70px', background: '#111', borderRadius: '8px', border: '2px dashed #2a2a2a', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, transition: 'border-color 0.15s', cursor: 'pointer' }}
                   onClick={() => { const result = ipcRenderer.sendSync('dialog-open-image'); if (result) setNewPhoto(result); }}>
@@ -227,9 +229,8 @@ export default function CharactersScreen({ show, navigate }) {
                       e.preventDefault(); 
                       e.stopPropagation();
                       e.currentTarget.style.borderColor = '#2a2a2a';
-                      const file = e.dataTransfer.files[0];
-                      console.log('drop fired', file?.path, file?.name);
-                      if (file && file.path) setNewPhoto(file.path);
+                      const droppedPath = getDroppedImagePath(e);
+                      if (droppedPath) setEditPhoto(droppedPath);
                     }}
                     style={{ width: '60px', height: '60px', background: '#111', borderRadius: '6px', border: '2px dashed #2a2a2a', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, cursor: 'pointer' }}
                     onClick={() => { const result = ipcRenderer.sendSync('dialog-open-image'); if (result) setEditPhoto(result); }}>

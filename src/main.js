@@ -707,15 +707,6 @@ ipcMain.on('get-app-icon', (event) => {
       event.returnValue = { success: true };
     } catch(e) { event.returnValue = { success: false }; }
   });
-  ipcMain.on('dialog-get-dropped-path', (event, fileName) => {
-    const { dialog } = require('electron');
-    const result = dialog.showOpenDialogSync({
-      properties: ['openFile'],
-      filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'svg', 'gif'] }],
-      message: `Select the image file: ${fileName}`,
-    });
-    event.returnValue = result ? result[0] : null;
-  });
   ipcMain.on('db-update-character', (event, { characterId, name, actorName, costumeNotes, photoPath }) => {
     try {
       getDb().prepare('UPDATE characters SET name = ?, actor_name = ?, costume_notes = ?, photo_path = ? WHERE id = ?').run(name, actorName || '', costumeNotes || '', photoPath || '', characterId);
