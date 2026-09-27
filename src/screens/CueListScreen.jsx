@@ -282,6 +282,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
       onUpdate(spotCue.id, 'intensity', '');
       onUpdate(spotCue.id, 'fade_time', '');
       onUpdate(spotCue.id, 'description', '');
+      onUpdate(spotCue.id, 'with_lq', 0);
       onUpdate(spotCue.id, 'notes', '');
       setShowActionPicker(false);
       return;
@@ -297,10 +298,8 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
     onUpdate(spotCue.id, 'active_frames', next.join(','));
   };
 
-  const handleWLQ = () => {
-    if (!lqNumber || !lqNumber.trim()) return;
-    onUpdate(spotCue.id, 'description', 'w/ LQ ' + lqNumber);
-  };
+  const withLQ = !!spotCue.with_lq;
+  const toggleWLQ = () => onUpdate(spotCue.id, 'with_lq', withLQ ? 0 : 1);
 
   if (spotCue.action === 'Off') {
     return (
@@ -510,16 +509,23 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
         </div>
 
         <div style={{ display: 'flex', gap: '4px', alignItems: 'center', marginBottom: '3px' }}>
+          {withLQ && (
+            <span style={{ fontSize: '12px', color: '#f0f0f0', whiteSpace: 'nowrap', padding: '2px 0' }}>
+              w/ LQ {lqNumber || '?'}
+            </span>
+          )}
           <input defaultValue={spotCue.description || ''}
             onBlur={e => onUpdate(spotCue.id, 'description', e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); }}
-            placeholder="When..."
+            placeholder={withLQ ? '' : 'When...'}
             style={{ flex: 1, background: 'transparent', border: 'none', borderBottom: '1px solid #1e1e1e', color: '#888', padding: '2px 0', fontSize: '12px', outline: 'none' }} />
-          <div onClick={handleWLQ} title="Auto-fill w/ LQ number"
-            style={{ fontSize: '9px', color: '#534AB7', cursor: 'pointer', padding: '2px 6px', borderRadius: '3px', border: '1px solid #534AB7', whiteSpace: 'nowrap', lineHeight: 1.3, fontWeight: '700' }}
-            onMouseEnter={e => { e.currentTarget.style.background = '#534AB7'; e.currentTarget.style.color = '#fff'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#534AB7'; }}>
-            w/LQ
+          <div onClick={toggleWLQ} role="switch" aria-checked={withLQ}
+            title={withLQ ? 'Linked to this cue\'s LQ number — click to unlink' : 'Link to this cue\'s LQ number'}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', flexShrink: 0 }}>
+            <div style={{ width: '32px', height: '18px', borderRadius: '9px', background: withLQ ? '#534AB7' : '#2a2a2a', position: 'relative', transition: 'background 0.15s' }}>
+              <div style={{ position: 'absolute', top: '2px', left: withLQ ? '16px' : '2px', width: '14px', height: '14px', borderRadius: '50%', background: withLQ ? '#fff' : '#666', transition: 'left 0.15s' }} />
+            </div>
+            <span style={{ fontSize: '11px', fontWeight: '700', color: withLQ ? '#8a82e0' : '#555', whiteSpace: 'nowrap' }}>w/LQ</span>
           </div>
         </div>
 
@@ -1064,7 +1070,7 @@ const groupedCues = () => {
                   <button onClick={async () => {
                     const srcData = { ...dragSource.spotCue };
                     const tgtData = dragTarget.spotCue ? { ...dragTarget.spotCue } : {};
-                    const fields = ['action','character_id','custom_character','frame_size','intensity','fade_time','active_frames','description','notes','no_color'];
+                    const fields = ['action','character_id','custom_character','frame_size','intensity','fade_time','active_frames','description','with_lq','notes','no_color'];
 
                     const swapUndoEntries = [];
                     if (dragSource.spotCue) {
@@ -1114,7 +1120,7 @@ const groupedCues = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <button onClick={() => {
                     const srcData = { ...dragSource.spotCue };
-                    const fields = ['action','character_id','frame_size','intensity','fade_time','active_frames','description','notes'];
+                    const fields = ['action','character_id','frame_size','intensity','fade_time','active_frames','description','with_lq','notes'];
                     if (dragTarget.spotCue) {
                       fields.forEach(f => updateSpotCue(dragTarget.spotCue.id, f, srcData[f] || ''));
                     } else {
@@ -1130,7 +1136,7 @@ const groupedCues = () => {
                   </button>
                   <button onClick={() => {
                     const srcData = { ...dragSource.spotCue };
-                    const fields = ['action','frame_size','intensity','fade_time','active_frames','description','notes'];
+                    const fields = ['action','frame_size','intensity','fade_time','active_frames','description','with_lq','notes'];
                     if (dragTarget.spotCue) {
                       fields.forEach(f => updateSpotCue(dragTarget.spotCue.id, f, srcData[f] || ''));
                     } else {

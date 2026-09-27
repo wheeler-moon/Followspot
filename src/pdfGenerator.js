@@ -3,6 +3,12 @@ const fs = require('fs');
 const path = require('path');
 const { app } = require('electron');
 
+// "When" text; a linked w/LQ always shows the cue's current LQ number
+function whenText(sc, cue) {
+  if (!sc.with_lq) return sc.description || '';
+  return ['w/ LQ', cue.lq_number, sc.description].filter(Boolean).join(' ');
+}
+
 function actionIconSVG(action, size = 28) {
   const s = size;
   const icons = {
@@ -156,7 +162,7 @@ const sceneOrderMap = {};
                 </td>
                 <td class="frames-cell">${sc.no_color ? 'NC' : (activeFrames || '')}</td>
                 <td class="time-cell">${sc.fade_time ? sc.fade_time + 's' : ''}</td>
-                <td class="when-cell">${sc.description || ''}</td>
+                <td class="when-cell">${whenText(sc, cue)}</td>
                 <td class="notes-cell">${sc.notes || ''}</td>
               </tr>
             </table>
@@ -180,7 +186,7 @@ const sceneOrderMap = {};
         </td>
         <td class="frames-cell">${sc.no_color ? 'NC' : (activeFrames || '—')}</td>
         <td class="time-cell">${sc.fade_time ? sc.fade_time + 's' : '—'}</td>
-        <td class="when-cell">${sc.description || ''}</td>
+        <td class="when-cell">${whenText(sc, cue)}</td>
         <td class="notes-cell">${sc.notes || ''}</td>
         `}
       </tr>
@@ -645,7 +651,7 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
                 ${sc.no_color ? `<span class="detail-badge color" style="padding:1px 5px;">NC</span>` : activeFrames ? `<span class="detail-badge color" style="padding:1px 5px;">${activeFrames}</span>` : ''}
                 ${sc.fade_time ? `<span class="detail-badge time" style="padding:1px 5px;">${sc.fade_time}s</span>` : ''}
               </div>
-              ${sc.description ? `<div class="when-text">${sc.description}</div>` : ''}
+              ${whenText(sc, cue) ? `<div class="when-text">${whenText(sc, cue)}</div>` : ''}
               ${sc.notes ? `<div class="notes-text">${sc.notes}</div>` : ''}
             </div>
           </td>

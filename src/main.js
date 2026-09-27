@@ -122,6 +122,17 @@ function initSchema() {
   try { db.exec("ALTER TABLE shows ADD COLUMN iris_sizes TEXT DEFAULT NULL"); } catch(e) {}
   try { db.exec('ALTER TABLE spots ADD COLUMN display_order INTEGER DEFAULT NULL'); } catch(e) {}
   try { db.exec('ALTER TABLE shows ADD COLUMN custom_actions TEXT DEFAULT NULL'); } catch(e) {}
+  try {
+    db.exec('ALTER TABLE spot_cues ADD COLUMN with_lq INTEGER DEFAULT 0');
+    // One-time: link "When" text that the old w/LQ button typed in for the cue's current number,
+    // keeping any words after the number as the extra text
+    db.exec(`
+      UPDATE spot_cues SET with_lq = 1,
+        description = TRIM(SUBSTR(description, LENGTH('w/ LQ ' || (SELECT lq_number FROM cues WHERE cues.id = spot_cues.cue_id)) + 1))
+      WHERE description = 'w/ LQ ' || (SELECT lq_number FROM cues WHERE cues.id = spot_cues.cue_id)
+         OR SUBSTR(description, 1, LENGTH('w/ LQ ' || (SELECT lq_number FROM cues WHERE cues.id = spot_cues.cue_id)) + 1) = 'w/ LQ ' || (SELECT lq_number FROM cues WHERE cues.id = spot_cues.cue_id) || ' '
+    `);
+  } catch(e) {}
 }
 
 function seedGels() {
@@ -562,7 +573,7 @@ function setupIPC() {
         const newCueId = cueIdMap[sc.cue_id];
         const newSpotId = spotIdMap[sc.spot_id];
         const newCharId = charIdMap[sc.character_id] || null;
-        if (newCueId && newSpotId) database.prepare('INSERT INTO spot_cues (cue_id, spot_id, action, character_id, frame_size, intensity, fade_time, active_frames, description, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(newCueId, newSpotId, sc.action, newCharId, sc.frame_size, sc.intensity, sc.fade_time, sc.active_frames, sc.description, sc.notes);
+        if (newCueId && newSpotId) database.prepare('INSERT INTO spot_cues (cue_id, spot_id, action, character_id, frame_size, intensity, fade_time, active_frames, description, notes, with_lq) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(newCueId, newSpotId, sc.action, newCharId, sc.frame_size, sc.intensity, sc.fade_time, sc.active_frames, sc.description, sc.notes, sc.with_lq ? 1 : 0);
       }
       event.returnValue = { success: true, showId: newShowId };
     } catch(e) {
