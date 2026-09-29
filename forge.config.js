@@ -16,6 +16,8 @@ module.exports = {
       'hardened-runtime': true,
       entitlements: 'entitlements.plist',
       'entitlements-inherit': 'entitlements.plist',
+      // Stop the build on a signing error instead of carrying on unsigned and failing later at notarization
+      continueOnError: false,
     },
     osxNotarize: {
       tool: 'notarytool',
