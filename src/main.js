@@ -135,6 +135,16 @@ function initSchema() {
          OR SUBSTR(description, 1, LENGTH('w/ LQ ' || (SELECT lq_number FROM cues WHERE cues.id = spot_cues.cue_id)) + 1) = 'w/ LQ ' || (SELECT lq_number FROM cues WHERE cues.id = spot_cues.cue_id) || ' '
     `);
   } catch(e) {}
+  // One-time: When/Notes became formatted text (HTML with <b>/<i>/<u>). Escape & < > in existing
+  // plain text so it still shows exactly as typed.
+  if (db.pragma('user_version', { simple: true }) < 1) {
+    db.transaction(() => {
+      for (const col of ['description', 'notes']) {
+        db.exec(`UPDATE spot_cues SET ${col} = REPLACE(REPLACE(REPLACE(${col}, '&', '&amp;'), '<', '&lt;'), '>', '&gt;') WHERE ${col} LIKE '%&%' OR ${col} LIKE '%<%' OR ${col} LIKE '%>%'`);
+      }
+      db.pragma('user_version = 1');
+    })();
+  }
 }
 
 function seedGels() {

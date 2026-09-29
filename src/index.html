@@ -13,6 +13,7 @@
         overflow: hidden;
       }
       .no-scrollbar::-webkit-scrollbar { display: none; }
+      .rich-line:empty::before { content: attr(data-placeholder); color: #444; pointer-events: none; }
     </style>
   </head>
   <script>

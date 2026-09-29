@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AppHeader from '../components/AppHeader';
+import RichLine from '../components/RichLine';
 const { ipcRenderer } = window.require('electron');
 const GEL_COLORS = {
   // ROSCO ROSCOLUX
@@ -564,11 +565,10 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
               w/ LQ {lqNumber || '?'}
             </span>
           )}
-          <input defaultValue={spotCue.description || ''}
-            onBlur={e => onUpdate(spotCue.id, 'description', e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); }}
+          <RichLine value={spotCue.description}
+            onSave={html => onUpdate(spotCue.id, 'description', html)}
             placeholder={withLQ ? '' : 'When...'}
-            style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', borderBottom: '1px solid #1e1e1e', color: '#888', padding: '2px 0', fontSize: '12px', outline: 'none' }} />
+            style={{ flex: 1, minWidth: 0, borderBottom: '1px solid #1e1e1e', color: '#888', padding: '2px 0', fontSize: '12px' }} />
           </div>
           <div onClick={toggleWLQ} role="switch" aria-checked={withLQ}
             title={withLQ ? 'Linked to this cue\'s LQ number — click to unlink' : 'Link to this cue\'s LQ number'}
@@ -580,11 +580,10 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
           </div>
         </div>
 
-        <input defaultValue={spotCue.notes || ''}
-          onBlur={e => onUpdate(spotCue.id, 'notes', e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); }}
+        <RichLine value={spotCue.notes}
+          onSave={html => onUpdate(spotCue.id, 'notes', html)}
           placeholder="Notes..."
-          style={{ width: '100%', boxSizing: 'border-box', background: 'transparent', border: 'none', borderBottom: '1px solid #1e1e1e', borderRadius: '4px', color: '#666', padding: '2px 0', fontSize: '12px', outline: 'none', fontStyle: 'italic', ...lineHighlightStyle(spotCue.notes_highlight) }} />
+          style={{ borderBottom: '1px solid #1e1e1e', borderRadius: '4px', color: '#888', padding: '2px 0', fontSize: '12px', ...lineHighlightStyle(spotCue.notes_highlight) }} />
       </div>
     </td>
   );
@@ -955,7 +954,7 @@ const groupedCues = () => {
               <tr style={{ background: '#141414', borderBottom: '1px solid #2a2a2a' }}>
                 <th style={{ padding: '8px', textAlign: 'left', fontSize: '10px', color: '#444', fontWeight: '600', width: '90px', borderRight: '1px solid #1e1e1e' }}>CUE</th>
                 {(data?.spots || []).map(spot => (
-                  <th key={spot.id} style={{ padding: '8px 10px', textAlign: 'left', borderRight: '1px solid #1e1e1e', minWidth: '260px' }}>
+                  <th key={spot.id} style={{ padding: '8px 10px', textAlign: 'left', borderRight: '1px solid #1e1e1e', minWidth: '260px', width: `${100 / (data?.spots || []).length}%` }}>
                     <div style={{ fontSize: '13px', color: '#534AB7', fontWeight: '800' }}>SPOT {spot.spot_number}</div>
                     {spot.operator_name && <div style={{ fontSize: '12px', color: '#888', fontWeight: '500', marginTop: '1px' }}>{spot.operator_name}</div>}
                   </th>

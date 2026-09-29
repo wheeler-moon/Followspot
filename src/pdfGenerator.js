@@ -2,6 +2,7 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
 const { app } = require('electron');
+const { safeRich, escapeText } = require('./richText');
 
 // Background for a highlighted When or Notes line
 function lineHighlightCSS(color) {
@@ -12,8 +13,9 @@ function lineHighlightCSS(color) {
 
 // "When" text; a linked w/LQ always shows the cue's current LQ number
 function whenText(sc, cue) {
-  if (!sc.with_lq) return sc.description || '';
-  return ['w/ LQ', cue.lq_number, sc.description].filter(Boolean).join(' ');
+  const desc = safeRich(sc.description);
+  if (!sc.with_lq) return desc;
+  return ['w/ LQ', escapeText(cue.lq_number), desc].filter(Boolean).join(' ');
 }
 
 function actionIconSVG(action, size = 28) {
@@ -170,7 +172,7 @@ const sceneOrderMap = {};
                 <td class="frames-cell">${sc.no_color ? 'NC' : (activeFrames || '')}</td>
                 <td class="time-cell">${sc.fade_time ? sc.fade_time + 's' : ''}</td>
                 <td class="when-cell" style="${lineHighlightCSS(sc.when_highlight)}">${whenText(sc, cue)}</td>
-                <td class="notes-cell" style="${lineHighlightCSS(sc.notes_highlight)}">${sc.notes || ''}</td>
+                <td class="notes-cell" style="${lineHighlightCSS(sc.notes_highlight)}">${safeRich(sc.notes)}</td>
               </tr>
             </table>
             <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20pt;font-weight:900;color:#1a1a1a;letter-spacing:0.3em;">— IGNORE —</div>
@@ -194,7 +196,7 @@ const sceneOrderMap = {};
         <td class="frames-cell">${sc.no_color ? 'NC' : (activeFrames || '—')}</td>
         <td class="time-cell">${sc.fade_time ? sc.fade_time + 's' : '—'}</td>
         <td class="when-cell" style="${lineHighlightCSS(sc.when_highlight)}">${whenText(sc, cue)}</td>
-        <td class="notes-cell" style="${lineHighlightCSS(sc.notes_highlight)}">${sc.notes || ''}</td>
+        <td class="notes-cell" style="${lineHighlightCSS(sc.notes_highlight)}">${safeRich(sc.notes)}</td>
         `}
       </tr>
     `;
@@ -659,7 +661,7 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
                 ${sc.fade_time ? `<span class="detail-badge time" style="padding:1px 5px;">${sc.fade_time}s</span>` : ''}
               </div>
               ${whenText(sc, cue) ? `<div class="when-text" style="${lineHighlightCSS(sc.when_highlight)}${sc.when_highlight ? 'padding:0 3px;' : ''}">${whenText(sc, cue)}</div>` : ''}
-              ${sc.notes ? `<div class="notes-text" style="${lineHighlightCSS(sc.notes_highlight)}${sc.notes_highlight ? 'padding:0 3px;' : ''}">${sc.notes}</div>` : ''}
+              ${safeRich(sc.notes) ? `<div class="notes-text" style="${lineHighlightCSS(sc.notes_highlight)}${sc.notes_highlight ? 'padding:0 3px;' : ''}">${safeRich(sc.notes)}</div>` : ''}
             </div>
           </td>
         `;

@@ -8,7 +8,7 @@ Current version: Beta 0.2.0
 - [x] Characters screen: dropping an image onto the photo box opens a file picker instead of using the dropped file
 
 ## App features
-- [ ] Bold/italic/underline in when/notes fields (Cmd+B, Cmd+I, Cmd+U)
+- [x] Bold/italic/underline in when/notes fields (Cmd+B, Cmd+I, Cmd+U)
 - [ ] PDF preview before export
 - [ ] Onboarding walkthrough for new users (tooltip-style popups on first launch)
 - [ ] Update default fixture types list in Spot Settings
