@@ -14,7 +14,7 @@ Current version: Beta 0.2.0
 - [ ] Update default fixture types list in Spot Settings
 - [x] Cue list: make "w/ LQ" a toggle that stays linked to the cue's LQ number, so renumbering the cue updates it automatically (no re-pressing the button)
 - [x] Cue list: don't show the hover "insert cue" button on the last cue, since the permanent add button at the bottom covers it
-- [ ] Cue list: iris sizes and gel frames get crowded with custom iris sizes and as spots are added; make that area less cramped
+- [x] Cue list: iris sizes and gel frames get crowded with custom iris sizes and as spots are added; make that area less cramped
 - [x] Show Settings: swap all cue data between two spots for the entire cue list with one button (e.g. Spot 1 ⇄ Spot 2)
 - [x] Cue popup (double-click): more flexible highlighting, e.g. highlight just the notes instead of the whole cue cell
 - [x] Cue list cells: put action and character on the same row (same behavior as now), and make both much bigger and easier to read

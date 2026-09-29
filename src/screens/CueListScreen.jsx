@@ -240,6 +240,57 @@ function ActionPicker({ value, onChange, onClose, pos, customActions }) {
     </div>
   );
 }
+// Iris chips in a sideways-scrolling strip; edges fade and an arrow appears when more sizes are hidden
+function IrisStrip({ sizes, selected, onPick }) {
+  const ref = useRef();
+  const [more, setMore] = useState({ left: false, right: false });
+
+  const measure = () => {
+    const el = ref.current;
+    if (!el) return;
+    setMore({ left: el.scrollLeft > 1, right: el.scrollLeft + el.clientWidth < el.scrollWidth - 1 });
+  };
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    // Start with the chosen size in view
+    const chip = el.querySelector('[data-selected="true"]');
+    if (chip && (chip.offsetLeft + chip.offsetWidth > el.clientWidth)) el.scrollLeft = chip.offsetLeft - 8;
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [sizes.length]);
+
+  const fade = `linear-gradient(to right, ${more.left ? 'transparent' : '#000'} 0, #000 ${more.left ? '16px' : '0'}, #000 calc(100% - ${more.right ? '16px' : '0px'}), ${more.right ? 'transparent' : '#000'} 100%)`;
+
+  return (
+    <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '2px' }}>
+      {/* Absolutely positioned so the chips never widen the table column; they scroll inside it instead */}
+      <div style={{ flex: 1, minWidth: 0, position: 'relative', height: '20px' }}>
+      <div ref={ref} className="no-scrollbar" onScroll={measure}
+        onWheel={e => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) ref.current.scrollLeft += e.deltaY; }}
+        style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', gap: '3px', overflowX: 'auto', scrollBehavior: 'smooth', WebkitMaskImage: fade, maskImage: fade }}>
+        {sizes.map(iris => {
+          const isSel = selected === iris.value;
+          return (
+            <div key={iris.value} data-selected={isSel} onClick={() => onPick(iris.value)} title={iris.value}
+              style={{ flexShrink: 0, padding: '2px 6px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap', background: isSel ? '#185FA5' : '#1a1a1a', color: isSel ? '#fff' : '#444', border: `1px solid ${isSel ? '#185FA5' : '#2a2a2a'}` }}>
+              {iris.label}
+            </div>
+          );
+        })}
+      </div>
+      </div>
+      {more.right && (
+        <div onClick={() => { ref.current.scrollLeft += 80; }} title="More iris sizes"
+          style={{ flexShrink: 0, fontSize: '13px', fontWeight: '700', color: '#8A82E0', cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}>›</div>
+      )}
+    </div>
+  );
+}
+
 function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqNumber, onDragStart, onDragOver, onDragLeave, onDrop, isDragTarget, onDoubleClick, customIrisSizes, customActions }) {
   const [showActionPicker, setShowActionPicker] = useState(false);
   const [hoveredFrame, setHoveredFrame] = useState(null);
@@ -453,17 +504,11 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
           </div>
         </div>
 
-<div style={{ display: 'flex', alignItems: 'center', marginBottom: '3px', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', gap: '3px' }}>
-              {[{label:'FB',value:'Full Body'},{label:'3/4',value:'3/4 Body'},{label:'1/2',value:'1/2 Body'},{label:'H&S',value:'Head & Shoulders'},{label:'Hd',value:'Head'}, ...(customIrisSizes || [])].map(iris => (
-              <div key={iris.value}
-                onClick={() => onUpdate(spotCue.id, 'frame_size', spotCue.frame_size === iris.value ? '' : iris.value)}
-                style={{ padding: '2px 6px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: spotCue.frame_size === iris.value ? '#185FA5' : '#1a1a1a', color: spotCue.frame_size === iris.value ? '#fff' : '#444', border: `1px solid ${spotCue.frame_size === iris.value ? '#185FA5' : '#2a2a2a'}` }}>
-                {iris.label}
-              </div>
-            ))}
-          </div>
-          <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
+<div style={{ display: 'flex', alignItems: 'center', marginBottom: '3px', gap: '8px' }}>
+          <IrisStrip sizes={[{label:'FB',value:'Full Body'},{label:'3/4',value:'3/4 Body'},{label:'1/2',value:'1/2 Body'},{label:'H&S',value:'Head & Shoulders'},{label:'Hd',value:'Head'}, ...(customIrisSizes || [])]}
+            selected={spotCue.frame_size}
+            onPick={value => onUpdate(spotCue.id, 'frame_size', spotCue.frame_size === value ? '' : value)} />
+          <div style={{ display: 'flex', gap: '3px', alignItems: 'center', flexShrink: 0 }}>
             <div
               onClick={() => {
                 const isNC = spotCue.no_color === 1;

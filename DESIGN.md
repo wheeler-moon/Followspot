@@ -62,7 +62,7 @@ For highlight **backgrounds**, use the color at 15% opacity (for example `rgba(2
 
 ## Typography
 
-The font is SF Pro through `font-family: -apple-system, BlinkMacSystemFont, sans-serif` (already set in `src/index.css`). "Emphasized" means weight 600 (semibold), or 700 where the table says Bold.
+The font is SF Pro through `font-family: -apple-system, BlinkMacSystemFont, sans-serif` (already set in the `<style>` block of `src/index.html`; `src/index.css` is not loaded). "Emphasized" means weight 600 (semibold), or 700 where the table says Bold.
 
 | Style | Size / line height | Weight (default → emphasized) | SpotPlot use |
 |---|---|---|---|
