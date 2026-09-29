@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('node:path');
 const Database = require('better-sqlite3');
+const { exportShow, importShow } = require('./showFile');
 const { buildSpotSheetHTML, buildCallerSheetHTML, buildColorLoadHTML, buildSpotNotesHTML, buildCharactersHTML, renderPDF, PAGE_MARGINS } = require('./pdfGenerator');
 
 if (require('electron-squirrel-startup')) app.quit();
@@ -530,58 +531,8 @@ function seedGels() {
 
 // Imports a .spotplot file as a new show (all or nothing). Returns { showId, title }.
 function importShowFile(filePath) {
-  const fs = require('fs');
-  const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-  const database = getDb();
-  let newShowId;
-  database.transaction(() => {
-    const insertShow = database.prepare(`INSERT INTO shows (title, theatre, producer, designer, associate_ld, assistant_ld, production_electrician, programmer, num_spots) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`);
-    const showResult = insertShow.run(data.show.title + ' (imported)', data.show.theatre, data.show.producer, data.show.designer, data.show.associate_ld, data.show.assistant_ld, data.show.production_electrician, data.show.programmer, data.show.num_spots);
-    newShowId = showResult.lastInsertRowid;
-    if (data.logoBase64) {
-      try {
-        const logoDir = require('path').join(app.getPath('userData'), 'logos');
-        if (!fs.existsSync(logoDir)) fs.mkdirSync(logoDir, { recursive: true });
-        const logoPath = require('path').join(logoDir, `show_${newShowId}.${data.logoBase64.ext}`);
-        fs.writeFileSync(logoPath, Buffer.from(data.logoBase64.data, 'base64'));
-        database.prepare('UPDATE shows SET logo_path = ? WHERE id = ?').run(logoPath, newShowId);
-      } catch(e) {
-        console.error('Logo restore error:', e);
-      }
-    }
-    const spotIdMap = {};
-    for (const spot of data.spots) {
-      const r = database.prepare('INSERT INTO spots (show_id, spot_number, operator_name, fixture_type, location) VALUES (?, ?, ?, ?, ?)').run(newShowId, spot.spot_number, spot.operator_name, spot.fixture_type, spot.location);
-      spotIdMap[spot.id] = r.lastInsertRowid;
-    }
-    for (const slot of data.colorSlots) {
-      const newSpotId = spotIdMap[slot.spot_id];
-      if (newSpotId) database.prepare('INSERT INTO color_slots (spot_id, slot_number, is_permanent, gel_number, gel_name) VALUES (?, ?, ?, ?, ?)').run(newSpotId, slot.slot_number, slot.is_permanent, slot.gel_number, slot.gel_name);
-    }
-    const sceneIdMap = {};
-    for (const scene of data.scenes) {
-      const r = database.prepare('INSERT INTO scenes (show_id, label, song, act_break, sort_order) VALUES (?, ?, ?, ?, ?)').run(newShowId, scene.label, scene.song, scene.act_break, scene.sort_order);
-      sceneIdMap[scene.id] = r.lastInsertRowid;
-    }
-    const charIdMap = {};
-    for (const char of data.characters) {
-      const r = database.prepare('INSERT INTO characters (show_id, name, actor_name, costume_notes, sort_order) VALUES (?, ?, ?, ?, ?)').run(newShowId, char.name, char.actor_name, char.costume_notes, char.sort_order);
-      charIdMap[char.id] = r.lastInsertRowid;
-    }
-    const cueIdMap = {};
-    for (const cue of data.cues) {
-      const newSceneId = sceneIdMap[cue.scene_id] || null;
-      const r = database.prepare('INSERT INTO cues (show_id, lq_number, track_number, scene_id, sort_order, caller_notes, rehearsal_notes) VALUES (?, ?, ?, ?, ?, ?, ?)').run(newShowId, cue.lq_number, cue.track_number, newSceneId, cue.sort_order, cue.caller_notes, cue.rehearsal_notes);
-      cueIdMap[cue.id] = r.lastInsertRowid;
-    }
-    for (const sc of data.spotCues) {
-      const newCueId = cueIdMap[sc.cue_id];
-      const newSpotId = spotIdMap[sc.spot_id];
-      const newCharId = charIdMap[sc.character_id] || null;
-      if (newCueId && newSpotId) database.prepare('INSERT INTO spot_cues (cue_id, spot_id, action, character_id, frame_size, intensity, fade_time, active_frames, description, notes, with_lq) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(newCueId, newSpotId, sc.action, newCharId, sc.frame_size, sc.intensity, sc.fade_time, sc.active_frames, sc.description, sc.notes, sc.with_lq ? 1 : 0);
-    }
-  })();
-  return { showId: newShowId, title: data.show.title + ' (imported)' };
+  const data = JSON.parse(require('fs').readFileSync(filePath, 'utf8'));
+  return importShow(getDb(), data, { imagesDir: imagesDir() });
 }
 
 // Double-clicking a .spotplot file in Finder: import it and tell the user
@@ -709,30 +660,13 @@ function setupIPC() {
   ipcMain.on('db-export-show', async (event, showId) => {
     try {
       const { dialog } = require('electron');
-      const database = getDb();
-      const show = database.prepare('SELECT * FROM shows WHERE id = ?').get(showId);
-      const spots = database.prepare('SELECT * FROM spots WHERE show_id = ?').all(showId);
-      const colorSlots = database.prepare('SELECT * FROM color_slots WHERE spot_id IN (SELECT id FROM spots WHERE show_id =?)').all(showId);
-      const scenes = database.prepare('SELECT * FROM scenes WHERE show_id = ? ORDER BY sort_order').all(showId);
-      const characters = database.prepare('SELECT * FROM characters WHERE show_id = ? ORDER BY sort_order').all(showId);
-      const cues = database.prepare('SELECT * FROM cues WHERE show_id = ? ORDER BY sort_order').all(showId);
-      const spotCues = database.prepare('SELECT sc.* FROM spot_cues sc JOIN cues c ON sc.cue_id = c.id WHERE c.show_id = ?').all(showId);
+      const data = exportShow(getDb(), showId);
       const { filePath } = await dialog.showSaveDialog({
-        defaultPath: `${show.title}.spotplot`,
+        defaultPath: `${data.show.title}.spotplot`,
         filters: [{ name: 'SpotPlot Show', extensions: ['spotplot'] }],
       });
       if (!filePath) { event.returnValue = { success: false, cancelled: true }; return; }
-      const fs = require('fs');
-            let logoBase64 = null;
-      if (show.logo_path) {
-        try {
-          const logoData = fs.readFileSync(show.logo_path);
-          const ext = show.logo_path.split('.').pop().toLowerCase();
-          logoBase64 = { data: logoData.toString('base64'), ext };
-        } catch(e) {}
-      }
-      const exportData = { version: '1.0', exported_at: new Date().toISOString(), show, spots, colorSlots, scenes, characters, cues, spotCues, logoBase64 };
-      fs.writeFileSync(filePath, JSON.stringify(exportData, null, 2));
+      require('fs').writeFileSync(filePath, JSON.stringify(data, null, 2));
       event.returnValue = { success: true, path: filePath };
     } catch(e) {
       console.error('Export error:', e);

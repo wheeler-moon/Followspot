@@ -3,17 +3,17 @@
 Current version: Beta 0.2.0
 
 ## Next release checklist
-- [ ] Before building: fix show import dropping per-cell data (see Bugs)
-- [ ] Before building: include character photos in `.spotplot` exports and restore them on import (see Bugs)
+- [x] Before building: fix show import dropping per-cell data (see Bugs)
+- [x] Before building: include character photos in `.spotplot` exports and restore them on import (see Bugs)
 - [ ] After installing the new build: `.spotplot` files show the SpotPlot icon in Finder
 - [ ] After installing the new build: double-clicking a `.spotplot` file opens SpotPlot and imports the show
 - [ ] After installing the new build: File → Import Show (Cmd+I) still works
 
 ## Bugs
 - [ ] `.spotplot` file icon not showing the SpotPlot logo in Finder — *fix in forge.config.js (Info.plist document type); verify after the next build*
-- [ ] **Fix before next release.** Show import drops per-cell data: highlights, spot notes, no-color, ignore, note-checked and custom character names are lost when importing a `.spotplot` file (import INSERT in `db-import-show` only copies some `spot_cues` columns)
+- [x] **Fix before next release.** Show import drops per-cell data: highlights, spot notes, no-color, ignore, note-checked and custom character names are lost when importing a `.spotplot` file (import INSERT in `db-import-show` only copies some `spot_cues` columns)
 - [x] Characters screen: dropping an image onto the photo box opens a file picker instead of using the dropped file
-- [ ] `.spotplot` exports only carry the show logo, not character photos (or custom action icons), so a shared show arrives without cast photos. Embed them in the export like the logo and save them into `userData/images` on import.
+- [x] `.spotplot` exports only carry the show logo, not character photos (or custom action icons), so a shared show arrives without cast photos. Embed them in the export like the logo and save them into `userData/images` on import.
 - [ ] Dev only: `npm start` downloads a fresh Chrome for Testing ("Downloading Chromium...") whenever Chrome updates, because `main.js` asks for the latest stable instead of the version Puppeteer expects. ~4 GB of duplicate copies have piled up in `~/.cache/puppeteer`. Pin dev to one version (the one `forge.config.js` bundles), then delete the extra copies. Doesn't affect installed builds.
 
 ## App features

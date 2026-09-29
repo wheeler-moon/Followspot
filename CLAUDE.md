@@ -42,7 +42,7 @@ The SQLite file lives at `app.getPath('userData')/followspot.db`, with the schem
 
 **Migrations**: new columns are added as `try { db.exec('ALTER TABLE … ADD COLUMN …') } catch(e) {}` lines at the end of `initSchema()`, which fail silently if the column already exists. Follow this pattern and never edit the `CREATE TABLE` statements alone, because existing users' databases won't pick those up. `db-update-show` only writes columns in its `allowed` whitelist, so add new show fields there too.
 
-**Show files** (`.spotplot`): JSON exports of all of a show's rows plus a base64 logo (`db-export-show` / `db-import-show`). Import remaps IDs. If you add a table or a foreign-key column, update both export and import.
+**Show files** (`.spotplot`): handled in `src/showFile.js`. Export writes every row of the show (`SELECT *`) plus every image it uses (logo, character photos, custom action icons) as base64. Import inserts every column the local table has, so new plain columns need no changes; it remaps ids and links, and restores images into `userData/images`. If you add a **table**, a **foreign-key column** or a new **image path**, update `showFile.js`. Images the user adds are always copied into `userData/images` (`storeImageCopy` in `main.js`).
 
 ## Build, signing and release
 
