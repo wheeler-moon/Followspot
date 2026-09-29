@@ -33,9 +33,15 @@ export default function HomeScreen({ navigate }) {
         if (shows) setShows(shows);
       }
     });
+    // A .spotplot file was double-clicked in Finder and imported
+    ipcRenderer.on('show-imported', () => {
+      const shows = ipcRenderer.sendSync('db-get-shows');
+      if (shows) setShows(shows);
+    });
     return () => {
       ipcRenderer.removeAllListeners('menu-new-show');
       ipcRenderer.removeAllListeners('menu-import-show');
+      ipcRenderer.removeAllListeners('show-imported');
     };
   }, []);
 

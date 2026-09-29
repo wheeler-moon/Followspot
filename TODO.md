@@ -2,6 +2,12 @@
 
 Current version: Beta 0.2.0
 
+## Next release checklist
+- [ ] Before building: fix show import dropping per-cell data (see Bugs)
+- [ ] After installing the new build: `.spotplot` files show the SpotPlot icon in Finder
+- [ ] After installing the new build: double-clicking a `.spotplot` file opens SpotPlot and imports the show
+- [ ] After installing the new build: File → Import Show (Cmd+I) still works
+
 ## Bugs
 - [ ] `.spotplot` file icon not showing the SpotPlot logo in Finder — *fix in forge.config.js (Info.plist document type); verify after the next build*
 - [ ] **Fix before next release.** Show import drops per-cell data: highlights, spot notes, no-color, ignore, note-checked and custom character names are lost when importing a `.spotplot` file (import INSERT in `db-import-show` only copies some `spot_cues` columns)
