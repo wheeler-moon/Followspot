@@ -4,7 +4,7 @@ Current version: Beta 0.2.0
 
 ## Bugs
 - [ ] `.spotplot` file icon not showing the SpotPlot logo in Finder
-- [ ] Show import drops per-cell data: highlights, spot notes, no-color, ignore, note-checked and custom character names are lost when importing a `.spotplot` file (import INSERT in `db-import-show` only copies some `spot_cues` columns)
+- [ ] **Fix before next release.** Show import drops per-cell data: highlights, spot notes, no-color, ignore, note-checked and custom character names are lost when importing a `.spotplot` file (import INSERT in `db-import-show` only copies some `spot_cues` columns)
 - [x] Characters screen: dropping an image onto the photo box opens a file picker instead of using the dropped file
 
 ## App features
@@ -18,7 +18,7 @@ Current version: Beta 0.2.0
 - [x] Show Settings: swap all cue data between two spots for the entire cue list with one button (e.g. Spot 1 ⇄ Spot 2)
 - [x] Cue popup (double-click): more flexible highlighting, e.g. highlight just the notes instead of the whole cue cell
 - [x] Cue list cells: put action and character on the same row (same behavior as now), and make both much bigger and easier to read
-- [ ] Spot Settings: option to copy Spot 1's colors (gel frames) to the other spots, so identical color loads don't have to be typed for each spot
+- [x] Spot Settings: option to copy Spot 1's colors (gel frames) to the other spots, so identical color loads don't have to be typed for each spot
 
 ## Print / paperwork
 - [ ] Caller sheet design v2: easier to read, more compact

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import SwapSpotsDialog from '../../components/SwapSpotsDialog';
+import CopyColorsSelect from '../../components/CopyColorsSelect';
 const { ipcRenderer } = window.require('electron');
 
 const FIXTURES = ['Strong Super Trouper','Strong Gladiator','Lycian 1290','Lycian Starklite','Robert Juliat Lancelot','Robert Juliat Merlin','Altman Comet','Robe BMFL','Robe Esprite','High End SolaSpot','Moving Light - Other','Other'];
@@ -60,7 +61,9 @@ function GelPicker({ value, onChange, placeholder }) {
   );
 }
 
-function SpotCard({ spot, colorSlots, onUpdateSpot, onUpdateGel, onDelete }) {
+function SpotCard({ spot, colorSlots, onUpdateSpot, onUpdateGel, onDelete, otherSpots, onCopyColorsFrom }) {
+  // Bumped after a copy so the gel pickers re-read their values
+  const [copyCount, setCopyCount] = useState(0);
   const isCustomFixture = spot.fixture_type && !FIXTURES.includes(spot.fixture_type);
   const [showCustomFixture, setShowCustomFixture] = useState(isCustomFixture);
   const slots = colorSlots || [];
@@ -73,13 +76,15 @@ function SpotCard({ spot, colorSlots, onUpdateSpot, onUpdateGel, onDelete }) {
         <div style={{ fontSize: '14px', fontWeight: '700', color: '#534AB7' }}>
           Spot {spot.spot_number}
         </div>
+        <div style={{ flex: 1 }} />
+        <CopyColorsSelect otherSpots={otherSpots} onPick={key => { if (onCopyColorsFrom(parseInt(key))) setCopyCount(c => c + 1); }} />
         <button onClick={() => {
           if (window.confirm('Delete Spot ' + spot.spot_number + '? All cues and data for this spot will be permanently deleted and cannot be recovered.')) {
             ipcRenderer.sendSync('db-remove-spot', spot.id);
             onDelete();
             onUpdateSpot(spot.id, '_deleted', true);
           }
-        }} style={{ background: 'none', border: '1px solid #3a2a2a', borderRadius: '6px', color: '#c44', padding: '4px 10px', fontSize: '11px', cursor: 'pointer' }}>
+        }} style={{ background: 'none', border: '1px solid #3a2a2a', borderRadius: '6px', color: '#c44', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', marginLeft: '8px' }}>
           Delete spot
         </button>
       </div>
@@ -121,7 +126,7 @@ function SpotCard({ spot, colorSlots, onUpdateSpot, onUpdateGel, onDelete }) {
         </div>
       </div>
       <div style={{ fontSize: '11px', color: '#666', marginBottom: '8px' }}>Color frames</div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '8px' }}>
+      <div key={copyCount} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '8px' }}>
         {regularSlots.map(slot => (
           <div key={slot.id} style={{ background: '#1a1a1a', borderRadius: '8px', padding: '8px' }}>
             <div style={{ fontSize: '10px', color: '#555', marginBottom: '4px', fontWeight: '600' }}>Frame {slot.slot_number}</div>
@@ -135,7 +140,7 @@ function SpotCard({ spot, colorSlots, onUpdateSpot, onUpdateGel, onDelete }) {
       {permSlot && (
         <div style={{ background: '#1a1a1a', borderRadius: '8px', padding: '8px', border: '1px solid #3a3020' }}>
           <div style={{ fontSize: '10px', color: '#8a6a20', marginBottom: '6px', fontWeight: '600' }}>Permanent frame</div>
-          <GelPicker
+          <GelPicker key={copyCount}
             value={permSlot.gel_number ? permSlot.gel_number + ' ' + permSlot.gel_name : ''}
             onChange={gel => onUpdateGel(spot.id, permSlot.id, gel)}
             placeholder="Search gel..." />
@@ -176,6 +181,19 @@ export default function SpotSettingsPanel({ show }) {
     }));
   };
 
+  const copyColors = (targetId, sourceId) => {
+    const target = colorSlots[targetId] || [];
+    const source = colorSlots[sourceId] || [];
+    const targetSpot = spots.find(s => s.id === targetId), sourceSpot = spots.find(s => s.id === sourceId);
+    if (target.some(sl => sl.gel_number || sl.gel_name) &&
+        !window.confirm(`Replace Spot ${targetSpot?.spot_number}'s colors with Spot ${sourceSpot?.spot_number}'s?`)) return false;
+    for (const slot of target) {
+      const match = source.find(sl => !!sl.is_permanent === !!slot.is_permanent && (slot.is_permanent || sl.slot_number === slot.slot_number));
+      updateGel(targetId, slot.id, { gel_number: match?.gel_number || '', gel_name: match?.gel_name || '' });
+    }
+    return true;
+  };
+
   return (
     <div>
       {spots.length >= 2 && (
@@ -194,6 +212,8 @@ export default function SpotSettingsPanel({ show }) {
           onUpdateSpot={updateSpot}
           onUpdateGel={updateGel}
           onDelete={() => load()}
+          otherSpots={spots.filter(s => s.id !== spot.id).map(s => ({ key: s.id, label: 'Spot ' + s.spot_number }))}
+          onCopyColorsFrom={sourceId => copyColors(spot.id, sourceId)}
         />
       ))}
             {spots.length < 4 && (

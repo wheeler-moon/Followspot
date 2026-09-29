@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AppHeader from '../components/AppHeader';
+import CopyColorsSelect from '../components/CopyColorsSelect';
 const { ipcRenderer } = window.require('electron');
 
 const FIXTURES = ['Strong Super Trouper','Strong Gladiator','Lycian 1290','Lycian Starklite','Robert Juliat Lancelot','Robert Juliat Merlin','Altman Comet','Robe BMFL','Robe Esprite','High End SolaSpot','Moving Light - Other','Other'];
@@ -73,7 +74,9 @@ function newSpot(number) {
   };
 }
 
-function SpotSetup({ spot, spotNumber, onChange, onRemove }) {
+function SpotSetup({ spot, spotNumber, onChange, onRemove, otherSpots, onCopyColorsFrom }) {
+  // Bumped after a copy so the gel pickers re-read their values
+  const [copyCount, setCopyCount] = useState(0);
   const updateGel = (i, gelData) => {
     const newGels = [...spot.gels];
     newGels[i] = { ...newGels[i], ...gelData };
@@ -84,7 +87,9 @@ function SpotSetup({ spot, spotNumber, onChange, onRemove }) {
     <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
         <span style={{ fontSize: '15px', fontWeight: '600', color: '#534AB7' }}>Spot {spotNumber}</span>
-        <button onClick={onRemove} style={{ background: 'none', border: '1px solid #3a2a2a', borderRadius: '6px', color: '#c44', padding: '4px 10px', fontSize: '12px', cursor: 'pointer' }}>Remove</button>
+        <div style={{ flex: 1 }} />
+        <CopyColorsSelect otherSpots={otherSpots} onPick={key => { if (onCopyColorsFrom(parseInt(key))) setCopyCount(c => c + 1); }} />
+        <button onClick={onRemove} style={{ background: 'none', border: '1px solid #3a2a2a', borderRadius: '6px', color: '#c44', padding: '4px 10px', fontSize: '12px', cursor: 'pointer', marginLeft: '8px' }}>Remove</button>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
         <div>
@@ -123,7 +128,7 @@ function SpotSetup({ spot, spotNumber, onChange, onRemove }) {
         )}
       </div>
       <label style={{ ...labelStyle, marginBottom: '8px', display: 'block' }}>Color frames</label>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '8px' }}>
+      <div key={copyCount} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '8px' }}>
         {spot.gels.map((gel, i) => (
           <div key={i} style={{ background: '#111', borderRadius: '8px', padding: '8px' }}>
             <div style={{ fontSize: '10px', color: '#555', marginBottom: '4px', fontWeight: '600' }}>Frame {gel.slot}</div>
@@ -138,7 +143,7 @@ function SpotSetup({ spot, spotNumber, onChange, onRemove }) {
         <div style={{ fontSize: '10px', color: '#8a6a20', marginBottom: '6px', fontWeight: '600' }}>
           Permanent frame <span style={{ color: '#555', fontWeight: '400' }}>(optional)</span>
         </div>
-        <GelPicker
+        <GelPicker key={copyCount}
           value={spot.perm_gel_number ? spot.perm_gel_number + ' ' + spot.perm_gel_name : ''}
           onChange={gelData => onChange({ ...spot, perm_gel_number: gelData.gel_number, perm_gel_name: gelData.gel_name })}
           placeholder="Search gel..." />
@@ -160,6 +165,13 @@ export default function NewShowScreen({ navigate }) {
   const addSpot = () => { if (spots.length < 4) setSpots(s => [...s, newSpot(s.length + 1)]); };
   const removeSpot = (i) => setSpots(s => s.filter((_, idx) => idx !== i).map((sp, idx) => ({ ...sp, spot_number: idx + 1 })));
   const updateSpot = (i, data) => setSpots(s => s.map((sp, idx) => idx === i ? data : sp));
+  const hasGels = sp => sp.gels.some(g => g.gel_number || g.gel_name) || sp.perm_gel_number || sp.perm_gel_name;
+  const copyColors = (targetIdx, sourceIdx) => {
+    const source = spots[sourceIdx];
+    if (hasGels(spots[targetIdx]) && !window.confirm(`Replace Spot ${targetIdx + 1}'s colors with Spot ${sourceIdx + 1}'s?`)) return false;
+    updateSpot(targetIdx, { ...spots[targetIdx], gels: source.gels.map(g => ({ ...g })), perm_gel_number: source.perm_gel_number, perm_gel_name: source.perm_gel_name });
+    return true;
+  };
 
   const handleSave = () => {
     if (!form.title.trim()) { setError('Show title is required.'); return; }
@@ -259,7 +271,9 @@ export default function NewShowScreen({ navigate }) {
             {spots.map((spot, i) => (
               <SpotSetup key={i} spot={spot} spotNumber={i + 1}
                 onChange={data => updateSpot(i, data)}
-                onRemove={() => removeSpot(i)} />
+                onRemove={() => removeSpot(i)}
+                otherSpots={spots.map((_, j) => ({ key: j, label: 'Spot ' + (j + 1) })).filter(o => o.key !== i)}
+                onCopyColorsFrom={j => copyColors(i, j)} />
             ))}
           </div>
 
