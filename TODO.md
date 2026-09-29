@@ -1,6 +1,6 @@
 # SpotPlot To-Do
 
-Current version: Beta 0.2.0
+Current version: Beta 0.2.1
 
 ## Next release checklist
 - [x] Before building: fix show import dropping per-cell data (see Bugs)
