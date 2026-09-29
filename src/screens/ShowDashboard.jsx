@@ -189,8 +189,11 @@ const startEdit = () => {
                     <div style={{ fontSize: '14px', color: '#666' }}>{show.theatre}{show.producer ? ` · ${show.producer}` : ''}</div>
                   </div>
                 </div>
-                  <button onClick={() => setShowSettings(true)} style={{ padding: '6px 14px', background: 'none', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#666', fontSize: '12px', cursor: 'pointer', marginTop: '4px' }}>
-                    Show Settings
+                  <button onClick={() => setShowSettings(true)}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.14)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.10)'; }}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', height: '28px', padding: '0 14px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '14px', color: '#fff', fontSize: '13px', fontWeight: '500', cursor: 'pointer', marginTop: '4px' }}>
+                    <span style={{ fontSize: '14px' }}>⚙︎</span> Show Settings
                   </button>
               </div>
             )}
