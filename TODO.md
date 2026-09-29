@@ -9,7 +9,6 @@ Current version: Beta 0.2.0
 
 ## App features
 - [x] Bold/italic/underline in when/notes fields (Cmd+B, Cmd+I, Cmd+U)
-- [ ] PDF preview before export
 - [ ] Onboarding walkthrough for new users (tooltip-style popups on first launch)
 - [ ] Update default fixture types list in Spot Settings
 - [x] Cue list: make "w/ LQ" a toggle that stays linked to the cue's LQ number, so renumbering the cue updates it automatically (no re-pressing the button)
@@ -21,6 +20,7 @@ Current version: Beta 0.2.0
 - [x] Spot Settings: option to copy Spot 1's colors (gel frames) to the other spots, so identical color loads don't have to be typed for each spot
 
 ## Print / paperwork
+- [x] Print page redesign with live preview (replaces "PDF preview before export"): instead of one long list of print options, start with "Select what you want to print" (e.g. Spot 1, Caller sheet, Color load, Spot notes). The selected sheet shows as a live preview of the actual PDF, with its options beside it (hide Off, hide Tracked, cue range, label…); changing an option re-renders the preview immediately. Export saves exactly what the preview shows.
 - [ ] Caller sheet design v2: easier to read, more compact
 - [ ] Spot sheet page breaks: cues shouldn't split across pages
 - [ ] Action symbols cheat sheet PDF

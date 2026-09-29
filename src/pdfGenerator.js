@@ -538,23 +538,6 @@ const sceneOrderMap = {};
 </html>`;
 }
 
-async function generateSpotSheetPDF({ show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, outputPath, hideOff, hideTracked, rangeStart, rangeEnd, customActions }) {
-  const html = buildSpotSheetHTML({ show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, hideOff, hideTracked, rangeStart, rangeEnd, customActions });
-  const isLandscape = numSpots > 2;
-
-  const browser = await puppeteer.launch({ headless: true, executablePath: global.chromiumPath || puppeteer.executablePath() });
-  const page = await browser.newPage();
-  await page.setContent(html, { waitUntil: 'networkidle0' });
-  await page.pdf({
-    path: outputPath,
-    width: isLandscape ? '11in' : '8.5in',
-    height: isLandscape ? '8.5in' : '11in',
-    printBackground: true,
-    margin: { top: '0.5in', right: '0.4in', bottom: '0.4in', left: '0.4in' },
-  });
-  await browser.close();
-  return outputPath;
-}
 function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions }) {
   let logoBase64 = '';
   if (show.logo_path) {
@@ -1003,23 +986,6 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
 </html>`;
 }
 
-async function generateCallerSheetPDF({ show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, outputPath, customActions }) {
-  const isLandscape = spots.length > 2;
-  const html = buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions });
-
-  const browser = await puppeteer.launch({ headless: true, executablePath: global.chromiumPath || puppeteer.executablePath() });
-  const page = await browser.newPage();
-  await page.setContent(html, { waitUntil: 'networkidle0' });
-  await page.pdf({
-    path: outputPath,
-    width: isLandscape ? '11in' : '8.5in',
-    height: isLandscape ? '8.5in' : '11in',
-    printBackground: true,
-    margin: { top: '0.4in', right: '0.35in', bottom: '0.35in', left: '0.35in' },
-  });
-  await browser.close();
-  return outputPath;
-}
 function buildColorLoadHTML({ show, spots, colorSlotsBySpot, label }) {
   let logoBase64 = '';
   if (show.logo_path) {
@@ -1353,22 +1319,6 @@ function buildColorLoadHTML({ show, spots, colorSlotsBySpot, label }) {
 </html>`;
 }
 
-async function generateColorLoadPDF({ show, spots, colorSlotsBySpot, label, outputPath }) {
-  const html = buildColorLoadHTML({ show, spots, colorSlotsBySpot, label });
-  const isLandscape = spots.length > 2;
-  const browser = await puppeteer.launch({ headless: true, executablePath: global.chromiumPath || puppeteer.executablePath() });
-  const page = await browser.newPage();
-  await page.setContent(html, { waitUntil: 'networkidle0' });
-  await page.pdf({
-    path: outputPath,
-    width: isLandscape ? '11in' : '8.5in',
-    height: isLandscape ? '8.5in' : '11in',
-    printBackground: true,
-    margin: { top: '0.5in', right: '0.4in', bottom: '0.4in', left: '0.4in' },
-  });
-  await browser.close();
-  return outputPath;
-}
 function buildSpotNotesHTML({ show, spots, cues, scenes, spotCues, characters, label }) {
   let logoBase64 = '';
   if (show.logo_path) {
@@ -1477,19 +1427,31 @@ function buildSpotNotesHTML({ show, spots, cues, scenes, spotCues, characters, l
 </html>`;
 }
 
-async function generateSpotNotesPDF({ show, spots, cues, scenes, spotCues, characters, label, outputPath }) {
-  const html = buildSpotNotesHTML({ show, spots, cues, scenes, spotCues, characters, label });
+// Page margins per sheet type (the sheets' HTML is laid out for these)
+const PAGE_MARGINS = {
+  spot: { top: '0.5in', right: '0.4in', bottom: '0.4in', left: '0.4in' },
+  caller: { top: '0.4in', right: '0.35in', bottom: '0.35in', left: '0.35in' },
+  color: { top: '0.5in', right: '0.4in', bottom: '0.4in', left: '0.4in' },
+  notes: { top: '0.5in', right: '0.5in', bottom: '0.5in', left: '0.5in' },
+};
+
+// Saves a sheet's HTML as a Letter-size PDF
+async function renderPDF(html, { landscape, margin }, outputPath) {
   const browser = await puppeteer.launch({ headless: true, executablePath: global.chromiumPath || puppeteer.executablePath() });
-  const page = await browser.newPage();
-  await page.setContent(html, { waitUntil: 'networkidle0' });
-  await page.pdf({
-    path: outputPath,
-    width: '8.5in',
-    height: '11in',
-    printBackground: true,
-    margin: { top: '0.5in', right: '0.5in', bottom: '0.5in', left: '0.5in' },
-  });
-  await browser.close();
+  try {
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+    await page.pdf({
+      path: outputPath,
+      width: landscape ? '11in' : '8.5in',
+      height: landscape ? '8.5in' : '11in',
+      printBackground: true,
+      margin,
+    });
+  } finally {
+    await browser.close();
+  }
   return outputPath;
 }
-module.exports = { generateSpotSheetPDF, generateCallerSheetPDF, generateColorLoadPDF, generateSpotNotesPDF };
+
+module.exports = { buildSpotSheetHTML, buildCallerSheetHTML, buildColorLoadHTML, buildSpotNotesHTML, renderPDF, PAGE_MARGINS };

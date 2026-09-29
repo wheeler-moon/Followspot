@@ -1,7 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('node:path');
 const Database = require('better-sqlite3');
-const { generateSpotSheetPDF, generateCallerSheetPDF, generateColorLoadPDF } = require('./pdfGenerator');
+const { buildSpotSheetHTML, buildCallerSheetHTML, buildColorLoadHTML, buildSpotNotesHTML, renderPDF, PAGE_MARGINS } = require('./pdfGenerator');
 
 if (require('electron-squirrel-startup')) app.quit();
 const { autoUpdater } = require('electron');
@@ -496,7 +496,96 @@ function seedGels() {
   ]);
 }
 
+// Builds one printable sheet. kind: 'spot' | 'caller' | 'color' | 'notes'.
+// The print preview and the PDF export both use this, so they always match.
+function buildSheet(kind, opts) {
+  const database = getDb();
+  const show = database.prepare('SELECT * FROM shows WHERE id = ?').get(opts.showId);
+  const spots = database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY COALESCE(display_order, spot_number * 1000)').all(opts.showId);
+  const cues = database.prepare('SELECT * FROM cues WHERE show_id = ? ORDER BY sort_order').all(opts.showId);
+  const characters = database.prepare('SELECT * FROM characters WHERE show_id = ?').all(opts.showId);
+  const scenes = database.prepare('SELECT * FROM scenes WHERE show_id = ? ORDER BY sort_order').all(opts.showId);
+  const customActions = show.custom_actions ? JSON.parse(show.custom_actions) : [];
+  const slotsFor = id => database.prepare('SELECT * FROM color_slots WHERE spot_id = ? ORDER BY is_permanent, slot_number').all(id);
+  const label = opts.label || '';
+  const labelPart = label || 'Sheet';
+  const landscape = spots.length > 2;
+
+  if (kind === 'spot') {
+    const spot = spots.find(s => s.id === opts.spotId);
+    return {
+      html: buildSpotSheetHTML({
+        show, spot, colorSlots: slotsFor(spot.id), cues, characters, scenes, label, customActions,
+        spotCues: database.prepare('SELECT * FROM spot_cues WHERE spot_id = ?').all(spot.id),
+        numSpots: spots.length, hideOff: !!opts.hideOff, hideTracked: !!opts.hideTracked,
+        rangeStart: opts.rangeStart ?? null, rangeEnd: opts.rangeEnd ?? null,
+      }),
+      landscape, margin: PAGE_MARGINS.spot,
+      fileName: `${show.title} - Spot ${spot.spot_number} - ${labelPart}.pdf`,
+    };
+  }
+  if (kind === 'caller') {
+    const colorSlotsBySpot = {}, spotCuesBySpot = {};
+    for (const spot of spots) {
+      colorSlotsBySpot[spot.id] = slotsFor(spot.id);
+      spotCuesBySpot[spot.id] = database.prepare('SELECT * FROM spot_cues WHERE spot_id = ?').all(spot.id);
+    }
+    return {
+      html: buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions }),
+      landscape, margin: PAGE_MARGINS.caller,
+      fileName: `${show.title} - Caller Sheet - ${labelPart}.pdf`,
+    };
+  }
+  if (kind === 'color') {
+    const colorSlotsBySpot = {};
+    for (const spot of spots) colorSlotsBySpot[spot.id] = slotsFor(spot.id);
+    return {
+      html: buildColorLoadHTML({ show, spots, colorSlotsBySpot, label }),
+      landscape, margin: PAGE_MARGINS.color,
+      fileName: `${show.title} - Color Load - ${labelPart}.pdf`,
+    };
+  }
+  if (kind === 'notes') {
+    const noteSpots = opts.spotId ? spots.filter(s => s.id === opts.spotId) : spots;
+    const spotCues = database.prepare("SELECT sc.* FROM spot_cues sc JOIN cues c ON sc.cue_id = c.id WHERE c.show_id = ? AND sc.spot_note IS NOT NULL AND sc.spot_note != ''").all(opts.showId);
+    return {
+      html: buildSpotNotesHTML({ show, spots: noteSpots, cues, scenes, spotCues, characters, label }),
+      landscape: false, margin: PAGE_MARGINS.notes,
+      fileName: `${show.title} - Spot Notes - ${labelPart}.pdf`,
+    };
+  }
+  throw new Error('Unknown sheet: ' + kind);
+}
+
 function setupIPC() {
+  ipcMain.on('print-preview', (event, { kind, ...opts }) => {
+    try {
+      const { html, landscape, margin } = buildSheet(kind, opts);
+      event.returnValue = { success: true, html, landscape, margin };
+    } catch(e) {
+      console.error('Print preview error:', e);
+      event.returnValue = { success: false, error: e.message };
+    }
+  });
+  ipcMain.on('print-export', async (event, { kind, ...opts }) => {
+    try {
+      const { dialog } = require('electron');
+      const sheet = buildSheet(kind, opts);
+      const { filePath } = await dialog.showSaveDialog({
+        defaultPath: sheet.fileName,
+        filters: [{ name: 'PDF', extensions: ['pdf'] }],
+      });
+      if (!filePath) { event.returnValue = { success: false, cancelled: true }; return; }
+      await renderPDF(sheet.html, sheet, filePath);
+      event.returnValue = { success: true, path: filePath };
+    } catch(e) {
+      console.error('PDF export error:', e);
+      event.returnValue = { success: false, error: e.message };
+    }
+  });
+  ipcMain.on('reveal-file', (event, filePath) => {
+    require('electron').shell.showItemInFolder(filePath);
+  });
   ipcMain.on('db-export-show', async (event, showId) => {
     try {
       const { dialog } = require('electron');
@@ -794,64 +883,6 @@ ipcMain.on('get-app-icon', (event) => {
       event.returnValue = { success: true };
     } catch(e) { event.returnValue = { success: false }; }
   });
-ipcMain.on('db-generate-caller-pdf', async (event, { showId, label, hideOff, hideTracked, rangeStart, rangeEnd }) => {
-    try {
-      const { dialog } = require('electron');
-      const database = getDb();
-      const show = database.prepare('SELECT * FROM shows WHERE id = ?').get(showId);
-      const spots = database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY COALESCE(display_order, spot_number * 1000)').all(showId);
-      const cues = database.prepare('SELECT * FROM cues WHERE show_id = ? ORDER BY sort_order').all(showId);
-      const characters = database.prepare('SELECT * FROM characters WHERE show_id = ?').all(showId);
-      const scenes = database.prepare('SELECT * FROM scenes WHERE show_id = ? ORDER BY sort_order').all(showId);
-
-      const colorSlotsBySpot = {};
-      const spotCuesBySpot = {};
-      for (const spot of spots) {
-        colorSlotsBySpot[spot.id] = database.prepare('SELECT * FROM color_slots WHERE spot_id = ? ORDER BY is_permanent, slot_number').all(spot.id);
-        spotCuesBySpot[spot.id] = database.prepare('SELECT * FROM spot_cues WHERE spot_id = ?').all(spot.id);
-      }
-
-      const { filePath } = await dialog.showSaveDialog({
-        defaultPath: `${show.title} - Caller Sheet - ${label || 'Sheet'}.pdf`,
-        filters: [{ name: 'PDF', extensions: ['pdf'] }],
-      });
-
-      if (!filePath) { event.returnValue = { success: false, cancelled: true }; return; }
-
-      await generateCallerSheetPDF({
-        show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes,
-        label, outputPath: filePath,
-        customActions: show.custom_actions ? JSON.parse(show.custom_actions) : [],
-      });
-
-      event.returnValue = { success: true, path: filePath };
-    } catch(e) {
-      console.error('Caller PDF error:', e);
-      event.returnValue = { success: false, error: e.message };
-    }
-  });
-  ipcMain.on('db-generate-color-load-pdf', async (event, { showId, label }) => {
-    try {
-      const { dialog } = require('electron');
-      const database = getDb();
-      const show = database.prepare('SELECT * FROM shows WHERE id = ?').get(showId);
-      const spots = database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY COALESCE(display_order, spot_number * 1000)').all(showId);
-      const colorSlotsBySpot = {};
-      for (const spot of spots) {
-        colorSlotsBySpot[spot.id] = database.prepare('SELECT * FROM color_slots WHERE spot_id = ? ORDER BY is_permanent, slot_number').all(spot.id);
-      }
-      const { filePath } = await dialog.showSaveDialog({
-        defaultPath: `${show.title} - Color Load - ${label || 'Sheet'}.pdf`,
-        filters: [{ name: 'PDF', extensions: ['pdf'] }],
-      });
-      if (!filePath) { event.returnValue = { success: false, cancelled: true }; return; }
-      await generateColorLoadPDF({ show, spots, colorSlotsBySpot, label, outputPath: filePath });
-      event.returnValue = { success: true, path: filePath };
-    } catch(e) {
-      console.error('Color load PDF error:', e);
-      event.returnValue = { success: false, error: e.message };
-    }
-  });
   ipcMain.on('dialog-open-image', (event) => {
     const { dialog } = require('electron');
     const result = dialog.showOpenDialogSync({
@@ -859,31 +890,6 @@ ipcMain.on('db-generate-caller-pdf', async (event, { showId, label, hideOff, hid
       filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'svg', 'gif'] }],
     });
     event.returnValue = result ? result[0] : null;
-  });
-  ipcMain.on('db-generate-spot-notes-pdf', async (event, { showId, spotId, label }) => {
-    try {
-      const { generateSpotNotesPDF } = require('./pdfGenerator');
-      const { dialog } = require('electron');
-      const database = getDb();
-      const show = database.prepare('SELECT * FROM shows WHERE id = ?').get(showId);
-      const spots = spotId 
-        ? [database.prepare('SELECT * FROM spots WHERE id = ?').get(spotId)]
-        : database.prepare('SELECT * FROM spots WHERE show_id = ? ORDER BY COALESCE(display_order, spot_number * 1000)').all(showId);
-      const cues = database.prepare('SELECT * FROM cues WHERE show_id = ? ORDER BY sort_order').all(showId);
-      const scenes = database.prepare('SELECT * FROM scenes WHERE show_id = ? ORDER BY sort_order').all(showId);
-      const spotCues = database.prepare("SELECT sc.* FROM spot_cues sc JOIN cues c ON sc.cue_id = c.id WHERE c.show_id = ? AND sc.spot_note IS NOT NULL AND sc.spot_note != ''").all(showId);
-      const characters = database.prepare('SELECT * FROM characters WHERE show_id = ?').all(showId);
-      const { filePath } = await dialog.showSaveDialog({
-        defaultPath: `${show.title} - Spot Notes - ${label}.pdf`,
-        filters: [{ name: 'PDF', extensions: ['pdf'] }],
-      });
-      if (!filePath) { event.returnValue = { success: false, cancelled: true }; return; }
-      await generateSpotNotesPDF({ show, spots, cues, scenes, spotCues, characters, label, outputPath: filePath });
-      event.returnValue = { success: true };
-    } catch(e) {
-      console.error('Spot notes PDF error:', e);
-      event.returnValue = { success: false, error: e.message };
-    }
   });
   ipcMain.on('db-create-show', (event, { form, spots }) => {
     try {
@@ -968,40 +974,6 @@ ipcMain.on('db-generate-caller-pdf', async (event, { showId, label, hideOff, hid
       getDb().prepare('UPDATE cues SET scene_id = ? WHERE id = ?').run(sceneId, cueId);
       event.returnValue = { success: true };
     } catch(e) { event.returnValue = { success: false }; }
-  });
-      ipcMain.on('db-generate-pdf', async (event, { showId, spotId, label, hideOff, hideTracked, rangeStart, rangeEnd }) => {
-    try {
-      const { dialog } = require('electron');
-      const database = getDb();
-      const show = database.prepare('SELECT * FROM shows WHERE id = ?').get(showId);
-      const spot = database.prepare('SELECT * FROM spots WHERE id = ?').get(spotId);
-      const colorSlots = database.prepare('SELECT * FROM color_slots WHERE spot_id = ? ORDER BY is_permanent, slot_number').all(spotId);
-      const cues = database.prepare('SELECT * FROM cues WHERE show_id = ? ORDER BY sort_order').all(showId);
-      const spotCues = database.prepare('SELECT * FROM spot_cues WHERE spot_id = ?').all(spotId);
-      const characters = database.prepare('SELECT * FROM characters WHERE show_id = ?').all(showId);
-      const scenes = database.prepare('SELECT * FROM scenes WHERE show_id = ? ORDER BY sort_order').all(showId);
-      const spots = database.prepare('SELECT * FROM spots WHERE show_id = ?').all(showId);
-
-      const { filePath } = await dialog.showSaveDialog({
-        defaultPath: `${show.title} - Spot ${spot.spot_number} - ${label || 'Sheet'}.pdf`,
-        filters: [{ name: 'PDF', extensions: ['pdf'] }],
-      });
-
-      if (!filePath) { event.returnValue = { success: false, cancelled: true }; return; }
-
-      await generateSpotSheetPDF({
-        show, spot, colorSlots, cues, spotCues, characters, scenes,
-        label, numSpots: spots.length, outputPath: filePath,
-        hideOff, hideTracked, rangeStart, rangeEnd,
-        customActions: show.custom_actions ? JSON.parse(show.custom_actions) : [],
-      });
-
-      event.returnValue = { success: true, path: filePath };
-    } catch(e) {
-      console.error(e);
-     console.error('PDF generation error:', e);
-      event.returnValue = { success: false, error: e.message };
-    }
   });
 ipcMain.on('db-get-show-stats', (event, showId) => {
     try {
