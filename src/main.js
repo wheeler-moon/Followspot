@@ -122,6 +122,8 @@ function initSchema() {
   try { db.exec("ALTER TABLE shows ADD COLUMN iris_sizes TEXT DEFAULT NULL"); } catch(e) {}
   try { db.exec('ALTER TABLE spots ADD COLUMN display_order INTEGER DEFAULT NULL'); } catch(e) {}
   try { db.exec('ALTER TABLE shows ADD COLUMN custom_actions TEXT DEFAULT NULL'); } catch(e) {}
+  try { db.exec('ALTER TABLE spot_cues ADD COLUMN when_highlight TEXT DEFAULT NULL'); } catch(e) {}
+  try { db.exec('ALTER TABLE spot_cues ADD COLUMN notes_highlight TEXT DEFAULT NULL'); } catch(e) {}
   try {
     db.exec('ALTER TABLE spot_cues ADD COLUMN with_lq INTEGER DEFAULT 0');
     // One-time: link "When" text that the old w/LQ button typed in for the cue's current number,
@@ -669,6 +671,19 @@ ipcMain.on('get-app-icon', (event) => {
     } catch(e) { event.returnValue = { success: false }; }
   });
 
+  ipcMain.on('db-swap-spots', (event, { spotAId, spotBId }) => {
+    // Swaps every cue's data between two spots; gels, operator and location stay with each spot
+    try {
+      const database = getDb();
+      database.transaction(() => {
+        database.prepare('UPDATE spot_cues SET spot_id = CASE spot_id WHEN @a THEN @b ELSE @a END WHERE spot_id IN (@a, @b)').run({ a: spotAId, b: spotBId });
+      })();
+      event.returnValue = { success: true };
+    } catch(e) {
+      console.error('Swap spots error:', e);
+      event.returnValue = { success: false, error: e.message };
+    }
+  });
   ipcMain.on('db-remove-spot', (event, spotId) => {
     try {
       const database = getDb();
@@ -937,12 +952,12 @@ ipcMain.on('db-generate-caller-pdf', async (event, { showId, label, hideOff, hid
       `).all(q, q);
       event.returnValue = results;
     } catch(e) { event.returnValue = []; }
+  });
   ipcMain.on('db-update-cue-scene', (event, { cueId, sceneId }) => {
     try {
       getDb().prepare('UPDATE cues SET scene_id = ? WHERE id = ?').run(sceneId, cueId);
       event.returnValue = { success: true };
     } catch(e) { event.returnValue = { success: false }; }
-  });
   });
       ipcMain.on('db-generate-pdf', async (event, { showId, spotId, label, hideOff, hideTracked, rangeStart, rangeEnd }) => {
     try {

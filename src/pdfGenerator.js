@@ -3,6 +3,13 @@ const fs = require('fs');
 const path = require('path');
 const { app } = require('electron');
 
+// Background for a highlighted When or Notes line
+function lineHighlightCSS(color) {
+  if (color === 'yellow') return 'background:rgba(200,160,0,0.30);border-radius:3px;';
+  if (color === 'red') return 'background:rgba(200,60,60,0.25);border-radius:3px;';
+  return '';
+}
+
 // "When" text; a linked w/LQ always shows the cue's current LQ number
 function whenText(sc, cue) {
   if (!sc.with_lq) return sc.description || '';
@@ -162,8 +169,8 @@ const sceneOrderMap = {};
                 </td>
                 <td class="frames-cell">${sc.no_color ? 'NC' : (activeFrames || '')}</td>
                 <td class="time-cell">${sc.fade_time ? sc.fade_time + 's' : ''}</td>
-                <td class="when-cell">${whenText(sc, cue)}</td>
-                <td class="notes-cell">${sc.notes || ''}</td>
+                <td class="when-cell" style="${lineHighlightCSS(sc.when_highlight)}">${whenText(sc, cue)}</td>
+                <td class="notes-cell" style="${lineHighlightCSS(sc.notes_highlight)}">${sc.notes || ''}</td>
               </tr>
             </table>
             <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20pt;font-weight:900;color:#1a1a1a;letter-spacing:0.3em;">— IGNORE —</div>
@@ -186,8 +193,8 @@ const sceneOrderMap = {};
         </td>
         <td class="frames-cell">${sc.no_color ? 'NC' : (activeFrames || '—')}</td>
         <td class="time-cell">${sc.fade_time ? sc.fade_time + 's' : '—'}</td>
-        <td class="when-cell">${whenText(sc, cue)}</td>
-        <td class="notes-cell">${sc.notes || ''}</td>
+        <td class="when-cell" style="${lineHighlightCSS(sc.when_highlight)}">${whenText(sc, cue)}</td>
+        <td class="notes-cell" style="${lineHighlightCSS(sc.notes_highlight)}">${sc.notes || ''}</td>
         `}
       </tr>
     `;
@@ -651,8 +658,8 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
                 ${sc.no_color ? `<span class="detail-badge color" style="padding:1px 5px;">NC</span>` : activeFrames ? `<span class="detail-badge color" style="padding:1px 5px;">${activeFrames}</span>` : ''}
                 ${sc.fade_time ? `<span class="detail-badge time" style="padding:1px 5px;">${sc.fade_time}s</span>` : ''}
               </div>
-              ${whenText(sc, cue) ? `<div class="when-text">${whenText(sc, cue)}</div>` : ''}
-              ${sc.notes ? `<div class="notes-text">${sc.notes}</div>` : ''}
+              ${whenText(sc, cue) ? `<div class="when-text" style="${lineHighlightCSS(sc.when_highlight)}${sc.when_highlight ? 'padding:0 3px;' : ''}">${whenText(sc, cue)}</div>` : ''}
+              ${sc.notes ? `<div class="notes-text" style="${lineHighlightCSS(sc.notes_highlight)}${sc.notes_highlight ? 'padding:0 3px;' : ''}">${sc.notes}</div>` : ''}
             </div>
           </td>
         `;

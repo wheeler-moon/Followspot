@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AppHeader from '../components/AppHeader';
+import SwapSpotsDialog from '../components/SwapSpotsDialog';
 const { ipcRenderer } = window.require('electron');
 
 const FIXTURES = ['Strong Super Trouper','Strong Gladiator','Lycian 1290','Lycian Starklite','Robert Juliat Lancelot','Robert Juliat Merlin','Altman Comet','Robe BMFL','Robe Esprite','High End SolaSpot','Moving Light','Other'];
@@ -200,6 +201,8 @@ export default function SpotSettingsScreen({ show, navigate }) {
     load();
   };
 
+  const [showSwap, setShowSwap] = useState(false);
+
   const updateSpot = (updatedSpot) => {
     setSpots(s => s.map(sp => sp.id === updatedSpot.id ? updatedSpot : sp));
   };
@@ -209,6 +212,11 @@ export default function SpotSettingsScreen({ show, navigate }) {
      <AppHeader title="Spot Settings" onBack={() => navigate('show', show)} backLabel={show.title}>
         <span style={{ fontSize: '12px', color: '#555' }}>{spots.length} spot{spots.length !== 1 ? 's' : ''}</span>
         <div style={{ flex: 1 }} />
+        {spots.length >= 2 && (
+          <button onClick={() => setShowSwap(true)} style={{ padding: '7px 16px', background: 'none', border: '1px solid #3a3a3a', borderRadius: '6px', color: '#f0f0f0', fontSize: '13px', cursor: 'pointer', marginRight: '8px' }}>
+            ⇄ Swap spots
+          </button>
+        )}
         {spots.length < 4 && (
           <button onClick={addSpot} style={{ padding: '7px 16px', background: 'none', border: '1px solid #534AB7', borderRadius: '6px', color: '#534AB7', fontSize: '13px', cursor: 'pointer' }}>
             + Add spot
@@ -226,6 +234,8 @@ export default function SpotSettingsScreen({ show, navigate }) {
           ))}
         </div>
       </div>
+
+      {showSwap && <SwapSpotsDialog spots={spots} onClose={() => setShowSwap(false)} />}
     </div>
   );
 }

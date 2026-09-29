@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import SwapSpotsDialog from '../../components/SwapSpotsDialog';
 const { ipcRenderer } = window.require('electron');
 
 const FIXTURES = ['Strong Super Trouper','Strong Gladiator','Lycian 1290','Lycian Starklite','Robert Juliat Lancelot','Robert Juliat Merlin','Altman Comet','Robe BMFL','Robe Esprite','High End SolaSpot','Moving Light - Other','Other'];
@@ -147,6 +148,7 @@ function SpotCard({ spot, colorSlots, onUpdateSpot, onUpdateGel, onDelete }) {
 export default function SpotSettingsPanel({ show }) {
   const [spots, setSpots] = useState([]);
   const [colorSlots, setColorSlots] = useState({});
+  const [showSwap, setShowSwap] = useState(false);
 
   const load = () => {
     const s = ipcRenderer.sendSync('db-get-spots', show.id);
@@ -176,6 +178,14 @@ export default function SpotSettingsPanel({ show }) {
 
   return (
     <div>
+      {spots.length >= 2 && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
+          <button onClick={() => setShowSwap(true)} style={{ height: '28px', padding: '0 14px', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: '14px', color: '#fff', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
+            ⇄ Swap spots
+          </button>
+        </div>
+      )}
+      {showSwap && <SwapSpotsDialog spots={spots} onClose={() => setShowSwap(false)} />}
       {spots.map(spot => (
         <SpotCard
           key={spot.id}

@@ -188,6 +188,9 @@ const INTENSITIES = ['Full','90%','80%','75%','70%','60%','50%','40%','30%','25%
 const TIMES = ['0','1','2','3','4','5','6','7','8','9','10','Custom'];
 const IRIS_SIZES = ['Full Body', '3/4 Body', '1/2 Body', 'Head & Shoulders', 'Head', 'Custom'];
 
+// Background for a highlighted When or Notes line (stronger than the whole-cell tint so a thin line reads)
+const lineHighlightStyle = (color) => color === 'yellow' ? { background: 'rgba(200,160,0,0.25)', padding: '2px 4px' }
+  : color === 'red' ? { background: 'rgba(200,60,60,0.25)', padding: '2px 4px' } : {};
 const selectStyle = {
   width: '100%', background: '#111', border: '1px solid #2a2a2a',
   borderRadius: '4px', color: '#888', padding: '3px 4px',
@@ -283,7 +286,9 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
       onUpdate(spotCue.id, 'fade_time', '');
       onUpdate(spotCue.id, 'description', '');
       onUpdate(spotCue.id, 'with_lq', 0);
+      onUpdate(spotCue.id, 'when_highlight', null);
       onUpdate(spotCue.id, 'notes', '');
+      onUpdate(spotCue.id, 'notes_highlight', null);
       setShowActionPicker(false);
       return;
     }
@@ -508,6 +513,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
         </div>
 
         <div style={{ display: 'flex', gap: '4px', alignItems: 'center', marginBottom: '3px' }}>
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', gap: '4px', alignItems: 'center', borderRadius: '4px', ...lineHighlightStyle(spotCue.when_highlight) }}>
           {withLQ && (
             <span style={{ fontSize: '12px', color: '#f0f0f0', whiteSpace: 'nowrap', padding: '2px 0' }}>
               w/ LQ {lqNumber || '?'}
@@ -517,7 +523,8 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
             onBlur={e => onUpdate(spotCue.id, 'description', e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); }}
             placeholder={withLQ ? '' : 'When...'}
-            style={{ flex: 1, background: 'transparent', border: 'none', borderBottom: '1px solid #1e1e1e', color: '#888', padding: '2px 0', fontSize: '12px', outline: 'none' }} />
+            style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', borderBottom: '1px solid #1e1e1e', color: '#888', padding: '2px 0', fontSize: '12px', outline: 'none' }} />
+          </div>
           <div onClick={toggleWLQ} role="switch" aria-checked={withLQ}
             title={withLQ ? 'Linked to this cue\'s LQ number — click to unlink' : 'Link to this cue\'s LQ number'}
             style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', flexShrink: 0 }}>
@@ -532,7 +539,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
           onBlur={e => onUpdate(spotCue.id, 'notes', e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); }}
           placeholder="Notes..."
-          style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid #1e1e1e', color: '#666', padding: '2px 0', fontSize: '12px', outline: 'none', fontStyle: 'italic' }} />
+          style={{ width: '100%', boxSizing: 'border-box', background: 'transparent', border: 'none', borderBottom: '1px solid #1e1e1e', borderRadius: '4px', color: '#666', padding: '2px 0', fontSize: '12px', outline: 'none', fontStyle: 'italic', ...lineHighlightStyle(spotCue.notes_highlight) }} />
       </div>
     </td>
   );
@@ -796,6 +803,16 @@ export default function CueListScreen({ show, navigate }) {
         }
       });
     }
+    return result;
+  };
+  const setPopupSpotCueField = (field, value) => {
+    if (cuePopup.spotCue?.id) {
+      updateSpotCue(cuePopup.spotCue.id, field, value);
+      setCuePopup(p => ({ ...p, spotCue: { ...p.spotCue, [field]: value } }));
+    } else {
+      const result = upsertSpotCue(cuePopup.spot.id, cuePopup.cue.id, field, value);
+      setCuePopup(p => ({ ...p, spotCue: { ...p.spotCue, spot_id: p.spot.id, cue_id: p.cue.id, id: result?.id, [field]: value } }));
+    }
   };
 
   const deleteCue = (cueId) => {
@@ -974,9 +991,6 @@ const groupedCues = () => {
                 </div>
                 <div style={{ fontSize: '12px', color: '#555', marginTop: '2px' }}>
                   {cuePopup.spot.operator_name || 'No operator'}
-                  <div style={{ fontSize: '10px', color: '#333' }}>
-                  spotCue id: {cuePopup.spotCue?.id || 'NULL'}
-                </div>
                 </div>
               </div>
               <button onClick={() => {
@@ -1003,31 +1017,24 @@ const groupedCues = () => {
                 </button>
               </div>
 
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={() => {
-                  const newVal = cuePopup.spotCue?.highlight === 'yellow' ? null : 'yellow';
-                  if (cuePopup.spotCue) {
-                    updateSpotCue(cuePopup.spotCue.id, 'highlight', newVal);
-                    setCuePopup(p => ({ ...p, spotCue: { ...p.spotCue, highlight: newVal } }));
-                  } else {
-                    upsertSpotCue(cuePopup.spot.id, cuePopup.cue.id, 'highlight', newVal);
-                    setCuePopup(p => ({ ...p, spotCue: { spot_id: cuePopup.spot.id, cue_id: cuePopup.cue.id, highlight: newVal } }));
-                  }
-                }} style={{ flex: 1, padding: '10px', background: cuePopup.spotCue?.highlight === 'yellow' ? '#3a3000' : '#1e1e1e', border: `1px solid ${cuePopup.spotCue?.highlight === 'yellow' ? '#C8A000' : '#3a3a3a'}`, borderRadius: '8px', color: cuePopup.spotCue?.highlight === 'yellow' ? '#C8A000' : '#888', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
-                  Yellow highlight
-                </button>
-                <button onClick={() => {
-                  const newVal = cuePopup.spotCue?.highlight === 'red' ? null : 'red';
-                  if (cuePopup.spotCue) {
-                    updateSpotCue(cuePopup.spotCue.id, 'highlight', newVal);
-                    setCuePopup(p => ({ ...p, spotCue: { ...p.spotCue, highlight: newVal } }));
-                  } else {
-                    upsertSpotCue(cuePopup.spot.id, cuePopup.cue.id, 'highlight', newVal);
-                    setCuePopup(p => ({ ...p, spotCue: { spot_id: cuePopup.spot.id, cue_id: cuePopup.cue.id, highlight: newVal } }));
-                  }
-                }} style={{ flex: 1, padding: '10px', background: cuePopup.spotCue?.highlight === 'red' ? '#3a1a1a' : '#1e1e1e', border: `1px solid ${cuePopup.spotCue?.highlight === 'red' ? '#c44' : '#3a3a3a'}`, borderRadius: '8px', color: cuePopup.spotCue?.highlight === 'red' ? '#c44' : '#888', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
-                  Red highlight
-                </button>
+              <div>
+                <div style={{ fontSize: '11px', fontWeight: '600', color: '#555', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Highlight</div>
+                {[{ field: 'highlight', label: 'Whole cue' }, { field: 'when_highlight', label: 'When line' }, { field: 'notes_highlight', label: 'Notes line' }].map(({ field, label }) => (
+                  <div key={field} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                    <div style={{ width: '80px', fontSize: '13px', color: 'rgba(255,255,255,0.55)' }}>{label}</div>
+                    <div style={{ flex: 1, display: 'flex', gap: '2px', padding: '2px', height: '28px', boxSizing: 'border-box', background: 'rgba(255,255,255,0.07)', borderRadius: '6px' }}>
+                      {[{ value: null, text: 'None', color: '#fff', bg: 'rgba(255,255,255,0.14)' }, { value: 'yellow', text: 'Yellow', color: '#FFD600', bg: 'rgba(200,160,0,0.30)' }, { value: 'red', text: 'Red', color: '#FF4245', bg: 'rgba(200,60,60,0.30)' }].map(opt => {
+                        const selected = (cuePopup.spotCue?.[field] || null) === opt.value;
+                        return (
+                          <div key={opt.text} onClick={() => setPopupSpotCueField(field, opt.value)}
+                            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: '500', background: selected ? opt.bg : 'transparent', color: selected ? opt.color : 'rgba(255,255,255,0.55)' }}>
+                            {opt.text}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
