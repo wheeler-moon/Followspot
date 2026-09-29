@@ -268,7 +268,7 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqN
       onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) onDragLeave(e); }}
       onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop(e); }}
       onDoubleClick={onDoubleClick}
-      style={{ padding: '8px 10px', borderRight: '1px solid #1e1e1e', verticalAlign: 'top', minWidth: '200px', minHeight: '80px', background: isDragTarget ? '#1a1a2e' : '#060606', outline: isDragTarget ? '2px solid #534AB7' : 'none', cursor: 'grab' }}>
+      style={{ padding: '8px 10px', borderRight: '1px solid #1e1e1e', verticalAlign: 'top', minWidth: '260px', minHeight: '80px', background: isDragTarget ? '#1a1a2e' : '#060606', outline: isDragTarget ? '2px solid #534AB7' : 'none', cursor: 'grab' }}>
         <div style={{ fontSize: '11px', color: '#222', minHeight: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>—</div>
     </td>
   );
@@ -309,7 +309,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
         onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); onDragOver(e); }}
         onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) onDragLeave(e); }}
         onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop(e); }}
-        style={{ padding: '8px 10px', borderRight: '1px solid #1e1e1e', verticalAlign: 'top', minWidth: '200px', background: isDragTarget ? '#1a1a2e' : '#080808', outline: isDragTarget ? '2px solid #534AB7' : 'none', position: 'relative' }}>
+        style={{ padding: '8px 10px', borderRight: '1px solid #1e1e1e', verticalAlign: 'top', minWidth: '260px', background: isDragTarget ? '#1a1a2e' : '#080808', outline: isDragTarget ? '2px solid #534AB7' : 'none', position: 'relative' }}>
         <div ref={ref} style={{ position: 'relative', zIndex: showActionPicker ? 99999 : 'auto' }}>
           <div ref={actionBtnRef} onClick={() => {
             if (actionBtnRef.current) {
@@ -344,7 +344,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
         padding: '8px 10px', 
         borderRight: '1px solid #1e1e1e', 
         verticalAlign: 'top', 
-        minWidth: '200px', 
+        minWidth: '260px', 
         position: 'relative',
         outline: isDragTarget ? '2px solid #534AB7' : 'none', 
         background: isDragTarget ? '#1a1a2e' : spotCue?.highlight === 'yellow' ? 'rgba(200,160,0,0.12)' : spotCue?.highlight === 'red' ? 'rgba(200,60,60,0.12)' : spotCue?.ignored ? 'rgba(180,40,40,0.08)' : 'transparent',
@@ -357,7 +357,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
       )}
       {isDragTarget && <div style={{ position: 'absolute', inset: 0, background: 'rgba(83,74,183,0.3)', pointerEvents: 'none', zIndex: 5 }} />}
       <div ref={ref} style={{ position: 'relative', zIndex: showActionPicker ? 9999 : 'auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '5px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
           <div ref={actionBtnRef} onClick={() => {
             if (actionBtnRef.current) {
               const rect = actionBtnRef.current.getBoundingClientRect();
@@ -368,7 +368,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
             }
             setShowActionPicker(v => !v);
           }}
-            style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '3px 7px', borderRadius: '5px', background: actionDef ? '#1e1e2e' : '#1a1a1a', border: `1px solid ${actionDef ? actionDef.color + '55' : '#2a2a2a'}`, cursor: 'pointer', flex: 1 }}>
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '32px', boxSizing: 'border-box', padding: '0 8px', borderRadius: '6px', background: actionDef ? '#1e1e2e' : '#1a1a1a', border: `1px solid ${actionDef ? actionDef.color + '55' : '#2a2a2a'}`, cursor: 'pointer', flex: '1 1 0', minWidth: 0 }}>
             {spotCue.action ? (
               <>
                 {(() => {
@@ -379,20 +379,18 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
                       const d = fs.readFileSync(customAction.icon);
                       const ext = customAction.icon.split('.').pop().toLowerCase();
                       const src = `data:image/${ext};base64,${d.toString('base64')}`;
-                      return <img src={src} style={{ width: 16, height: 16, objectFit: 'contain' }} />;
+                      return <img src={src} style={{ width: 20, height: 20, objectFit: 'contain', flexShrink: 0 }} />;
                     } catch(e) {}
                   }
-                  return <ActionIcon action={spotCue.action} size={16} />;
+                  return <ActionIcon action={spotCue.action} size={20} />;
                 })()}
-                <span style={{ fontSize: '13px', color: actionDef ? actionDef.color : '#888', fontWeight: '500' }}>{spotCue.action}</span>
+                <span style={{ fontSize: '14px', color: actionDef ? actionDef.color : '#888', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{spotCue.action}</span>
               </>
             ) : (
-              <span style={{ fontSize: '13px', color: '#333' }}>Select action...</span>
+              <span style={{ fontSize: '14px', color: '#444', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Action...</span>
             )}
           </div>
 {showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} pos={pickerPos} customActions={customActions} />}
-        </div>
-
                 {showCustomChar ? (
                     <input
             autoFocus
@@ -408,7 +406,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
               }
             }}
             placeholder="Type character name..."
-            style={{ ...selectStyle, color: '#f0f0f0', marginBottom: '5px' }}
+            style={{ ...selectStyle, flex: '1 1 0', minWidth: 0, height: '32px', fontSize: '14px', fontWeight: '600', borderRadius: '6px', padding: '0 8px', color: '#f0f0f0' }}
           />
         ) : (
           <select value={spotCue.character_id || ''} onChange={e => {
@@ -419,12 +417,13 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
               onUpdate(spotCue.id, 'character_id', e.target.value ? parseInt(e.target.value) : null);
               onUpdate(spotCue.id, 'custom_character', null);
             }
-          }} style={{ ...selectStyle, color: (spotCue.character_id || spotCue.custom_character) ? '#f0f0f0' : '#444', marginBottom: '5px' }}>
+          }} style={{ ...selectStyle, flex: '1 1 0', minWidth: 0, height: '32px', fontSize: '14px', fontWeight: '600', borderRadius: '6px', padding: '0 8px', color: (spotCue.character_id || spotCue.custom_character) ? '#f0f0f0' : '#444' }}>
             <option value="">{spotCue.custom_character || 'Character...'}</option>
             {characters.map(c => <option key={c.id} value={c.id}>{c.name}{c.actor_name ? ' (' + c.actor_name + ')' : ''}</option>)}
             <option value="custom">+ Type custom name...</option>
           </select>
         )}
+        </div>
 
         <div style={{ display: 'flex', gap: '4px', marginBottom: '5px' }}>
           <select value={spotCue.intensity || ''} onChange={e => onUpdate(spotCue.id, 'intensity', e.target.value)}
@@ -894,7 +893,7 @@ const groupedCues = () => {
               <tr style={{ background: '#141414', borderBottom: '1px solid #2a2a2a' }}>
                 <th style={{ padding: '8px', textAlign: 'left', fontSize: '10px', color: '#444', fontWeight: '600', width: '90px', borderRight: '1px solid #1e1e1e' }}>CUE</th>
                 {(data?.spots || []).map(spot => (
-                  <th key={spot.id} style={{ padding: '8px 10px', textAlign: 'left', borderRight: '1px solid #1e1e1e', minWidth: '200px' }}>
+                  <th key={spot.id} style={{ padding: '8px 10px', textAlign: 'left', borderRight: '1px solid #1e1e1e', minWidth: '260px' }}>
                     <div style={{ fontSize: '13px', color: '#534AB7', fontWeight: '800' }}>SPOT {spot.spot_number}</div>
                     {spot.operator_name && <div style={{ fontSize: '12px', color: '#888', fontWeight: '500', marginTop: '1px' }}>{spot.operator_name}</div>}
                   </th>

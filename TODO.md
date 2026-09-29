@@ -17,7 +17,7 @@ Current version: Beta 0.2.0
 - [ ] Cue list: iris sizes and gel frames get crowded with custom iris sizes and as spots are added; make that area less cramped
 - [ ] Show Settings: swap all cue data between two spots for the entire cue list with one button (e.g. Spot 1 ⇄ Spot 2)
 - [ ] Cue popup (double-click): more flexible highlighting, e.g. highlight just the notes instead of the whole cue cell
-- [ ] Cue list cells: put action and character on the same row (same behavior as now), and make both much bigger and easier to read
+- [x] Cue list cells: put action and character on the same row (same behavior as now), and make both much bigger and easier to read
 - [ ] Spot Settings: option to copy Spot 1's colors (gel frames) to the other spots, so identical color loads don't have to be typed for each spot
 
 ## Print / paperwork
