@@ -8,6 +8,7 @@ module.exports = {
     name: 'SpotPlot',
     extraResource: [
       './src/icon.png',
+      './src/icons/icons/mac/icon.icns',
       `${process.env.HOME}/.cache/puppeteer/chrome/mac_arm-151.0.7922.77/chrome-mac-arm64/Google Chrome for Testing.app`,
     ],
     osxSign: {
@@ -26,15 +27,29 @@ module.exports = {
         schemes: ['spotplot'],
       },
     ],
-    fileAssociations: [
-      {
-        ext: 'spotplot',
-        name: 'SpotPlot Show File',
-        description: 'SpotPlot Show File',
-        icon: './src/icons/icons/mac/icon.icns',
-        role: 'Editor',
-      },
-    ],
+    // Registers .spotplot files with macOS so Finder shows the SpotPlot icon for them.
+    // (Electron Packager has no `fileAssociations` option; this has to go in Info.plist.)
+    // icon.icns is copied into Contents/Resources by the extraResource entry above.
+    extendInfo: {
+      CFBundleDocumentTypes: [
+        {
+          CFBundleTypeName: 'SpotPlot Show File',
+          CFBundleTypeRole: 'Editor',
+          LSHandlerRank: 'Owner',
+          CFBundleTypeIconFile: 'icon.icns',
+          LSItemContentTypes: ['com.electron.spotplot.show'],
+        },
+      ],
+      UTExportedTypeDeclarations: [
+        {
+          UTTypeIdentifier: 'com.electron.spotplot.show',
+          UTTypeDescription: 'SpotPlot Show File',
+          UTTypeConformsTo: ['public.json', 'public.data'],
+          UTTypeIconFile: 'icon.icns',
+          UTTypeTagSpecification: { 'public.filename-extension': ['spotplot'] },
+        },
+      ],
+    },
   },
   rebuildConfig: {},
   hooks: {

@@ -3,7 +3,7 @@
 Current version: Beta 0.2.0
 
 ## Bugs
-- [ ] `.spotplot` file icon not showing the SpotPlot logo in Finder
+- [ ] `.spotplot` file icon not showing the SpotPlot logo in Finder — *fix in forge.config.js (Info.plist document type); verify after the next build*
 - [ ] **Fix before next release.** Show import drops per-cell data: highlights, spot notes, no-color, ignore, note-checked and custom character names are lost when importing a `.spotplot` file (import INSERT in `db-import-show` only copies some `spot_cues` columns)
 - [x] Characters screen: dropping an image onto the photo box opens a file picker instead of using the dropped file
 
