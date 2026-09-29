@@ -522,10 +522,10 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
           <div onClick={toggleWLQ} role="switch" aria-checked={withLQ}
             title={withLQ ? 'Linked to this cue\'s LQ number — click to unlink' : 'Link to this cue\'s LQ number'}
             style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', flexShrink: 0 }}>
-            <div style={{ width: '32px', height: '18px', borderRadius: '9px', background: withLQ ? '#534AB7' : '#2a2a2a', position: 'relative', transition: 'background 0.15s' }}>
-              <div style={{ position: 'absolute', top: '2px', left: withLQ ? '16px' : '2px', width: '14px', height: '14px', borderRadius: '50%', background: withLQ ? '#fff' : '#666', transition: 'left 0.15s' }} />
+            <div style={{ width: '44px', height: '20px', borderRadius: '10px', background: withLQ ? '#534AB7' : 'rgba(255,255,255,0.10)', position: 'relative', transition: 'background 0.15s' }}>
+              <div style={{ position: 'absolute', top: '2px', left: withLQ ? '16px' : '2px', width: '26px', height: '16px', borderRadius: '8px', background: 'rgba(255,255,255,0.85)', boxShadow: '0 3px 8px rgba(0,0,0,0.15)', transition: 'left 0.15s' }} />
             </div>
-            <span style={{ fontSize: '11px', fontWeight: '700', color: withLQ ? '#8a82e0' : '#555', whiteSpace: 'nowrap' }}>w/LQ</span>
+            <span style={{ fontSize: '11px', fontWeight: '700', color: withLQ ? '#8A82E0' : 'rgba(255,255,255,0.55)', whiteSpace: 'nowrap' }}>w/LQ</span>
           </div>
         </div>
 

@@ -60,6 +60,10 @@ The SQLite file lives at `app.getPath('userData')/followspot.db`, with the schem
 
 The GitHub repo is public. Never put the license-server admin password, license keys, or signing credentials in any committed file (including this one). The license server (`spotplot-server.onrender.com`, admin UI at `/admin`) is a separate project.
 
+## Design
+
+Follow `DESIGN.md` for any new or reworked UI: colors, type sizes, control sizes, radii and spacing. It's based on Apple's macOS 27 UI Kit and adapted for SpotPlot. Existing screens don't match it yet; that's the design-refresh item in `TODO.md`.
+
 ## Roadmap
 
 The to-do list and roadmap live in `TODO.md`. Check it when starting new work and tick items off when they're done.
