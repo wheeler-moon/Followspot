@@ -66,6 +66,7 @@ export default function PrintScreen({ show, navigate }) {
   const [rangeStart, setRangeStart] = useState('');
   const [rangeEnd, setRangeEnd] = useState('');
   const [notesSpotId, setNotesSpotId] = useState(null); // null = all spots
+  const [showCostumeNotes, setShowCostumeNotes] = useState(true);
   const [sheet, setSheet] = useState(null);
   const [previewError, setPreviewError] = useState('');
   const [exporting, setExporting] = useState(false);
@@ -81,6 +82,7 @@ export default function PrintScreen({ show, navigate }) {
     { key: 'caller', kind: 'caller', title: 'Caller sheet', sub: 'All spots side by side' },
     { key: 'color', kind: 'color', title: 'Color load', sub: 'Gel frames for every spot' },
     { key: 'notes', kind: 'notes', title: 'Spot notes', sub: 'Notes for operators' },
+    { key: 'characters', kind: 'characters', title: 'Characters', sub: 'Cast photos, actors & costumes' },
   ];
 
   const request = () => {
@@ -91,6 +93,7 @@ export default function PrintScreen({ show, navigate }) {
         rangeStart: rangeStart ? parseInt(rangeStart) : null, rangeEnd: rangeEnd ? parseInt(rangeEnd) : null });
     }
     if (selected.kind === 'notes') req.spotId = notesSpotId;
+    if (selected.kind === 'characters') req.showCostumeNotes = showCostumeNotes;
     return req;
   };
 
@@ -104,7 +107,7 @@ export default function PrintScreen({ show, navigate }) {
       else setPreviewError(result?.error || 'Could not build the preview.');
     }, 200);
     return () => clearTimeout(t);
-  }, [selected?.key, label, hideOff, hideTracked, rangeStart, rangeEnd, notesSpotId]);
+  }, [selected?.key, label, hideOff, hideTracked, rangeStart, rangeEnd, notesSpotId, showCostumeNotes]);
 
   const exportPDF = () => {
     const req = request();
@@ -176,6 +179,13 @@ export default function PrintScreen({ show, navigate }) {
                     <input value={rangeEnd} onChange={e => setRangeEnd(e.target.value.replace(/\D/g, ''))} placeholder="To T·" style={fieldStyle} />
                   </div>
                   <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)', marginTop: '4px' }}>Tracking numbers (T·1, T·2…). Leave blank for all.</div>
+                </>
+              )}
+
+              {selected.kind === 'characters' && (
+                <>
+                  <div style={sectionLabel}>Options</div>
+                  <Switch on={showCostumeNotes} onChange={setShowCostumeNotes} label="Costume notes" hint="Show each character's costume notes" />
                 </>
               )}
 

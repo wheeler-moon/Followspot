@@ -1,7 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('node:path');
 const Database = require('better-sqlite3');
-const { buildSpotSheetHTML, buildCallerSheetHTML, buildColorLoadHTML, buildSpotNotesHTML, renderPDF, PAGE_MARGINS } = require('./pdfGenerator');
+const { buildSpotSheetHTML, buildCallerSheetHTML, buildColorLoadHTML, buildSpotNotesHTML, buildCharactersHTML, renderPDF, PAGE_MARGINS } = require('./pdfGenerator');
 
 if (require('electron-squirrel-startup')) app.quit();
 const { autoUpdater } = require('electron');
@@ -16,6 +16,20 @@ function getDb() {
     initSchema();
   }
   return db;
+}
+
+// SpotPlot keeps its own copy of every image the user adds (character photos, show logos,
+// custom action icons), so moving or deleting the original file can't break it.
+function imagesDir() {
+  return path.join(app.getPath('userData'), 'images');
+}
+function storeImageCopy(srcPath) {
+  if (!srcPath || srcPath.startsWith(imagesDir() + path.sep)) return srcPath;
+  const fs = require('fs');
+  fs.mkdirSync(imagesDir(), { recursive: true });
+  const dest = path.join(imagesDir(), `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${path.extname(srcPath).toLowerCase() || '.png'}`);
+  fs.copyFileSync(srcPath, dest);
+  return dest;
 }
 
 function initSchema() {
@@ -144,6 +158,24 @@ function initSchema() {
       }
       db.pragma('user_version = 1');
     })();
+  }
+  // One-time: copy images that still exist into SpotPlot's own folder and point at the copies
+  if (db.pragma('user_version', { simple: true }) < 2) {
+    const fs = require('fs');
+    const keep = p => { try { return p && fs.existsSync(p) ? storeImageCopy(p) : p; } catch(e) { return p; } };
+    for (const show of db.prepare("SELECT id, logo_path, custom_actions FROM shows").all()) {
+      const logo = keep(show.logo_path);
+      let actions = show.custom_actions;
+      try {
+        const parsed = JSON.parse(actions || 'null');
+        if (Array.isArray(parsed)) actions = JSON.stringify(parsed.map(a => a && a.icon ? { ...a, icon: keep(a.icon) } : a));
+      } catch(e) {}
+      db.prepare('UPDATE shows SET logo_path = ?, custom_actions = ? WHERE id = ?').run(logo, actions, show.id);
+    }
+    for (const c of db.prepare("SELECT id, photo_path FROM characters WHERE COALESCE(photo_path, '') <> ''").all()) {
+      db.prepare('UPDATE characters SET photo_path = ? WHERE id = ?').run(keep(c.photo_path), c.id);
+    }
+    db.pragma('user_version = 2');
   }
 }
 
@@ -576,7 +608,7 @@ app.on('open-file', (event, filePath) => {
   }
 });
 
-// Builds one printable sheet. kind: 'spot' | 'caller' | 'color' | 'notes'.
+// Builds one printable sheet. kind: 'spot' | 'caller' | 'color' | 'notes' | 'characters'.
 // The print preview and the PDF export both use this, so they always match.
 function buildSheet(kind, opts) {
   const database = getDb();
@@ -632,6 +664,14 @@ function buildSheet(kind, opts) {
       html: buildSpotNotesHTML({ show, spots: noteSpots, cues, scenes, spotCues, characters, label }),
       landscape: false, margin: PAGE_MARGINS.notes,
       fileName: `${show.title} - Spot Notes - ${labelPart}.pdf`,
+    };
+  }
+  if (kind === 'characters') {
+    const cast = database.prepare('SELECT * FROM characters WHERE show_id = ? ORDER BY sort_order, id').all(opts.showId);
+    return {
+      html: buildCharactersHTML({ show, characters: cast, label, showCostumeNotes: opts.showCostumeNotes !== false }),
+      landscape: false, margin: PAGE_MARGINS.characters,
+      fileName: `${show.title} - Characters - ${labelPart}.pdf`,
     };
   }
   throw new Error('Unknown sheet: ' + kind);
@@ -922,7 +962,14 @@ ipcMain.on('get-app-icon', (event) => {
       properties: ['openFile'],
       filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'svg', 'gif'] }],
     });
-    event.returnValue = result ? result[0] : null;
+    if (!result) { event.returnValue = null; return; }
+    try { event.returnValue = storeImageCopy(result[0]); }
+    catch(e) { console.error('Image copy error:', e); event.returnValue = result[0]; }
+  });
+  // Images dropped onto the window: keep our own copy, like the picker does
+  ipcMain.on('store-image', (event, filePath) => {
+    try { event.returnValue = storeImageCopy(filePath); }
+    catch(e) { console.error('Image copy error:', e); event.returnValue = filePath; }
   });
   ipcMain.on('db-create-show', (event, { form, spots }) => {
     try {

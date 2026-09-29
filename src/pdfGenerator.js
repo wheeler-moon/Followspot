@@ -1427,12 +1427,104 @@ function buildSpotNotesHTML({ show, spots, cues, scenes, spotCues, characters, l
 </html>`;
 }
 
+// Cast grid: photo, character, actor and costume notes for every character, with the standard show header
+function buildCharactersHTML({ show, characters, label, showCostumeNotes }) {
+  const fs = require('fs');
+  const imageData = (filePath) => {
+    if (!filePath) return '';
+    try {
+      const ext = filePath.split('.').pop().toLowerCase();
+      const mime = { png: 'image/png', gif: 'image/gif', svg: 'image/svg+xml', webp: 'image/webp' }[ext] || 'image/jpeg';
+      return `data:${mime};base64,${fs.readFileSync(filePath).toString('base64')}`;
+    } catch(e) { return ''; }
+  };
+  const logo = imageData(show.logo_path);
+  const initials = name => String(name || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+
+  // Always one page: choose the column count whose cells come out closest to a portrait card,
+  // then size text to the cell. Page content area is 7.7in x 10.1in (Letter minus margins).
+  const GAP = 10, GRID_W = 7.7 * 96, GRID_H = 10.05 * 96 - 96; // minus ~1in for the header
+  const n = Math.max(characters.length, 1);
+  let best = null;
+  for (let cols = 1; cols <= 8; cols++) {
+    const rows = Math.ceil(n / cols);
+    const cellW = (GRID_W - GAP * (cols - 1)) / cols;
+    const cellH = (GRID_H - GAP * (rows - 1)) / rows;
+    const emptyCells = cols * rows - n; // prefer grids without a ragged last row
+    const score = Math.abs(Math.log((cellW / cellH) / 0.62)) + emptyCells / (cols * rows);
+    if (!best || score < best.score) best = { cols, rows, cellW, cellH, score };
+  }
+  const k = Math.max(0.55, Math.min(1, best.cellW / 170));
+  const noteLines = best.cellH > 300 ? 5 : best.cellH > 200 ? 3 : 2;
+
+  const cardsHTML = characters.map(c => {
+    const photo = imageData(c.photo_path);
+    return `
+      <div class="card">
+        ${photo ? `<img class="photo" src="${photo}" />` : `<div class="photo placeholder">${escapeText(initials(c.name))}</div>`}
+        <div class="card-body">
+          <div class="char-name">${escapeText(c.name)}</div>
+          ${c.actor_name ? `<div class="actor-name">${escapeText(c.actor_name)}</div>` : ''}
+          ${showCostumeNotes && c.costume_notes ? `<div class="costume"><span class="costume-label">Costume</span>${escapeText(c.costume_notes)}</div>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  @page { size: 8.5in 11in; margin: 0.5in 0.4in 0.4in 0.4in; }
+  html, body { height: 10.05in; overflow: hidden; }
+  body { font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif; font-size: 11pt; color: #1a1a1a; background: white; display: flex; flex-direction: column; }
+
+  .header { flex-shrink: 0; display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 2.5px solid #1a1a1a; }
+  .header-left { flex: 1; }
+  .show-title { font-size: 22pt; font-weight: 800; letter-spacing: -0.5px; line-height: 1; margin-bottom: 4px; }
+  .header-team { font-size: 8.5pt; color: #555; margin-bottom: 2px; }
+  .header-right { text-align: right; flex-shrink: 0; }
+  .print-label { font-size: 14pt; font-weight: 800; color: #1a1a1a; }
+  .print-sub { font-size: 8.5pt; color: #888; margin-top: 2px; }
+
+  .grid { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(${best.cols}, 1fr); grid-template-rows: repeat(${best.rows}, 1fr); gap: ${GAP}px; }
+  .card { min-height: 0; display: flex; flex-direction: column; border: 1.5px solid #ddd; border-radius: ${Math.round(10 * k)}px; overflow: hidden; background: #fff; }
+  .photo { display: block; width: 100%; flex: 1; min-height: 0; object-fit: cover; background: #f0f0f0; }
+  .placeholder { display: flex; align-items: center; justify-content: center; font-size: ${(28 * k).toFixed(1)}pt; font-weight: 800; color: #c8c8c8; }
+  .card-body { flex-shrink: 0; padding: ${Math.round(7 * k)}px ${Math.round(9 * k)}px ${Math.round(9 * k)}px; }
+  .char-name { font-size: ${Math.max(7, 12 * k).toFixed(1)}pt; font-weight: 800; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .actor-name { font-size: ${Math.max(6.5, 9 * k).toFixed(1)}pt; color: #555; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .costume { font-size: ${Math.max(6, 8 * k).toFixed(1)}pt; color: #333; line-height: 1.35; margin-top: ${Math.round(5 * k)}px; padding-top: ${Math.round(5 * k)}px; border-top: 1px solid #eee; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: ${noteLines + 1}; overflow: hidden; }
+  .costume-label { display: block; font-size: ${Math.max(5.5, 6.5 * k).toFixed(1)}pt; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1px; }
+  .empty { color: #999; font-size: 11pt; padding: 40px 0; text-align: center; }
+</style>
+</head>
+<body>
+  <div class="header">
+    ${logo ? `<img style="width:56px;height:56px;object-fit:contain;border-radius:8px;flex-shrink:0;" src="${logo}" />` : ''}
+    <div class="header-left">
+      <div class="show-title">${escapeText(show.title)}</div>
+      <div class="header-team">${[show.designer ? 'LD: ' + show.designer : '', show.associate_ld ? 'Assoc: ' + show.associate_ld : '', show.assistant_ld ? 'Asst: ' + show.assistant_ld : ''].filter(Boolean).map(escapeText).join(' · ')}</div>
+    </div>
+    <div class="header-right">
+      <div class="print-label">${escapeText(label || 'Characters')}</div>
+      <div class="print-sub">Characters &amp; Cast · ${characters.length}</div>
+      <div class="print-sub">${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+    </div>
+  </div>
+  ${characters.length ? `<div class="grid">${cardsHTML}</div>` : '<div class="empty">No characters yet. Add them on the Characters screen.</div>'}
+</body>
+</html>`;
+}
+
 // Page margins per sheet type (the sheets' HTML is laid out for these)
 const PAGE_MARGINS = {
   spot: { top: '0.5in', right: '0.4in', bottom: '0.4in', left: '0.4in' },
   caller: { top: '0.4in', right: '0.35in', bottom: '0.35in', left: '0.35in' },
   color: { top: '0.5in', right: '0.4in', bottom: '0.4in', left: '0.4in' },
   notes: { top: '0.5in', right: '0.5in', bottom: '0.5in', left: '0.5in' },
+  characters: { top: '0.5in', right: '0.4in', bottom: '0.4in', left: '0.4in' },
 };
 
 // Saves a sheet's HTML as a Letter-size PDF
@@ -1454,4 +1546,4 @@ async function renderPDF(html, { landscape, margin }, outputPath) {
   return outputPath;
 }
 
-module.exports = { buildSpotSheetHTML, buildCallerSheetHTML, buildColorLoadHTML, buildSpotNotesHTML, renderPDF, PAGE_MARGINS };
+module.exports = { buildSpotSheetHTML, buildCallerSheetHTML, buildColorLoadHTML, buildSpotNotesHTML, buildCharactersHTML, renderPDF, PAGE_MARGINS };

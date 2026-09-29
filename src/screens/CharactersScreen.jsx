@@ -4,7 +4,8 @@ const { ipcRenderer, webUtils } = window.require('electron');
 const getDroppedImagePath = (e) => {
   const file = e.dataTransfer.files[0];
   if (!file || !file.type.startsWith('image/')) return null;
-  return webUtils.getPathForFile(file) || null;
+  const filePath = webUtils.getPathForFile(file);
+  return filePath ? ipcRenderer.sendSync('store-image', filePath) : null;
 };
 const getImageSrc = (path) => {
   if (!path) return null;
