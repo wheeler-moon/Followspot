@@ -194,7 +194,8 @@ export default function CharactersScreen({ show, navigate }) {
               No characters yet — add your first character above
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            // Apple grouped list: one rounded panel, rows divided by hairlines
+            <div style={{ display: 'flex', flexDirection: 'column', background: '#2A2A2A', borderRadius: '10px', overflow: 'hidden' }}>
               {characters.map((char, index) => (
                 <div key={char.id}
                   draggable
@@ -203,10 +204,11 @@ export default function CharactersScreen({ show, navigate }) {
                   onDrop={e => handleDrop(e, index)}
                   onDragLeave={() => setDragOverId(null)}
                   style={{
-                    background: dragOverId === index ? 'rgba(10,132,255,0.16)' : '#2A2A2A',
-                    border: `1px solid ${dragOverId === index ? '#0A84FF' : 'rgba(255,255,255,0.1)'}`,
-                    borderRadius: '10px', padding: '14px 16px',
-                    cursor: 'grab', transition: 'border-color 0.1s',
+                    background: dragOverId === index ? 'rgba(10,132,255,0.16)' : 'transparent',
+                    borderTop: index > 0 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+                    boxShadow: dragOverId === index ? 'inset 0 0 0 1px #0A84FF' : 'none',
+                    padding: '10px 14px',
+                    cursor: 'grab', transition: 'background 0.1s',
                   }}>
                   {editingId === char.id ? (
                     <div>
@@ -285,13 +287,13 @@ export default function CharactersScreen({ show, navigate }) {
                           Print
                         </label>
                         <button onClick={() => moveCharacter(index, -1)} disabled={index === 0}
-                          style={{ background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: index === 0 ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.52)', width: '26px', height: '26px', cursor: index === 0 ? 'default' : 'pointer', fontSize: '12px' }}>↑</button>
+                          style={{ background: 'transparent', border: 'none', borderRadius: '6px', color: index === 0 ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.52)', width: '24px', height: '24px', cursor: index === 0 ? 'default' : 'pointer', fontSize: '12px' }}>↑</button>
                         <button onClick={() => moveCharacter(index, 1)} disabled={index === characters.length - 1}
-                          style={{ background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: index === characters.length - 1 ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.52)', width: '26px', height: '26px', cursor: index === characters.length - 1 ? 'default' : 'pointer', fontSize: '12px' }}>↓</button>
+                          style={{ background: 'transparent', border: 'none', borderRadius: '6px', color: index === characters.length - 1 ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.52)', width: '24px', height: '24px', cursor: index === characters.length - 1 ? 'default' : 'pointer', fontSize: '12px' }}>↓</button>
                         <button onClick={() => startEdit(char)}
-                          style={{ background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', padding: '4px 10px', cursor: 'pointer', fontSize: '12px' }}>Edit</button>
+                          style={{ background: 'transparent', border: 'none', borderRadius: '6px', color: '#409CFF', padding: '4px 8px', cursor: 'pointer', fontSize: '12px', fontWeight: '500' }}>Edit</button>
                         <button onClick={() => deleteCharacter(char.id)}
-                          style={{ background: 'rgba(255,69,58,0.14)', border: 'none', borderRadius: '6px', color: '#FF453A', padding: '4px 10px', cursor: 'pointer', fontSize: '12px' }}>Delete</button>
+                          style={{ background: 'transparent', border: 'none', borderRadius: '6px', color: '#FF453A', padding: '4px 8px', cursor: 'pointer', fontSize: '12px', fontWeight: '500' }}>Delete</button>
                       </div>
                     </div>
                   )}

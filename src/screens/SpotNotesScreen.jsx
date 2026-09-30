@@ -85,7 +85,7 @@ export default function SpotNotesScreen({ show, navigate }) {
               const notes = notesForSpot(spot.id);
               return (
                 <div key={spot.id}>
-                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#409CFF', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px', paddingBottom: '8px', borderBottom: '2px solid #0A84FF' }}>
+                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#FFFFFF', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
                     Spot {spot.spot_number}{spot.operator_name ? ' · ' + spot.operator_name : ''}
                   </div>
                   {notes.length === 0 ? (
@@ -103,21 +103,21 @@ export default function SpotNotesScreen({ show, navigate }) {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                                   <span style={{ fontSize: '16px', fontWeight: '700', color: '#FFFFFF' }}>LQ {cue.lq_number || '—'}</span>
                                   <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>T·{cue.track_number}</span>
-                                  {scene && <span style={{ fontSize: '11px', color: '#409CFF', fontWeight: '600' }}>{scene.label}</span>}
+                                  {scene && <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)', fontWeight: '600' }}>{scene.label}</span>}
                                 </div>
                                 {sc.action && <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginTop: '2px' }}>{sc.action}{sc.character_id && charMap[sc.character_id] ? ' · ' + charMap[sc.character_id].name : ''}</div>}
                               </div>
                               <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
                                 <button onClick={() => toggleChecked(sc.id, isChecked)}
-                                  style={{ background: isChecked ? 'rgba(48,209,88,0.16)' : 'none', border: `1px solid ${isChecked ? '#30D158' : 'rgba(255,255,255,0.1)'}`, borderRadius: '6px', color: isChecked ? '#30D158' : 'rgba(255,255,255,0.45)', padding: '3px 8px', fontSize: '11px', cursor: 'pointer' }}>
+                                  style={{ background: isChecked ? 'rgba(48,209,88,0.16)' : 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: isChecked ? '#30D158' : '#FFFFFF', padding: '3px 8px', fontSize: '11px', fontWeight: '500', cursor: 'pointer' }}>
                                   {isChecked ? '✓ Done' : 'Check off'}
                                 </button>
                                 <button onClick={() => { setEditingId(sc.id); setEditText(sc.spot_note); }}
-                                  style={{ background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', padding: '3px 8px', fontSize: '11px', cursor: 'pointer' }}>
+                                  style={{ background: 'transparent', border: 'none', borderRadius: '6px', color: '#409CFF', padding: '3px 6px', fontSize: '11px', fontWeight: '500', cursor: 'pointer' }}>
                                   Edit
                                 </button>
                                 <button onClick={() => deleteNote(sc.id)}
-                                  style={{ background: 'rgba(255,69,58,0.14)', border: 'none', borderRadius: '6px', color: '#FF453A', padding: '3px 8px', fontSize: '11px', cursor: 'pointer' }}>
+                                  style={{ background: 'transparent', border: 'none', borderRadius: '6px', color: '#FF453A', padding: '3px 6px', fontSize: '11px', fontWeight: '500', cursor: 'pointer' }}>
                                   Delete
                                 </button>
                               </div>

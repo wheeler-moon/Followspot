@@ -94,7 +94,7 @@ export default function ScenesScreen({ show, navigate }) {
       </AppHeader>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
-        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '920px', margin: '0 auto' }}>
 
           <div style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
             <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Add scene</div>
@@ -148,9 +148,11 @@ export default function ScenesScreen({ show, navigate }) {
                 });
                 if (currentColumn.length > 0) columns.push(currentColumn);
                 return columns.map((col, colIndex) => (
-                  <div key={colIndex} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '200px' }}>
-                    {colIndex > 0 && <div style={{ fontSize: '10px', fontWeight: '700', color: '#409CFF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>Act Break</div>}
-                    {col.map(({ scene, index }) => (
+                  <div key={colIndex} style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: '200px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 6px 14px' }}>Act {colIndex + 1}</div>
+                    {/* Apple grouped list: one rounded panel, rows divided by hairlines */}
+                    <div style={{ background: '#2A2A2A', borderRadius: '10px', overflow: 'hidden' }}>
+                    {col.map(({ scene, index }, rowIndex) => (
                       <div key={scene.id}
                         draggable
                         onDragStart={e => handleDragStart(e, index)}
@@ -158,10 +160,11 @@ export default function ScenesScreen({ show, navigate }) {
                         onDrop={e => handleDrop(e, index)}
                         onDragLeave={() => setDragOverId(null)}
                         style={{
-                          background: dragOverId === index ? 'rgba(10,132,255,0.16)' : '#2A2A2A',
-                          border: `1px solid ${dragOverId === index ? '#0A84FF' : 'rgba(255,255,255,0.1)'}`,
-                          borderRadius: '10px', padding: '14px 16px',
-                          cursor: 'grab', transition: 'border-color 0.1s, background 0.1s',
+                          background: dragOverId === index ? 'rgba(10,132,255,0.16)' : 'transparent',
+                          borderTop: rowIndex > 0 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+                          boxShadow: dragOverId === index ? 'inset 0 0 0 1px #0A84FF' : 'none',
+                          padding: '10px 12px 10px 10px',
+                          cursor: 'grab', transition: 'background 0.1s',
                           minWidth: 0,
                         }}>
                         {editingId === scene.id ? (
@@ -193,32 +196,33 @@ export default function ScenesScreen({ show, navigate }) {
                             </div>
                           </div>
                         ) : (
-                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', flexWrap: 'wrap' }}>
-                            <div style={{ color: 'rgba(255,255,255,0.28)', fontSize: '18px', cursor: 'grab', flexShrink: 0 }}>⠿</div>
-                            <div style={{ flex: 1 }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)' }}>{index + 1}.</span>
-                                <span style={{ fontSize: '14px', fontWeight: '600', color: '#FFFFFF' }}>{scene.label}</span>
-                                {scene.act_break ? <span style={{ fontSize: '10px', padding: '2px 6px', background: 'rgba(10,132,255,0.16)', color: '#FF9F0A', borderRadius: '6px', fontWeight: '600' }}>ACT BREAK</span> : null}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ color: 'rgba(255,255,255,0.22)', fontSize: '15px', cursor: 'grab', flexShrink: 0 }}>⠿</div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                                <span style={{ fontSize: '11px', fontWeight: '500', color: 'rgba(255,255,255,0.35)', fontVariantNumeric: 'tabular-nums', minWidth: '18px', textAlign: 'right' }}>{index + 1}</span>
+                                <span style={{ fontSize: '13px', fontWeight: '600', color: '#FFFFFF' }}>{scene.label}</span>
+                                {scene.act_break ? <span style={{ fontSize: '10px', padding: '1px 6px', background: 'rgba(255,159,10,0.16)', color: '#FF9F0A', borderRadius: '6px', fontWeight: '600', whiteSpace: 'nowrap' }}>ACT BREAK</span> : null}
                               </div>
-                              {scene.song && <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginTop: '2px' }}>~ {scene.song}</div>}
+                              {scene.song && <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginTop: '2px', marginLeft: '26px' }}>{scene.song}</div>}
                             </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 }}>
-                              <div style={{ display: 'flex', gap: '4px' }}>
+                            <div style={{ display: 'flex', flexShrink: 0 }}>
+                              <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
                                 <button onClick={() => moveScene(index, -1)} disabled={index === 0}
-                                  style={{ background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: index === 0 ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.52)', width: '26px', height: '26px', cursor: index === 0 ? 'default' : 'pointer', fontSize: '12px' }}>↑</button>
+                                  style={{ background: 'transparent', border: 'none', borderRadius: '6px', color: index === 0 ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.52)', width: '24px', height: '24px', cursor: index === 0 ? 'default' : 'pointer', fontSize: '12px' }}>↑</button>
                                 <button onClick={() => moveScene(index, 1)} disabled={index === scenes.length - 1}
-                                  style={{ background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: index === scenes.length - 1 ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.52)', width: '26px', height: '26px', cursor: index === scenes.length - 1 ? 'default' : 'pointer', fontSize: '12px' }}>↓</button>
+                                  style={{ background: 'transparent', border: 'none', borderRadius: '6px', color: index === scenes.length - 1 ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.52)', width: '24px', height: '24px', cursor: index === scenes.length - 1 ? 'default' : 'pointer', fontSize: '12px' }}>↓</button>
                                 <button onClick={() => startEdit(scene)}
-                                  style={{ background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', padding: '4px 10px', cursor: 'pointer', fontSize: '12px' }}>Edit</button>
+                                  style={{ background: 'transparent', border: 'none', borderRadius: '6px', color: '#409CFF', padding: '4px 8px', cursor: 'pointer', fontSize: '12px', fontWeight: '500' }}>Edit</button>
                                 <button onClick={() => deleteScene(scene.id)}
-                                  style={{ background: 'rgba(255,69,58,0.14)', border: 'none', borderRadius: '6px', color: '#FF453A', padding: '4px 10px', cursor: 'pointer', fontSize: '12px' }}>Delete</button>
+                                  style={{ background: 'transparent', border: 'none', borderRadius: '6px', color: '#FF453A', padding: '4px 8px', cursor: 'pointer', fontSize: '12px', fontWeight: '500' }}>Delete</button>
                               </div>
                             </div>
                           </div>
                         )}
                       </div>
                     ))}
+                    </div>
                   </div>
                 ));
               })()}

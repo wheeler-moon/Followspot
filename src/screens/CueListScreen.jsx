@@ -642,7 +642,7 @@ function CueRow({ cue, isLastCue, spots, spotCues, characters, colorSlotsBySpot,
   return (
     <>
       <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-        onMouseEnter={e => e.currentTarget.style.background = '#1E1E1E'}
+        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.025)'}
         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
         <td style={{ padding: '8px 6px', borderRight: '1px solid rgba(255,255,255,0.06)', verticalAlign: 'top', width: '90px', minWidth: '90px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
@@ -651,21 +651,21 @@ function CueRow({ cue, isLastCue, spots, spotCues, characters, colorSlotsBySpot,
                 onBlur={saveLQ} onKeyDown={e => e.key === 'Enter' && saveLQ()}
                 style={{ width: '64px', background: 'rgba(255,255,255,0.05)', border: '1px solid #0A84FF', borderRadius: '6px', color: '#FFFFFF', padding: '3px 6px', fontSize: '16px', fontWeight: '700', textAlign: 'center', outline: 'none' }} />
             ) : (
-              <div onClick={() => setEditingLQ(true)} style={{ fontSize: '20px', fontWeight: '700', color: lqVal ? '#FFFFFF' : 'rgba(255,255,255,0.28)', cursor: 'pointer', minHeight: '24px' }}>
+              <div onClick={() => setEditingLQ(true)} style={{ fontSize: '20px', fontWeight: '700', color: lqVal ? '#FFFFFF' : 'rgba(255,255,255,0.28)', cursor: 'pointer', minHeight: '24px', fontVariantNumeric: 'tabular-nums' }}>
                 {lqVal || '—'}
               </div>
             )}
-            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.28)' }}>T·{cue.track_number}</div>
+            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', fontVariantNumeric: 'tabular-nums' }}>T·{cue.track_number}</div>
             <select value={cue.scene_id || ''} onChange={e => onUpdateCue(cue.id, 'scene_id', e.target.value ? parseInt(e.target.value) : null)}
-              style={{ width: '72px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '6px', color: 'rgba(255,255,255,0.28)', padding: '2px 2px', fontSize: '10px', outline: 'none', marginTop: '2px' }}>
+              style={{ width: '74px', height: '20px', background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '6px', color: 'rgba(255,255,255,0.45)', padding: '0 4px', fontSize: '10px', outline: 'none', marginTop: '4px' }}>
               <option value="">No scene</option>
               {scenes.map(s => <option key={s.id} value={s.id}>{s.label}{s.song ? ' · ' + s.song : ''}</option>)}
             </select>
             <div onClick={() => { if (window.confirm('Delete this cue?')) onDelete(cue.id); }}
-              style={{ fontSize: '10px', color: '#FF453A', cursor: 'pointer', marginTop: '2px', opacity: 0.4 }}
-              onMouseEnter={e => e.currentTarget.style.opacity = 1}
-              onMouseLeave={e => e.currentTarget.style.opacity = 0.4}>
-              del
+              style={{ fontSize: '10px', fontWeight: '500', color: '#FF453A', cursor: 'pointer', marginTop: '2px', padding: '1px 6px', borderRadius: '6px', opacity: 0.45 }}
+              onMouseEnter={e => { e.currentTarget.style.opacity = 1; e.currentTarget.style.background = 'rgba(255,69,58,0.14)'; }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = 0.45; e.currentTarget.style.background = 'transparent'; }}>
+              Delete
             </div>
           </div>
         </td>
@@ -936,7 +936,7 @@ const groupedCues = () => {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#1E1E1E' }}>
     <AppHeader title="Cue List" onBack={() => navigate('show', show)} backLabel={show.title}>
         <div style={{ flex: 1 }} />
-         <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)' }}>Jump to:</span>
+         <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)' }}>Jump to</span>
         <select value={selectedSceneId || ''} onChange={e => {
           const sceneId = e.target.value ? parseInt(e.target.value) : null;
           setSelectedSceneId(sceneId);
@@ -950,12 +950,12 @@ const groupedCues = () => {
             }
           }
         }}
-          style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '6px', color: 'rgba(255,255,255,0.78)', padding: '5px 8px', fontSize: '12px', outline: 'none' }}>
+          style={{ height: '28px', maxWidth: '260px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', padding: '0 8px', fontSize: '13px', outline: 'none' }}>
           <option value="">Jump to scene...</option>
           {(data?.scenes || []).map(s => <option key={s.id} value={s.id}>{s.label}{s.song ? ' · ' + s.song : ''}</option>)}
         </select>
-        <button onClick={() => setShowSceneModal(true)} style={{ padding: '5px 10px', background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '6px', color: 'rgba(255,255,255,0.62)', fontSize: '12px', cursor: 'pointer' }}>+ Scene</button>
-        <button onClick={() => setShowCharModal(true)} style={{ padding: '5px 10px', background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '6px', color: 'rgba(255,255,255,0.62)', fontSize: '12px', cursor: 'pointer' }}>+ Character</button>
+        <button onClick={() => setShowSceneModal(true)} style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>+ Scene</button>
+        <button onClick={() => setShowCharModal(true)} style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>+ Character</button>
       </AppHeader>
 
       <div ref={scrollRef} onScroll={() => {
@@ -988,11 +988,11 @@ const groupedCues = () => {
               {groupedCues().map((group, groupIndex, groups) => (
                 <React.Fragment key={group.sceneId || 'unassigned'}>
                   <tr data-scene-id={group.sceneId}>
-                    <td colSpan={(data?.spots || []).length + 1} style={{ padding: '5px 12px', background: group.actBreak ? 'rgba(255,159,10,0.10)' : 'rgba(255,255,255,0.05)',borderTop: `1px solid ${group.actBreak ? 'rgba(255,159,10,0.35)' : 'rgba(255,255,255,0.08)'}`, borderBottom: `1px solid ${group.actBreak ? 'rgba(255,159,10,0.35)' : 'rgba(255,255,255,0.08)'}` }}>
-                      <span style={{ fontSize: '11px', fontWeight: '600', color: group.actBreak ? '#FF9F0A' : '#30D158', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <td colSpan={(data?.spots || []).length + 1} style={{ padding: '7px 14px', background: group.actBreak ? 'rgba(255,159,10,0.10)' : '#262626', borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                      <span style={{ fontSize: '12px', fontWeight: '700', color: group.actBreak ? '#FF9F0A' : '#FFFFFF', letterSpacing: '0.01em' }}>
                         {group.sceneLabel}
                       </span>
-                      {group.sceneSong && <span style={{ fontSize: '11px', color: group.actBreak ? '#FF9F0A' : '#30D158', marginLeft: '8px' }}>· {group.sceneSong}</span>}
+                      {group.sceneSong && <span style={{ fontSize: '12px', color: group.actBreak ? 'rgba(255,159,10,0.75)' : 'rgba(255,255,255,0.55)', marginLeft: '8px' }}>{group.sceneSong}</span>}
                     </td>
                   </tr>
                   {group.cues.map((cue, cueIndex) => (

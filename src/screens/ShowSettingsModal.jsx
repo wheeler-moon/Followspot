@@ -26,15 +26,15 @@ export default function ShowSettingsModal({ show, onClose, onShowUpdate }) {
         onClick={e => e.stopPropagation()}>
 
         {/* Sidebar */}
-        <div style={{ width: '190px', background: 'rgba(255,255,255,0.05)', borderRight: '1px solid rgba(255,255,255,0.1)', padding: '24px 0', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontSize: '11px', fontWeight: '700', color: 'rgba(255,255,255,0.28)', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '0 18px', marginBottom: '16px' }}>
+        <div style={{ width: '200px', background: '#242424', borderRight: '1px solid rgba(0,0,0,0.35)', padding: '20px 0', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.40)', padding: '0 20px', marginBottom: '10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {show.title}
           </div>
           {SECTIONS.map(s => (
             <div key={s.id} onClick={() => setActiveSection(s.id)}
-              style={{ padding: '9px 18px', cursor: 'pointer', fontSize: '13px', fontWeight: activeSection === s.id ? '600' : '400', color: activeSection === s.id ? '#FFFFFF' : 'rgba(255,255,255,0.52)', background: activeSection === s.id ? 'rgba(10,132,255,0.15)' : 'transparent', borderLeft: `3px solid ${activeSection === s.id ? '#0A84FF' : 'transparent'}`, transition: 'all 0.1s' }}
-              onMouseEnter={e => { if (activeSection !== s.id) { e.currentTarget.style.color = 'rgba(255,255,255,0.78)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}}
-              onMouseLeave={e => { if (activeSection !== s.id) { e.currentTarget.style.color = 'rgba(255,255,255,0.52)'; e.currentTarget.style.background = 'transparent'; }}}>
+              style={{ margin: '0 10px', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: activeSection === s.id ? '600' : '400', color: activeSection === s.id ? '#FFFFFF' : 'rgba(255,255,255,0.72)', background: activeSection === s.id ? 'rgba(255,255,255,0.12)' : 'transparent' }}
+              onMouseEnter={e => { if (activeSection !== s.id) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}}
+              onMouseLeave={e => { if (activeSection !== s.id) { e.currentTarget.style.background = 'transparent'; }}}>
               {s.label}
             </div>
           ))}
