@@ -82,7 +82,7 @@ export default function App() {
   };
   if (licenseStatus === 'checking') {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#0f0f0f', color: '#555', fontSize: '14px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#1E1E1E', color: 'rgba(255,255,255,0.45)', fontSize: '14px' }}>
         Loading SpotPlot...
       </div>
     );
@@ -115,7 +115,7 @@ export default function App() {
   }
 
   return (
-    <div style={{ height: '100vh', background: '#0f0f0f', color: '#f0f0f0', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ height: '100vh', background: '#1E1E1E', color: '#FFFFFF', display: 'flex', flexDirection: 'column' }}>
       {screen === 'home' && <HomeScreen navigate={navigate} />}
       {screen === 'new-show' && <NewShowScreen navigate={navigate} />}
       {screen === 'show' && <ShowDashboard show={currentShow} navigate={navigate} />}

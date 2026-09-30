@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 const { ipcRenderer } = window.require('electron');
 
-const secondaryBtn = { flex: 1, height: '28px', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: '14px', color: '#fff', fontSize: '13px', fontWeight: '500', cursor: 'pointer' };
-const primaryBtn = { ...secondaryBtn, background: '#534AB7' };
+const secondaryBtn = { flex: 1, height: '28px', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: '14px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' };
+const primaryBtn = { ...secondaryBtn, background: '#0A84FF' };
 
 // Swaps every cue's data between two spots. Gels, operator and location stay with each spot.
 export default function SwapSpotsDialog({ spots, onClose, onSwapped }) {
@@ -25,19 +25,19 @@ export default function SwapSpotsDialog({ spots, onClose, onSwapped }) {
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 100000, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', padding: '20px', width: '340px', boxShadow: '0 18px 48px rgba(0,0,0,0.45)' }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', padding: '20px', width: '340px', boxShadow: '0 18px 48px rgba(0,0,0,0.45)' }}>
         {!confirming ? (
           <>
-            <div style={{ fontSize: '15px', fontWeight: '600', color: '#fff', marginBottom: '4px' }}>Swap spots</div>
+            <div style={{ fontSize: '15px', fontWeight: '600', color: '#FFFFFF', marginBottom: '4px' }}>Swap spots</div>
             <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)', marginBottom: '16px' }}>
               Moves every cue's data between two spots for the whole cue list.
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
               {[[a, setA], [b, setB]].map(([value, setValue], i) => (
                 <React.Fragment key={i}>
-                  {i === 1 && <span style={{ color: '#8A82E0', fontSize: '16px' }}>⇄</span>}
+                  {i === 1 && <span style={{ color: '#409CFF', fontSize: '16px' }}>⇄</span>}
                   <select value={value} onChange={e => setValue(parseInt(e.target.value))}
-                    style={{ flex: 1, height: '28px', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: '500', padding: '0 8px', outline: 'none' }}>
+                    style={{ flex: 1, height: '28px', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', padding: '0 8px', outline: 'none' }}>
                     {spots.map(s => <option key={s.id} value={s.id}>Spot {s.spot_number}{s.operator_name ? ' (' + s.operator_name + ')' : ''}</option>)}
                   </select>
                 </React.Fragment>
@@ -51,13 +51,13 @@ export default function SwapSpotsDialog({ spots, onClose, onSwapped }) {
           </>
         ) : (
           <>
-            <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>
+            <div style={{ fontSize: '13px', fontWeight: '700', color: '#FFFFFF', marginBottom: '8px' }}>
               Swap all cue data between {spotLabel(a)} and {spotLabel(b)}?
             </div>
             <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)', lineHeight: '18px', marginBottom: '16px' }}>
               Actions, characters, intensities, frames, times, When, notes, spot notes, highlights and ignores all move. Gel colors, operator and location stay with each spot. To undo, swap them again.
               {gelsDiffer && (
-                <div style={{ marginTop: '10px', color: '#FF9230' }}>
+                <div style={{ marginTop: '10px', color: '#FF9F0A' }}>
                   These spots have different gel loads. Cue frame numbers move with the cues, so check the colors afterwards.
                 </div>
               )}

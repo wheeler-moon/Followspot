@@ -6,8 +6,8 @@ const { ipcRenderer } = window.require('electron');
 const FIXTURES = ['Strong Super Trouper','Strong Gladiator','Lycian 1290','Lycian Starklite','Robert Juliat Lancelot','Robert Juliat Merlin','Altman Comet','Robe BMFL','Robe Esprite','High End SolaSpot','Moving Light - Other','Other'];
 
 const inputStyle = {
-  width: '100%', background: '#111', border: '1px solid #2a2a2a',
-  borderRadius: '6px', color: '#f0f0f0', padding: '7px 10px',
+  width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: '6px', color: '#FFFFFF', padding: '7px 10px',
   fontSize: '13px', outline: 'none', boxSizing: 'border-box',
 };
 
@@ -44,15 +44,15 @@ function GelPicker({ value, onChange, placeholder }) {
         onChange={e => { setQuery(e.target.value); onChange({ gel_number: '', gel_name: e.target.value }); }}
         onFocus={() => query.length > 0 && results.length > 0 && setOpen(true)} />
       {open && (
-        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1000, background: '#1a1a1a', border: '1px solid #3a3a3a', borderRadius: '6px', maxHeight: '180px', overflowY: 'auto', marginTop: '2px' }}>
+        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1000, background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.14)', borderRadius: '6px', maxHeight: '180px', overflowY: 'auto', marginTop: '2px' }}>
           {results.map((gel, i) => (
             <div key={i} onMouseDown={() => select(gel)}
-              style={{ padding: '6px 10px', cursor: 'pointer', fontSize: '12px', borderBottom: '1px solid #2a2a2a', display: 'flex', gap: '8px' }}
-              onMouseEnter={e => e.currentTarget.style.background = '#2a2a2a'}
+              style={{ padding: '6px 10px', cursor: 'pointer', fontSize: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', gap: '8px' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-              <span style={{ color: '#534AB7', fontWeight: '600', minWidth: '50px' }}>{gel.gel_number}</span>
-              <span style={{ color: '#ccc' }}>{gel.gel_name}</span>
-              <span style={{ color: '#555', marginLeft: 'auto' }}>{gel.manufacturer}</span>
+              <span style={{ color: '#409CFF', fontWeight: '600', minWidth: '50px' }}>{gel.gel_number}</span>
+              <span style={{ color: 'rgba(255,255,255,0.78)' }}>{gel.gel_name}</span>
+              <span style={{ color: 'rgba(255,255,255,0.45)', marginLeft: 'auto' }}>{gel.manufacturer}</span>
             </div>
           ))}
         </div>
@@ -71,9 +71,9 @@ function SpotCard({ spot, colorSlots, onUpdateSpot, onUpdateGel, onDelete, other
   const permSlot = slots.find(s => s.is_permanent);
 
   return (
-    <div style={{ background: '#111', border: '1px solid #2a2a2a', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+    <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-        <div style={{ fontSize: '14px', fontWeight: '700', color: '#534AB7' }}>
+        <div style={{ fontSize: '14px', fontWeight: '700', color: '#409CFF' }}>
           Spot {spot.spot_number}
         </div>
         <div style={{ flex: 1 }} />
@@ -84,32 +84,32 @@ function SpotCard({ spot, colorSlots, onUpdateSpot, onUpdateGel, onDelete, other
             onDelete();
             onUpdateSpot(spot.id, '_deleted', true);
           }
-        }} style={{ background: 'none', border: '1px solid #3a2a2a', borderRadius: '6px', color: '#c44', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', marginLeft: '8px' }}>
+        }} style={{ background: 'rgba(255,69,58,0.14)', border: 'none', borderRadius: '6px', color: '#FF453A', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', marginLeft: '8px' }}>
           Delete spot
         </button>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
         <div>
-          <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>Operator name</div>
+          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Operator name</div>
           <input style={inputStyle} defaultValue={spot.operator_name || ''}
             onBlur={e => onUpdateSpot(spot.id, 'operator_name', e.target.value)}
             placeholder="e.g. Lindsay" />
         </div>
         <div>
-          <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>Location</div>
+          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Location</div>
           <input style={inputStyle} defaultValue={spot.location || ''}
             onBlur={e => onUpdateSpot(spot.id, 'location', e.target.value)}
             placeholder="e.g. FOH Left Booth" />
         </div>
         <div style={{ gridColumn: '1 / -1' }}>
-          <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>Fixture type</div>
+          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Fixture type</div>
           {showCustomFixture ? (
             <div>
               <input style={inputStyle} defaultValue={spot.fixture_type || ''}
                 onBlur={e => onUpdateSpot(spot.id, 'fixture_type', e.target.value)}
                 placeholder="Enter fixture type..." />
               <div onClick={() => { onUpdateSpot(spot.id, 'fixture_type', ''); setShowCustomFixture(false); }}
-                style={{ fontSize: '11px', color: '#534AB7', cursor: 'pointer', marginTop: '4px' }}>
+                style={{ fontSize: '11px', color: '#409CFF', cursor: 'pointer', marginTop: '4px' }}>
                 Choose from list instead
               </div>
             </div>
@@ -125,11 +125,11 @@ function SpotCard({ spot, colorSlots, onUpdateSpot, onUpdateGel, onDelete, other
           )}
         </div>
       </div>
-      <div style={{ fontSize: '11px', color: '#666', marginBottom: '8px' }}>Color frames</div>
+      <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '8px' }}>Color frames</div>
       <div key={copyCount} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '8px' }}>
         {regularSlots.map(slot => (
-          <div key={slot.id} style={{ background: '#1a1a1a', borderRadius: '8px', padding: '8px' }}>
-            <div style={{ fontSize: '10px', color: '#555', marginBottom: '4px', fontWeight: '600' }}>Frame {slot.slot_number}</div>
+          <div key={slot.id} style={{ background: '#2A2A2A', borderRadius: '8px', padding: '8px' }}>
+            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', marginBottom: '4px', fontWeight: '600' }}>Frame {slot.slot_number}</div>
             <GelPicker
               value={slot.gel_number ? slot.gel_number + ' ' + slot.gel_name : ''}
               onChange={gel => onUpdateGel(spot.id, slot.id, gel)}
@@ -138,8 +138,8 @@ function SpotCard({ spot, colorSlots, onUpdateSpot, onUpdateGel, onDelete, other
         ))}
       </div>
       {permSlot && (
-        <div style={{ background: '#1a1a1a', borderRadius: '8px', padding: '8px', border: '1px solid #3a3020' }}>
-          <div style={{ fontSize: '10px', color: '#8a6a20', marginBottom: '6px', fontWeight: '600' }}>Permanent frame</div>
+        <div style={{ background: '#2A2A2A', borderRadius: '8px', padding: '8px', border: '1px solid rgba(255,214,10,0.25)' }}>
+          <div style={{ fontSize: '10px', color: '#C8A26B', marginBottom: '6px', fontWeight: '600' }}>Permanent frame</div>
           <GelPicker key={copyCount}
             value={permSlot.gel_number ? permSlot.gel_number + ' ' + permSlot.gel_name : ''}
             onChange={gel => onUpdateGel(spot.id, permSlot.id, gel)}
@@ -198,7 +198,7 @@ export default function SpotSettingsPanel({ show }) {
     <div>
       {spots.length >= 2 && (
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
-          <button onClick={() => setShowSwap(true)} style={{ height: '28px', padding: '0 14px', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: '14px', color: '#fff', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
+          <button onClick={() => setShowSwap(true)} style={{ height: '28px', padding: '0 14px', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: '14px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
             ⇄ Swap spots
           </button>
         </div>
@@ -221,7 +221,7 @@ export default function SpotSettingsPanel({ show }) {
           const newSpotNumber = spots.length + 1;
           const result = ipcRenderer.sendSync('db-add-spot', { showId: show.id, spotNumber: newSpotNumber });
           if (result.success) load();
-        }} style={{ width: '100%', padding: '10px', background: 'none', border: '1px dashed #2a2a2a', borderRadius: '10px', color: '#534AB7', fontSize: '13px', fontWeight: '600', cursor: 'pointer', marginTop: '8px' }}>
+        }} style={{ width: '100%', padding: '10px', background: 'none', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '10px', color: '#409CFF', fontSize: '13px', fontWeight: '600', cursor: 'pointer', marginTop: '8px' }}>
           + Add Spot
         </button>
       )}

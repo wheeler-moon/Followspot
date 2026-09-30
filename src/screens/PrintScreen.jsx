@@ -3,17 +3,17 @@ import AppHeader from '../components/AppHeader';
 const { ipcRenderer } = window.require('electron');
 
 const sectionLabel = { fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' };
-const fieldStyle = { width: '100%', boxSizing: 'border-box', height: '28px', background: '#0f0f0f', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '6px', color: '#fff', padding: '0 10px', fontSize: '13px', outline: 'none' };
+const fieldStyle = { width: '100%', boxSizing: 'border-box', height: '28px', background: '#1E1E1E', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '6px', color: '#FFFFFF', padding: '0 10px', fontSize: '13px', outline: 'none' };
 
 function Switch({ on, onChange, label, hint }) {
   return (
     <div onClick={() => onChange(!on)} role="switch" aria-checked={on}
       style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginBottom: '12px' }}>
-      <div style={{ width: '44px', height: '20px', borderRadius: '10px', background: on ? '#534AB7' : 'rgba(255,255,255,0.10)', position: 'relative', flexShrink: 0, transition: 'background 0.15s' }}>
+      <div style={{ width: '44px', height: '20px', borderRadius: '10px', background: on ? '#0A84FF' : 'rgba(255,255,255,0.10)', position: 'relative', flexShrink: 0, transition: 'background 0.15s' }}>
         <div style={{ position: 'absolute', top: '2px', left: on ? '16px' : '2px', width: '26px', height: '16px', borderRadius: '8px', background: 'rgba(255,255,255,0.85)', boxShadow: '0 3px 8px rgba(0,0,0,0.15)', transition: 'left 0.15s' }} />
       </div>
       <div>
-        <div style={{ fontSize: '13px', color: '#fff' }}>{label}</div>
+        <div style={{ fontSize: '13px', color: '#FFFFFF' }}>{label}</div>
         {hint && <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)' }}>{hint}</div>}
       </div>
     </div>
@@ -30,10 +30,10 @@ function PdfPreview({ preview, updating }) {
   }, [preview]);
 
   return (
-    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: '#262626' }}>
+    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: '#161616' }}>
       <div style={{ flexShrink: 0, height: '32px', display: 'flex', alignItems: 'center', gap: '10px', padding: '0 16px', borderBottom: '1px solid rgba(255,255,255,0.10)', fontSize: '12px', color: 'rgba(255,255,255,0.55)' }}>
         <span>{preview.pages} page{preview.pages === 1 ? '' : 's'}</span>
-        {updating && <span style={{ color: '#8A82E0' }}>Updating…</span>}
+        {updating && <span style={{ color: '#409CFF' }}>Updating…</span>}
       </div>
       {url && <iframe key={url} src={url + '#toolbar=0&navpanes=0&view=FitH'} title="Print preview" style={{ flex: 1, width: '100%', border: 'none' }} />}
     </div>
@@ -117,20 +117,20 @@ export default function PrintScreen({ show, navigate }) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#0f0f0f', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#1E1E1E', overflow: 'hidden' }}>
       <AppHeader title="Print" onBack={() => navigate('show', show)} backLabel={show.title}>
         <div style={{ flex: 1 }} />
         {message && (
-          <span style={{ fontSize: '13px', color: message.ok ? '#30D158' : '#FF4245', marginRight: '12px' }}>
+          <span style={{ fontSize: '13px', color: message.ok ? '#30D158' : '#FF453A', marginRight: '12px' }}>
             {message.text}
             {message.path && (
               <span onClick={() => ipcRenderer.send('reveal-file', message.path)}
-                style={{ color: '#8A82E0', cursor: 'pointer', marginLeft: '8px' }}>Show in Finder</span>
+                style={{ color: '#409CFF', cursor: 'pointer', marginLeft: '8px' }}>Show in Finder</span>
             )}
           </span>
         )}
         <button onClick={exportPDF} disabled={!selected || exporting}
-          style={{ height: '28px', padding: '0 16px', background: '#534AB7', border: 'none', borderRadius: '14px', color: '#fff', fontSize: '13px', fontWeight: '500', cursor: selected && !exporting ? 'pointer' : 'default', opacity: selected && !exporting ? 1 : 0.5 }}>
+          style={{ height: '28px', padding: '0 16px', background: '#0A84FF', border: 'none', borderRadius: '14px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: selected && !exporting ? 'pointer' : 'default', opacity: selected && !exporting ? 1 : 0.5 }}>
           {exporting ? 'Saving…' : 'Export PDF…'}
         </button>
       </AppHeader>
@@ -144,10 +144,10 @@ export default function PrintScreen({ show, navigate }) {
               const isSel = selected?.key === item.key;
               return (
                 <div key={item.key} onClick={() => { setSelected(item); setMessage(null); }}
-                  style={{ padding: '8px 10px', borderRadius: '6px', cursor: 'pointer', background: isSel ? 'rgba(83,74,183,0.30)' : 'transparent' }}
+                  style={{ padding: '8px 10px', borderRadius: '6px', cursor: 'pointer', background: isSel ? 'rgba(10,132,255,0.30)' : 'transparent' }}
                   onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
                   onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = 'transparent'; }}>
-                  <div style={{ fontSize: '13px', fontWeight: '600', color: isSel ? '#fff' : '#f0f0f0' }}>{item.title}</div>
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: isSel ? '#FFFFFF' : '#FFFFFF' }}>{item.title}</div>
                   <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)' }}>{item.sub}</div>
                 </div>
               );
@@ -197,17 +197,17 @@ export default function PrintScreen({ show, navigate }) {
 
         {/* Live preview */}
         {!selected ? (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#262626', color: 'rgba(255,255,255,0.55)', fontSize: '15px' }}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#161616', color: 'rgba(255,255,255,0.55)', fontSize: '15px' }}>
             Select what you want to print
           </div>
         ) : previewError ? (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#262626', color: '#FF4245', fontSize: '13px' }}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#161616', color: '#FF453A', fontSize: '13px' }}>
             {previewError}
           </div>
         ) : preview ? (
           <PdfPreview preview={preview} updating={updating} />
         ) : (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#262626', color: 'rgba(255,255,255,0.55)', fontSize: '13px' }}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#161616', color: 'rgba(255,255,255,0.55)', fontSize: '13px' }}>
             Preparing preview…
           </div>
         )}

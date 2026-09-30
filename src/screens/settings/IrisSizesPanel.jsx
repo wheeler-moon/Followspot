@@ -40,61 +40,61 @@ export default function IrisSizesPanel({ show }) {
   };
 
   const inputStyle = {
-    background: '#111', border: '1px solid #2a2a2a', borderRadius: '6px',
-    color: '#f0f0f0', padding: '7px 10px', fontSize: '13px', outline: 'none',
+    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px',
+    color: '#FFFFFF', padding: '7px 10px', fontSize: '13px', outline: 'none',
   };
 
   return (
     <div>
-      <div style={{ fontSize: '13px', color: '#666', marginBottom: '16px' }}>
+      <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.52)', marginBottom: '16px' }}>
         Default iris sizes are always available. Add custom sizes specific to this show.
       </div>
 
-      <div style={{ fontSize: '11px', fontWeight: '600', color: '#555', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Default sizes</div>
+      <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Default sizes</div>
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px' }}>
         {DEFAULT_IRIS_SIZES.map(s => (
-          <div key={s.value} style={{ background: '#111', border: '1px solid #2a2a2a', borderRadius: '8px', padding: '8px 14px' }}>
-            <div style={{ fontSize: '13px', fontWeight: '700', color: '#f0f0f0' }}>{s.label}</div>
-            <div style={{ fontSize: '11px', color: '#555', marginTop: '2px' }}>{s.value}</div>
+          <div key={s.value} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '8px 14px' }}>
+            <div style={{ fontSize: '13px', fontWeight: '700', color: '#FFFFFF' }}>{s.label}</div>
+            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', marginTop: '2px' }}>{s.value}</div>
           </div>
         ))}
       </div>
 
-      <div style={{ fontSize: '11px', fontWeight: '600', color: '#555', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Custom sizes</div>
+      <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Custom sizes</div>
       {customSizes.length > 0 && (
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
           {customSizes.map((s, i) => (
-            <div key={i} style={{ background: '#1a1a2e', border: '1px solid #534AB7', borderRadius: '8px', padding: '8px 14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div key={i} style={{ background: 'rgba(10,132,255,0.16)', border: '1px solid #0A84FF', borderRadius: '8px', padding: '8px 14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div>
-                <div style={{ fontSize: '13px', fontWeight: '700', color: '#f0f0f0' }}>{s.label}</div>
-                <div style={{ fontSize: '11px', color: '#888', marginTop: '2px' }}>{s.value}</div>
+                <div style={{ fontSize: '13px', fontWeight: '700', color: '#FFFFFF' }}>{s.label}</div>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.62)', marginTop: '2px' }}>{s.value}</div>
               </div>
               <button onClick={() => deleteSize(i)}
-                style={{ background: 'none', border: 'none', color: '#c44', fontSize: '16px', cursor: 'pointer', padding: '0 2px' }}>×</button>
+                style={{ background: 'none', border: 'none', color: '#FF453A', fontSize: '16px', cursor: 'pointer', padding: '0 2px' }}>×</button>
             </div>
           ))}
         </div>
       )}
 
-      <div style={{ background: '#111', border: '1px solid #2a2a2a', borderRadius: '10px', padding: '14px' }}>
-        <div style={{ fontSize: '11px', color: '#555', marginBottom: '10px', fontWeight: '600' }}>Add custom size</div>
+      <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '14px' }}>
+        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', marginBottom: '10px', fontWeight: '600' }}>Add custom size</div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
           <div>
-            <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>Button label</div>
+            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Button label</div>
             <input style={{ ...inputStyle, width: '80px' }} value={newLabel}
               onChange={e => setNewLabel(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && addSize()}
               placeholder="e.g. Ks" />
           </div>
           <div>
-            <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>Full name</div>
+            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Full name</div>
             <input style={{ ...inputStyle, width: '160px' }} value={newValue}
               onChange={e => setNewValue(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && addSize()}
               placeholder="e.g. Knees" />
           </div>
           <button onClick={addSize}
-            style={{ padding: '7px 16px', background: '#534AB7', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+            style={{ padding: '7px 16px', background: '#0A84FF', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
             Add
           </button>
         </div>

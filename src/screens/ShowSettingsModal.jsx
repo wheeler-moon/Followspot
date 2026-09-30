@@ -22,19 +22,19 @@ export default function ShowSettingsModal({ show, onClose, onShowUpdate }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       onClick={onClose}>
-      <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '16px', width: '820px', height: '580px', display: 'flex', overflow: 'hidden', resize: 'both', minWidth: '600px', minHeight: '400px' }}
+      <div style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', width: '820px', height: '580px', display: 'flex', overflow: 'hidden', resize: 'both', minWidth: '600px', minHeight: '400px' }}
         onClick={e => e.stopPropagation()}>
 
         {/* Sidebar */}
-        <div style={{ width: '190px', background: '#111', borderRight: '1px solid #2a2a2a', padding: '24px 0', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontSize: '11px', fontWeight: '700', color: '#444', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '0 18px', marginBottom: '16px' }}>
+        <div style={{ width: '190px', background: 'rgba(255,255,255,0.05)', borderRight: '1px solid rgba(255,255,255,0.1)', padding: '24px 0', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ fontSize: '11px', fontWeight: '700', color: 'rgba(255,255,255,0.28)', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '0 18px', marginBottom: '16px' }}>
             {show.title}
           </div>
           {SECTIONS.map(s => (
             <div key={s.id} onClick={() => setActiveSection(s.id)}
-              style={{ padding: '9px 18px', cursor: 'pointer', fontSize: '13px', fontWeight: activeSection === s.id ? '600' : '400', color: activeSection === s.id ? '#f0f0f0' : '#666', background: activeSection === s.id ? 'rgba(83,74,183,0.15)' : 'transparent', borderLeft: `3px solid ${activeSection === s.id ? '#534AB7' : 'transparent'}`, transition: 'all 0.1s' }}
-              onMouseEnter={e => { if (activeSection !== s.id) { e.currentTarget.style.color = '#aaa'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}}
-              onMouseLeave={e => { if (activeSection !== s.id) { e.currentTarget.style.color = '#666'; e.currentTarget.style.background = 'transparent'; }}}>
+              style={{ padding: '9px 18px', cursor: 'pointer', fontSize: '13px', fontWeight: activeSection === s.id ? '600' : '400', color: activeSection === s.id ? '#FFFFFF' : 'rgba(255,255,255,0.52)', background: activeSection === s.id ? 'rgba(10,132,255,0.15)' : 'transparent', borderLeft: `3px solid ${activeSection === s.id ? '#0A84FF' : 'transparent'}`, transition: 'all 0.1s' }}
+              onMouseEnter={e => { if (activeSection !== s.id) { e.currentTarget.style.color = 'rgba(255,255,255,0.78)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}}
+              onMouseLeave={e => { if (activeSection !== s.id) { e.currentTarget.style.color = 'rgba(255,255,255,0.52)'; e.currentTarget.style.background = 'transparent'; }}}>
               {s.label}
             </div>
           ))}
@@ -42,12 +42,12 @@ export default function ShowSettingsModal({ show, onClose, onShowUpdate }) {
 
         {/* Content area */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px 16px', borderBottom: '1px solid #2a2a2a', flexShrink: 0 }}>
-            <div style={{ fontSize: '16px', fontWeight: '700', color: '#f0f0f0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px 16px', borderBottom: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}>
+            <div style={{ fontSize: '16px', fontWeight: '700', color: '#FFFFFF' }}>
               {SECTIONS.find(s => s.id === activeSection)?.label}
             </div>
             <button onClick={onClose}
-              style={{ background: 'none', border: 'none', color: '#555', fontSize: '22px', cursor: 'pointer', lineHeight: 1 }}>×</button>
+              style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.45)', fontSize: '22px', cursor: 'pointer', lineHeight: 1 }}>×</button>
           </div>
           <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
             {activeSection === 'show-info' && <ShowInfoPanel show={show} onShowUpdate={onShowUpdate} onClose={onClose} />}

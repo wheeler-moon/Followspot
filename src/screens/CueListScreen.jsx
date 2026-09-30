@@ -162,25 +162,25 @@ function getGelColor(gelNum) {
 }
 
 const ACTIONS = [
-  { name: 'Pick Up', short: 'Pick Up', color: '#3B6D11', intensityDefault: 'Full', timeDefault: null },
-  { name: 'Fade Up', short: 'Fade Up', color: '#3B6D11', intensityDefault: null, timeDefault: null },
-  { name: 'Fade Down', short: 'Fade Down', color: '#A32D2D', intensityDefault: null, timeDefault: null },
-  { name: 'Fade Out', short: 'Fade Out', color: '#A32D2D', intensityDefault: 'Out', timeDefault: null },
-  { name: 'Fade In Place', short: 'Fade In Plce', color: '#A32D2D', intensityDefault: 'Out', timeDefault: null },
-  { name: 'Bump Up', short: 'Bump Up', color: '#3B6D11', intensityDefault: 'Full', timeDefault: '0' },
-  { name: 'Bump Out', short: 'Bump Out', color: '#A32D2D', intensityDefault: 'Out', timeDefault: '0' },
-  { name: 'Swap To', short: 'Swap To', color: '#185FA5', intensityDefault: null, timeDefault: null },
-  { name: 'Slide To', short: 'Slide To', color: '#185FA5', intensityDefault: null, timeDefault: null },
-  { name: 'Stay With', short: 'Stay With', color: '#185FA5', intensityDefault: null, timeDefault: null },
-  { name: 'Iris In', short: 'Iris In', color: '#534AB7', intensityDefault: null, timeDefault: null },
-  { name: 'Iris Out', short: 'Iris Out', color: '#534AB7', intensityDefault: null, timeDefault: null },
-  { name: 'Iris/Fade Up', short: 'Iris/Fade Up', color: '#534AB7', intensityDefault: null, timeDefault: null },
-  { name: 'Iris/Fade Down', short: 'Iris/Fade Dn', color: '#534AB7', intensityDefault: null, timeDefault: null },
-  { name: 'Iris/Fade Out', short: 'Iris/Fade Out', color: '#534AB7', intensityDefault: 'Out', timeDefault: null },
-  { name: 'Up & Out', short: 'Up & Out', color: '#854F0B', intensityDefault: 'Full', timeDefault: null },
-  { name: 'Bump Color', short: 'Bump Color', color: '#854F0B', intensityDefault: null, timeDefault: '0' },
-  { name: 'Roll Color', short: 'Roll Color', color: '#854F0B', intensityDefault: null, timeDefault: null },
-  { name: 'Ballyhoo', short: 'Ballyhoo', color: '#D85A30', intensityDefault: null, timeDefault: null },
+  { name: 'Pick Up', short: 'Pick Up', color: '#30D158', intensityDefault: 'Full', timeDefault: null },
+  { name: 'Fade Up', short: 'Fade Up', color: '#30D158', intensityDefault: null, timeDefault: null },
+  { name: 'Fade Down', short: 'Fade Down', color: '#FF453A', intensityDefault: null, timeDefault: null },
+  { name: 'Fade Out', short: 'Fade Out', color: '#FF453A', intensityDefault: 'Out', timeDefault: null },
+  { name: 'Fade In Place', short: 'Fade In Plce', color: '#FF453A', intensityDefault: 'Out', timeDefault: null },
+  { name: 'Bump Up', short: 'Bump Up', color: '#30D158', intensityDefault: 'Full', timeDefault: '0' },
+  { name: 'Bump Out', short: 'Bump Out', color: '#FF453A', intensityDefault: 'Out', timeDefault: '0' },
+  { name: 'Swap To', short: 'Swap To', color: '#64D2FF', intensityDefault: null, timeDefault: null },
+  { name: 'Slide To', short: 'Slide To', color: '#64D2FF', intensityDefault: null, timeDefault: null },
+  { name: 'Stay With', short: 'Stay With', color: '#64D2FF', intensityDefault: null, timeDefault: null },
+  { name: 'Iris In', short: 'Iris In', color: '#5E5CE6', intensityDefault: null, timeDefault: null },
+  { name: 'Iris Out', short: 'Iris Out', color: '#5E5CE6', intensityDefault: null, timeDefault: null },
+  { name: 'Iris/Fade Up', short: 'Iris/Fade Up', color: '#5E5CE6', intensityDefault: null, timeDefault: null },
+  { name: 'Iris/Fade Down', short: 'Iris/Fade Dn', color: '#5E5CE6', intensityDefault: null, timeDefault: null },
+  { name: 'Iris/Fade Out', short: 'Iris/Fade Out', color: '#5E5CE6', intensityDefault: 'Out', timeDefault: null },
+  { name: 'Up & Out', short: 'Up & Out', color: '#AC8E68', intensityDefault: 'Full', timeDefault: null },
+  { name: 'Bump Color', short: 'Bump Color', color: '#AC8E68', intensityDefault: null, timeDefault: '0' },
+  { name: 'Roll Color', short: 'Roll Color', color: '#AC8E68', intensityDefault: null, timeDefault: null },
+  { name: 'Ballyhoo', short: 'Ballyhoo', color: '#FF9F0A', intensityDefault: null, timeDefault: null },
   { name: 'Off', short: 'Off', color: '#444', intensityDefault: 'Out', timeDefault: null },
   { name: 'Tracked', short: 'TRK', color: '#555555' },
 ];
@@ -190,36 +190,36 @@ const TIMES = ['0','1','2','3','4','5','6','7','8','9','10','Custom'];
 const IRIS_SIZES = ['Full Body', '3/4 Body', '1/2 Body', 'Head & Shoulders', 'Head', 'Custom'];
 
 // Background for a highlighted When or Notes line (stronger than the whole-cell tint so a thin line reads)
-const lineHighlightStyle = (color) => color === 'yellow' ? { background: 'rgba(200,160,0,0.25)', padding: '2px 4px' }
-  : color === 'red' ? { background: 'rgba(200,60,60,0.25)', padding: '2px 4px' } : {};
+const lineHighlightStyle = (color) => color === 'yellow' ? { background: 'rgba(255,214,10,0.25)', padding: '2px 4px' }
+  : color === 'red' ? { background: 'rgba(255,69,58,0.25)', padding: '2px 4px' } : {};
 const selectStyle = {
-  width: '100%', background: '#111', border: '1px solid #2a2a2a',
-  borderRadius: '4px', color: '#888', padding: '3px 4px',
+  width: '100%', background: 'rgba(255,255,255,0.08)', border: 'none',
+  borderRadius: '6px', color: 'rgba(255,255,255,0.62)', padding: '3px 6px',
   fontSize: '11px', outline: 'none',
 };
 
 function ActionIcon({ action, size = 20 }) {
   const s = size;
   switch (action) {
-    case 'Pick Up': return <svg width={s} height={s} viewBox="0 0 32 32"><polygon points="16,4 24,20 8,20" fill="#3B6D11"/><polygon points="16,14 22,26 10,26" fill="#639922" opacity="0.5"/></svg>;
-    case 'Fade Up': return <svg width={s} height={s} viewBox="0 0 32 32"><polygon points="16,5 23,18 9,18" fill="#3B6D11"/></svg>;
-    case 'Fade Down': return <svg width={s} height={s} viewBox="0 0 32 32"><polygon points="16,27 23,14 9,14" fill="#A32D2D"/></svg>;
-    case 'Fade Out': return <svg width={s} height={s} viewBox="0 0 32 32"><polygon points="16,28 24,12 8,12" fill="#A32D2D"/><polygon points="16,18 22,6 10,6" fill="#E24B4A" opacity="0.5"/></svg>;
-    case 'Fade In Place': return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="none" stroke="#A32D2D" strokeWidth="2"/><polygon points="16,27 23,14 9,14" fill="#A32D2D"/></svg>;
-    case 'Bump Up': return <svg width={s} height={s} viewBox="0 0 32 32"><rect x="8" y="10" width="16" height="3" rx="1.5" fill="#3B6D11"/><rect x="10" y="15" width="12" height="3" rx="1.5" fill="#3B6D11" opacity="0.6"/><rect x="12" y="20" width="8" height="3" rx="1.5" fill="#3B6D11" opacity="0.3"/></svg>;
-    case 'Bump Out': return <svg width={s} height={s} viewBox="0 0 32 32"><rect x="8" y="19" width="16" height="3" rx="1.5" fill="#A32D2D"/><rect x="10" y="14" width="12" height="3" rx="1.5" fill="#A32D2D" opacity="0.6"/><rect x="12" y="9" width="8" height="3" rx="1.5" fill="#A32D2D" opacity="0.3"/></svg>;
-    case 'Swap To': return <svg width={s} height={s} viewBox="0 0 32 32"><path d="M10 10 C10 6 22 6 22 10 L22 16 C22 20 16 24 16 24 C16 24 10 20 10 16 Z" fill="none" stroke="#185FA5" strokeWidth="2"/><path d="M20 20 L26 24 L22 26 L20 20Z" fill="#185FA5"/></svg>;
-    case 'Slide To': return <svg width={s} height={s} viewBox="0 0 32 32"><line x1="6" y1="16" x2="26" y2="16" stroke="#185FA5" strokeWidth="2.5" strokeLinecap="round"/><polygon points="22,10 30,16 22,22" fill="#185FA5"/><polygon points="10,10 2,16 10,22" fill="#185FA5"/></svg>;
-    case 'Stay With': return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="16" r="9" fill="#E6F1FB" stroke="#185FA5" strokeWidth="1.5"/><circle cx="12" cy="16" r="3" fill="#185FA5"/><circle cx="20" cy="16" r="3" fill="#185FA5"/></svg>;
-    case 'Iris In': return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="none" stroke="#534AB7" strokeWidth="2"/><line x1="8" y1="16" x2="24" y2="16" stroke="#534AB7" strokeWidth="2" strokeLinecap="round"/><polygon points="10,12 6,16 10,20" fill="#534AB7"/><polygon points="22,12 26,16 22,20" fill="#534AB7"/></svg>;
-    case 'Iris Out': return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="none" stroke="#534AB7" strokeWidth="2"/><line x1="8" y1="16" x2="24" y2="16" stroke="#534AB7" strokeWidth="2" strokeLinecap="round"/><polygon points="6,12 10,16 6,20" fill="#534AB7"/><polygon points="26,12 22,16 26,20" fill="#534AB7"/></svg>;
-    case 'Iris/Fade Up': return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="18" r="9" fill="none" stroke="#534AB7" strokeWidth="2"/><polygon points="16,4 22,14 10,14" fill="#3B6D11"/></svg>;
-    case 'Iris/Fade Down': return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="14" r="9" fill="none" stroke="#534AB7" strokeWidth="2"/><polygon points="16,28 22,18 10,18" fill="#A32D2D"/></svg>;
-    case 'Iris/Fade Out': return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="16" r="9" fill="none" stroke="#534AB7" strokeWidth="2"/><line x1="9" y1="16" x2="23" y2="16" stroke="#A32D2D" strokeWidth="2"/><polygon points="11,12 7,16 11,20" fill="#A32D2D"/><polygon points="21,12 25,16 21,20" fill="#A32D2D"/></svg>;
-    case 'Up & Out': return <svg width={s} height={s} viewBox="0 0 32 32"><polygon points="16,4 22,14 10,14" fill="#3B6D11"/><polygon points="16,28 22,18 10,18" fill="#A32D2D"/></svg>;
-    case 'Bump Color': return <svg width={s} height={s} viewBox="0 0 32 32"><rect x="9" y="8" width="14" height="16" rx="2" fill="none" stroke="#BA7517" strokeWidth="1.5"/><rect x="12" y="11" width="3" height="10" fill="#639922"/><rect x="16" y="11" width="3" height="10" fill="#E24B4A"/></svg>;
-    case 'Roll Color': return <svg width={s} height={s} viewBox="0 0 32 32"><rect x="9" y="8" width="14" height="16" rx="2" fill="none" stroke="#BA7517" strokeWidth="1.5"/><rect x="9" y="8" width="3.5" height="16" rx="1" fill="#E24B4A"/><rect x="12.5" y="8" width="3.5" height="16" fill="#EF9F27"/><rect x="16" y="8" width="3.5" height="16" fill="#639922"/><rect x="19.5" y="8" width="3.5" height="16" rx="1" fill="#185FA5"/></svg>;
-    case 'Ballyhoo': return <svg width={s} height={s} viewBox="0 0 32 32"><path d="M8 16 C8 10 12 6 16 6 C20 6 24 10 24 16 C24 22 20 26 16 26 C12 26 8 22 8 16 Z" fill="none" stroke="#D85A30" strokeWidth="2.5"/><path d="M16 6 C16 6 20 16 16 26" fill="none" stroke="#D85A30" strokeWidth="2"/><path d="M16 6 C16 6 12 16 16 26" fill="none" stroke="#D85A30" strokeWidth="2"/></svg>;
+    case 'Pick Up': return <svg width={s} height={s} viewBox="0 0 32 32"><polygon points="16,4 24,20 8,20" fill="#30D158"/><polygon points="16,14 22,26 10,26" fill="#6BD58A" opacity="0.5"/></svg>;
+    case 'Fade Up': return <svg width={s} height={s} viewBox="0 0 32 32"><polygon points="16,5 23,18 9,18" fill="#30D158"/></svg>;
+    case 'Fade Down': return <svg width={s} height={s} viewBox="0 0 32 32"><polygon points="16,27 23,14 9,14" fill="#FF453A"/></svg>;
+    case 'Fade Out': return <svg width={s} height={s} viewBox="0 0 32 32"><polygon points="16,28 24,12 8,12" fill="#FF453A"/><polygon points="16,18 22,6 10,6" fill="#FF6961" opacity="0.5"/></svg>;
+    case 'Fade In Place': return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="none" stroke="#FF453A" strokeWidth="2"/><polygon points="16,27 23,14 9,14" fill="#FF453A"/></svg>;
+    case 'Bump Up': return <svg width={s} height={s} viewBox="0 0 32 32"><rect x="8" y="10" width="16" height="3" rx="1.5" fill="#30D158"/><rect x="10" y="15" width="12" height="3" rx="1.5" fill="#30D158" opacity="0.6"/><rect x="12" y="20" width="8" height="3" rx="1.5" fill="#30D158" opacity="0.3"/></svg>;
+    case 'Bump Out': return <svg width={s} height={s} viewBox="0 0 32 32"><rect x="8" y="19" width="16" height="3" rx="1.5" fill="#FF453A"/><rect x="10" y="14" width="12" height="3" rx="1.5" fill="#FF453A" opacity="0.6"/><rect x="12" y="9" width="8" height="3" rx="1.5" fill="#FF453A" opacity="0.3"/></svg>;
+    case 'Swap To': return <svg width={s} height={s} viewBox="0 0 32 32"><path d="M10 10 C10 6 22 6 22 10 L22 16 C22 20 16 24 16 24 C16 24 10 20 10 16 Z" fill="none" stroke="#64D2FF" strokeWidth="2"/><path d="M20 20 L26 24 L22 26 L20 20Z" fill="#64D2FF"/></svg>;
+    case 'Slide To': return <svg width={s} height={s} viewBox="0 0 32 32"><line x1="6" y1="16" x2="26" y2="16" stroke="#64D2FF" strokeWidth="2.5" strokeLinecap="round"/><polygon points="22,10 30,16 22,22" fill="#64D2FF"/><polygon points="10,10 2,16 10,22" fill="#64D2FF"/></svg>;
+    case 'Stay With': return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="16" r="9" fill="#D9F3FF" stroke="#64D2FF" strokeWidth="1.5"/><circle cx="12" cy="16" r="3" fill="#64D2FF"/><circle cx="20" cy="16" r="3" fill="#64D2FF"/></svg>;
+    case 'Iris In': return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="none" stroke="#5E5CE6" strokeWidth="2"/><line x1="8" y1="16" x2="24" y2="16" stroke="#5E5CE6" strokeWidth="2" strokeLinecap="round"/><polygon points="10,12 6,16 10,20" fill="#5E5CE6"/><polygon points="22,12 26,16 22,20" fill="#5E5CE6"/></svg>;
+    case 'Iris Out': return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="none" stroke="#5E5CE6" strokeWidth="2"/><line x1="8" y1="16" x2="24" y2="16" stroke="#5E5CE6" strokeWidth="2" strokeLinecap="round"/><polygon points="6,12 10,16 6,20" fill="#5E5CE6"/><polygon points="26,12 22,16 26,20" fill="#5E5CE6"/></svg>;
+    case 'Iris/Fade Up': return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="18" r="9" fill="none" stroke="#5E5CE6" strokeWidth="2"/><polygon points="16,4 22,14 10,14" fill="#30D158"/></svg>;
+    case 'Iris/Fade Down': return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="14" r="9" fill="none" stroke="#5E5CE6" strokeWidth="2"/><polygon points="16,28 22,18 10,18" fill="#FF453A"/></svg>;
+    case 'Iris/Fade Out': return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="16" r="9" fill="none" stroke="#5E5CE6" strokeWidth="2"/><line x1="9" y1="16" x2="23" y2="16" stroke="#FF453A" strokeWidth="2"/><polygon points="11,12 7,16 11,20" fill="#FF453A"/><polygon points="21,12 25,16 21,20" fill="#FF453A"/></svg>;
+    case 'Up & Out': return <svg width={s} height={s} viewBox="0 0 32 32"><polygon points="16,4 22,14 10,14" fill="#30D158"/><polygon points="16,28 22,18 10,18" fill="#FF453A"/></svg>;
+    case 'Bump Color': return <svg width={s} height={s} viewBox="0 0 32 32"><rect x="9" y="8" width="14" height="16" rx="2" fill="none" stroke="#FF9F0A" strokeWidth="1.5"/><rect x="12" y="11" width="3" height="10" fill="#6BD58A"/><rect x="16" y="11" width="3" height="10" fill="#FF6961"/></svg>;
+    case 'Roll Color': return <svg width={s} height={s} viewBox="0 0 32 32"><rect x="9" y="8" width="14" height="16" rx="2" fill="none" stroke="#FF9F0A" strokeWidth="1.5"/><rect x="9" y="8" width="3.5" height="16" rx="1" fill="#FF6961"/><rect x="12.5" y="8" width="3.5" height="16" fill="#FFB340"/><rect x="16" y="8" width="3.5" height="16" fill="#6BD58A"/><rect x="19.5" y="8" width="3.5" height="16" rx="1" fill="#64D2FF"/></svg>;
+    case 'Ballyhoo': return <svg width={s} height={s} viewBox="0 0 32 32"><path d="M8 16 C8 10 12 6 16 6 C20 6 24 10 24 16 C24 22 20 26 16 26 C12 26 8 22 8 16 Z" fill="none" stroke="#FF9F0A" strokeWidth="2.5"/><path d="M16 6 C16 6 20 16 16 26" fill="none" stroke="#FF9F0A" strokeWidth="2"/><path d="M16 6 C16 6 12 16 16 26" fill="none" stroke="#FF9F0A" strokeWidth="2"/></svg>;
     case 'Off': return <svg width={s} height={s} viewBox="0 0 32 32"><line x1="8" y1="8" x2="24" y2="24" stroke="#555" strokeWidth="2.5" strokeLinecap="round"/><line x1="24" y1="8" x2="8" y2="24" stroke="#555" strokeWidth="2.5" strokeLinecap="round"/></svg>;
     case 'Tracked': return <svg width={s} height={s} viewBox="0 0 32 32"><line x1="6" y1="16" x2="26" y2="16" stroke="#555" strokeWidth="2.5" strokeLinecap="round"/><polygon points="20,10 26,16 20,22" fill="#555"/></svg>;
     default: return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="16" r="8" fill="#333"/></svg>;
@@ -228,14 +228,14 @@ function ActionIcon({ action, size = 20 }) {
 
 function ActionPicker({ value, onChange, onClose, pos, customActions }) {
   return (
-    <div style={{ position: 'fixed', top: pos ? pos.top : 0, left: pos ? pos.left : 0, zIndex: 99999, background: '#1a1a1a', border: '1px solid #3a3a3a', borderRadius: '10px', padding: '8px', width: '280px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', marginTop: '4px' }}>
-      {[...ACTIONS, ...(customActions || []).map(a => ({ name: a.name, short: a.name.substring(0, 4), color: a.color || '#888', icon: a.icon || null }))].map(a => (
+    <div style={{ position: 'fixed', top: pos ? pos.top : 0, left: pos ? pos.left : 0, zIndex: 99999, background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.14)', borderRadius: '10px', padding: '8px', width: '280px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', marginTop: '4px' }}>
+      {[...ACTIONS, ...(customActions || []).map(a => ({ name: a.name, short: a.name.substring(0, 4), color: a.color || 'rgba(255,255,255,0.62)', icon: a.icon || null }))].map(a => (
         <div key={a.name} onClick={() => { onChange(a); onClose(); }}
-          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', padding: '6px 4px', borderRadius: '6px', cursor: 'pointer', background: value === a.name ? '#2a2a3a' : 'transparent', border: value === a.name ? '1px solid #534AB7' : '1px solid transparent' }}
-          onMouseEnter={e => e.currentTarget.style.background = '#2a2a2a'}
-          onMouseLeave={e => e.currentTarget.style.background = value === a.name ? '#2a2a3a' : 'transparent'}>
+          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', padding: '6px 4px', borderRadius: '6px', cursor: 'pointer', background: value === a.name ? 'rgba(10,132,255,0.16)' : 'transparent', border: value === a.name ? '1px solid #0A84FF' : '1px solid transparent' }}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+          onMouseLeave={e => e.currentTarget.style.background = value === a.name ? 'rgba(10,132,255,0.16)' : 'transparent'}>
           {a.icon ? <img src={(() => { try { const fs = window.require('fs'); const d = fs.readFileSync(a.icon); const ext = a.icon.split('.').pop().toLowerCase(); return `data:image/${ext};base64,${d.toString('base64')}`; } catch(e) { return ''; } })()} style={{ width: 28, height: 28, objectFit: 'contain' }} /> : <ActionIcon action={a.name} size={28} />}
-          <span style={{ fontSize: '10px', color: '#888', textAlign: 'center', lineHeight: 1.2, wordBreak: 'break-word' }}>{a.name}</span>
+          <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.62)', textAlign: 'center', lineHeight: 1.2, wordBreak: 'break-word' }}>{a.name}</span>
         </div>
       ))}
     </div>
@@ -277,7 +277,7 @@ function IrisStrip({ sizes, selected, onPick }) {
           const isSel = selected === iris.value;
           return (
             <div key={iris.value} data-selected={isSel} onClick={() => onPick(iris.value)} title={iris.value}
-              style={{ flexShrink: 0, padding: '2px 6px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap', background: isSel ? '#185FA5' : '#1a1a1a', color: isSel ? '#fff' : '#444', border: `1px solid ${isSel ? '#185FA5' : '#2a2a2a'}` }}>
+              style={{ flexShrink: 0, padding: '2px 6px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap', background: isSel ? '#0A84FF' : '#2A2A2A', color: isSel ? '#FFFFFF' : 'rgba(255,255,255,0.28)', border: `1px solid ${isSel ? '#0A84FF' : 'rgba(255,255,255,0.1)'}` }}>
               {iris.label}
             </div>
           );
@@ -286,7 +286,7 @@ function IrisStrip({ sizes, selected, onPick }) {
       </div>
       {more.right && (
         <div onClick={() => { ref.current.scrollLeft += 80; }} title="More iris sizes"
-          style={{ flexShrink: 0, fontSize: '13px', fontWeight: '700', color: '#8A82E0', cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}>›</div>
+          style={{ flexShrink: 0, fontSize: '13px', fontWeight: '700', color: '#409CFF', cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}>›</div>
       )}
     </div>
   );
@@ -324,8 +324,8 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, onN
       onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) onDragLeave(e); }}
       onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop(e); }}
       onDoubleClick={onDoubleClick}
-      style={{ padding: '8px 10px', borderRight: '1px solid #1e1e1e', verticalAlign: 'top', minWidth: '260px', minHeight: '80px', background: isDragTarget ? '#1a1a2e' : '#060606', outline: isDragTarget ? '2px solid #534AB7' : 'none', cursor: 'grab' }}>
-        <div style={{ fontSize: '11px', color: '#222', minHeight: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>—</div>
+      style={{ padding: '8px 10px', borderRight: '1px solid rgba(255,255,255,0.06)', verticalAlign: 'top', minWidth: '260px', minHeight: '80px', background: isDragTarget ? 'rgba(10,132,255,0.16)' : '#191919', outline: isDragTarget ? '2px solid #0A84FF' : 'none', cursor: 'grab' }}>
+        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.22)', minHeight: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>—</div>
     </td>
   );
 
@@ -384,7 +384,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
         onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); onDragOver(e); }}
         onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) onDragLeave(e); }}
         onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop(e); }}
-        style={{ padding: '8px 10px', borderRight: '1px solid #1e1e1e', verticalAlign: 'top', minWidth: '260px', background: isDragTarget ? '#1a1a2e' : '#080808', outline: isDragTarget ? '2px solid #534AB7' : 'none', position: 'relative' }}>
+        style={{ padding: '8px 10px', borderRight: '1px solid rgba(255,255,255,0.06)', verticalAlign: 'top', minWidth: '260px', background: isDragTarget ? 'rgba(10,132,255,0.16)' : '#191919', outline: isDragTarget ? '2px solid #0A84FF' : 'none', position: 'relative' }}>
         <div ref={ref} style={{ position: 'relative', zIndex: showActionPicker ? 99999 : 'auto' }}>
           <div ref={actionBtnRef} onClick={() => {
             if (actionBtnRef.current) {
@@ -396,12 +396,12 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
             }
             setShowActionPicker(v => !v);
           }}
-            style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '3px 7px', borderRadius: '5px', background: '#111', border: '1px solid #222', cursor: 'pointer' }}>
+            style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '3px 7px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer' }}>
             <ActionIcon action="Off" size={16} />
-            <span style={{ fontSize: '11px', color: '#444', fontWeight: '500' }}>Off</span>
+            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.28)', fontWeight: '500' }}>Off</span>
           </div>
 {showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} pos={pickerPos} customActions={customActions} />}
-          <div style={{ fontSize: '13px', color: '#444', marginTop: '6px', fontStyle: 'italic', textAlign: 'center', fontWeight: '600', pointerEvents: 'none' }}>spot inactive</div>
+          <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.28)', marginTop: '6px', fontStyle: 'italic', textAlign: 'center', fontWeight: '600', pointerEvents: 'none' }}>spot inactive</div>
         </div>
       </td>
     );
@@ -417,20 +417,20 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
       onDoubleClick={onDoubleClick}
       style={{ 
         padding: '8px 10px', 
-        borderRight: '1px solid #1e1e1e', 
+        borderRight: '1px solid rgba(255,255,255,0.06)', 
         verticalAlign: 'top', 
         minWidth: '260px', 
         position: 'relative',
-        outline: isDragTarget ? '2px solid #534AB7' : 'none', 
-        background: isDragTarget ? '#1a1a2e' : spotCue?.highlight === 'yellow' ? 'rgba(200,160,0,0.12)' : spotCue?.highlight === 'red' ? 'rgba(200,60,60,0.12)' : spotCue?.ignored ? 'rgba(180,40,40,0.08)' : 'transparent',
+        outline: isDragTarget ? '2px solid #0A84FF' : 'none', 
+        background: isDragTarget ? 'rgba(10,132,255,0.16)' : spotCue?.highlight === 'yellow' ? 'rgba(255,214,10,0.12)' : spotCue?.highlight === 'red' ? 'rgba(255,69,58,0.12)' : spotCue?.ignored ? 'rgba(255,69,58,0.08)' : 'transparent',
         cursor: 'grab',
         opacity: spotCue?.ignored ? 0.5 : 1,
         textDecoration: spotCue?.ignored ? 'line-through' : 'none',
       }}>
         {spotCue?.spot_note && (
-        <div style={{ position: 'absolute', top: '4px', right: '4px', width: '6px', height: '6px', borderRadius: '50%', background: '#C8A000' }} />
+        <div style={{ position: 'absolute', top: '4px', right: '4px', width: '6px', height: '6px', borderRadius: '50%', background: '#FFD60A' }} />
       )}
-      {isDragTarget && <div style={{ position: 'absolute', inset: 0, background: 'rgba(83,74,183,0.3)', pointerEvents: 'none', zIndex: 5 }} />}
+      {isDragTarget && <div style={{ position: 'absolute', inset: 0, background: 'rgba(10,132,255,0.3)', pointerEvents: 'none', zIndex: 5 }} />}
       <div ref={ref} style={{ position: 'relative', zIndex: showActionPicker ? 9999 : 'auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
           <div ref={actionBtnRef} onClick={() => {
@@ -443,7 +443,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
             }
             setShowActionPicker(v => !v);
           }}
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '32px', boxSizing: 'border-box', padding: '0 8px', borderRadius: '6px', background: actionDef ? '#1e1e2e' : '#1a1a1a', border: `1px solid ${actionDef ? actionDef.color + '55' : '#2a2a2a'}`, cursor: 'pointer', flex: '1 1 0', minWidth: 0 }}>
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '32px', boxSizing: 'border-box', padding: '0 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer', flex: '1 1 0', minWidth: 0 }}>
             {spotCue.action ? (
               <>
                 {(() => {
@@ -459,10 +459,10 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
                   }
                   return <ActionIcon action={spotCue.action} size={20} />;
                 })()}
-                <span style={{ fontSize: '14px', color: actionDef ? actionDef.color : '#888', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{spotCue.action}</span>
+                <span style={{ fontSize: '14px', color: actionDef ? actionDef.color : 'rgba(255,255,255,0.62)', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{spotCue.action}</span>
               </>
             ) : (
-              <span style={{ fontSize: '14px', color: '#444', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Action...</span>
+              <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.28)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Action...</span>
             )}
           </div>
 {showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} pos={pickerPos} customActions={customActions} />}
@@ -473,7 +473,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
             onBlur={e => commitCustomChar(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') commitCustomChar(e.target.value); }}
             placeholder="Type character name..."
-            style={{ ...selectStyle, flex: '1 1 0', minWidth: 0, height: '32px', fontSize: '14px', fontWeight: '600', borderRadius: '6px', padding: '0 8px', color: '#f0f0f0' }}
+            style={{ ...selectStyle, flex: '1 1 0', minWidth: 0, height: '32px', fontSize: '14px', fontWeight: '600', borderRadius: '6px', padding: '0 8px', color: '#FFFFFF' }}
           />
         ) : (
           <select value={spotCue.character_id || ''} onChange={e => {
@@ -485,7 +485,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
               onUpdate(spotCue.id, 'character_id', e.target.value ? parseInt(e.target.value) : null);
               onUpdate(spotCue.id, 'custom_character', null);
             }
-          }} style={{ ...selectStyle, flex: '1 1 0', minWidth: 0, height: '32px', fontSize: '14px', fontWeight: '600', borderRadius: '6px', padding: '0 8px', color: (spotCue.character_id || spotCue.custom_character) ? '#f0f0f0' : '#444' }}>
+          }} style={{ ...selectStyle, flex: '1 1 0', minWidth: 0, height: '32px', fontSize: '14px', fontWeight: '600', borderRadius: '6px', padding: '0 8px', color: (spotCue.character_id || spotCue.custom_character) ? '#FFFFFF' : 'rgba(255,255,255,0.28)' }}>
             <option value="">{spotCue.custom_character || 'Character...'}</option>
             {characters.map(c => <option key={c.id} value={c.id}>{c.name}{c.actor_name ? ' (' + c.actor_name + ')' : ''}</option>)}
             <option value="custom">+ Type custom name...</option>
@@ -495,7 +495,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
 
         <div style={{ display: 'flex', gap: '4px', marginBottom: '5px' }}>
           <select value={spotCue.intensity || ''} onChange={e => onUpdate(spotCue.id, 'intensity', e.target.value)}
-            style={{ ...selectStyle, flex: 1, color: spotCue.intensity ? '#f0f0f0' : '#444' }}>
+            style={{ ...selectStyle, flex: 1, color: spotCue.intensity ? '#FFFFFF' : 'rgba(255,255,255,0.28)' }}>
             <option value="">Int...</option>
             {INTENSITIES.map(i => <option key={i} value={i}>{i}</option>)}
           </select>
@@ -504,11 +504,11 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
               <input autoFocus value={customTimeVal} onChange={e => setCustomTimeVal(e.target.value)}
                 onBlur={() => { onUpdate(spotCue.id, 'fade_time', customTimeVal); setShowCustomTime(false); }}
                 onKeyDown={e => { if (e.key === 'Enter') { onUpdate(spotCue.id, 'fade_time', customTimeVal); setShowCustomTime(false); }}}
-                style={{ width: '100%', background: '#111', border: '1px solid #534AB7', borderRadius: '4px', color: '#f0f0f0', padding: '3px 4px', fontSize: '11px', outline: 'none' }}
+                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid #0A84FF', borderRadius: '6px', color: '#FFFFFF', padding: '3px 4px', fontSize: '11px', outline: 'none' }}
                 placeholder="e.g. 2.5" />
             ) : (
               <select value={spotCue.fade_time || ''} onChange={e => { if (e.target.value === 'Custom') { setShowCustomTime(true); setCustomTimeVal(''); } else onUpdate(spotCue.id, 'fade_time', e.target.value); }}
-                style={{ ...selectStyle, color: spotCue.fade_time ? '#f0f0f0' : '#444' }}>
+                style={{ ...selectStyle, color: spotCue.fade_time ? '#FFFFFF' : 'rgba(255,255,255,0.28)' }}>
                 <option value="">Time...</option>
                 {TIMES.map(t => <option key={t} value={t}>{t === 'Custom' ? 'Custom...' : t + 's'}</option>)}
               </select>
@@ -527,7 +527,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
                 onUpdate(spotCue.id, 'no_color', isNC ? 0 : 1);
                 if (!isNC) onUpdate(spotCue.id, 'active_frames', '');
               }}
-              style={{ padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: spotCue.no_color ? '#854F0B' : '#1a1a1a', color: spotCue.no_color ? '#fff' : '#555', border: `1px solid ${spotCue.no_color ? '#854F0B' : '#2a2a2a'}` }}>
+              style={{ padding: '2px 6px', borderRadius: '6px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: spotCue.no_color ? '#AC8E68' : '#2A2A2A', color: spotCue.no_color ? '#FFFFFF' : 'rgba(255,255,255,0.45)', border: `1px solid ${spotCue.no_color ? '#AC8E68' : 'rgba(255,255,255,0.1)'}` }}>
               NC
             </div>
             {colorSlots.map(slot => {
@@ -539,11 +539,11 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
                     onClick={() => toggleFrame('F' + slot.slot_number)}
                     onMouseEnter={() => setHoveredFrame(slot.id)}
                     onMouseLeave={() => setHoveredFrame(null)}
-                    style={{ padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: isActive ? '#534AB7' : '#1a1a1a', color: isActive ? '#fff' : '#555', border: `1px solid ${isActive ? '#534AB7' : '#2a2a2a'}` }}>
+                    style={{ padding: '2px 6px', borderRadius: '6px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: isActive ? '#0A84FF' : '#2A2A2A', color: isActive ? '#FFFFFF' : 'rgba(255,255,255,0.45)', border: `1px solid ${isActive ? '#0A84FF' : 'rgba(255,255,255,0.1)'}` }}>
                     F{slot.slot_number}
                   </div>
                   {isHovered && slot.gel_number && (
-                    <div style={{ position: 'fixed', zIndex: 99999, transform: 'translateX(-50%)', marginTop: '4px', background: '#1a1a1a', border: '1px solid #3a3a3a', borderRadius: '8px', padding: '8px 10px', pointerEvents: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', minWidth: '120px' }}
+                    <div style={{ position: 'fixed', zIndex: 99999, transform: 'translateX(-50%)', marginTop: '4px', background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.14)', borderRadius: '8px', padding: '8px 10px', pointerEvents: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', minWidth: '120px' }}
                       ref={el => {
                         if (el) {
                           const btn = el.previousSibling;
@@ -555,10 +555,10 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
                         }
                       }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ width: '20px', height: '20px', borderRadius: '4px', background: getGelColor(slot.gel_number), flexShrink: 0, border: '1px solid #444' }} />
+                        <div style={{ width: '20px', height: '20px', borderRadius: '6px', background: getGelColor(slot.gel_number), flexShrink: 0, border: '1px solid rgba(255,255,255,0.18)' }} />
                         <div>
-                          <div style={{ fontSize: '11px', fontWeight: '700', color: '#f0f0f0' }}>{slot.gel_number}</div>
-                          <div style={{ fontSize: '10px', color: '#888' }}>{slot.gel_name}</div>
+                          <div style={{ fontSize: '11px', fontWeight: '700', color: '#FFFFFF' }}>{slot.gel_number}</div>
+                          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.62)' }}>{slot.gel_name}</div>
                         </div>
                       </div>
                     </div>
@@ -570,31 +570,31 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
         </div>
 
         <div style={{ display: 'flex', gap: '4px', alignItems: 'center', marginBottom: '3px' }}>
-          <div style={{ flex: 1, minWidth: 0, display: 'flex', gap: '4px', alignItems: 'center', borderRadius: '4px', ...lineHighlightStyle(spotCue.when_highlight) }}>
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', gap: '4px', alignItems: 'center', borderRadius: '6px', ...lineHighlightStyle(spotCue.when_highlight) }}>
           {withLQ && (
-            <span style={{ fontSize: '12px', color: '#f0f0f0', whiteSpace: 'nowrap', padding: '2px 0' }}>
+            <span style={{ fontSize: '12px', color: '#FFFFFF', whiteSpace: 'nowrap', padding: '2px 0' }}>
               w/ LQ {lqNumber || '?'}
             </span>
           )}
           <RichLine value={spotCue.description}
             onSave={html => onUpdate(spotCue.id, 'description', html)}
             placeholder={withLQ ? '' : 'When...'}
-            style={{ flex: 1, minWidth: 0, borderBottom: '1px solid #1e1e1e', color: '#888', padding: '2px 0', fontSize: '12px' }} />
+            style={{ flex: 1, minWidth: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.62)', padding: '2px 0', fontSize: '12px' }} />
           </div>
           <div onClick={toggleWLQ} role="switch" aria-checked={withLQ}
             title={withLQ ? 'Linked to this cue\'s LQ number — click to unlink' : 'Link to this cue\'s LQ number'}
             style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', flexShrink: 0 }}>
-            <div style={{ width: '44px', height: '20px', borderRadius: '10px', background: withLQ ? '#534AB7' : 'rgba(255,255,255,0.10)', position: 'relative', transition: 'background 0.15s' }}>
+            <div style={{ width: '44px', height: '20px', borderRadius: '10px', background: withLQ ? '#0A84FF' : 'rgba(255,255,255,0.10)', position: 'relative', transition: 'background 0.15s' }}>
               <div style={{ position: 'absolute', top: '2px', left: withLQ ? '16px' : '2px', width: '26px', height: '16px', borderRadius: '8px', background: 'rgba(255,255,255,0.85)', boxShadow: '0 3px 8px rgba(0,0,0,0.15)', transition: 'left 0.15s' }} />
             </div>
-            <span style={{ fontSize: '11px', fontWeight: '700', color: withLQ ? '#8A82E0' : 'rgba(255,255,255,0.55)', whiteSpace: 'nowrap' }}>w/LQ</span>
+            <span style={{ fontSize: '11px', fontWeight: '700', color: withLQ ? '#409CFF' : 'rgba(255,255,255,0.55)', whiteSpace: 'nowrap' }}>w/LQ</span>
           </div>
         </div>
 
         <RichLine value={spotCue.notes}
           onSave={html => onUpdate(spotCue.id, 'notes', html)}
           placeholder="Notes..."
-          style={{ borderBottom: '1px solid #1e1e1e', borderRadius: '4px', color: '#888', padding: '2px 0', fontSize: '12px', ...lineHighlightStyle(spotCue.notes_highlight) }} />
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', borderRadius: '6px', color: 'rgba(255,255,255,0.62)', padding: '2px 0', fontSize: '12px', ...lineHighlightStyle(spotCue.notes_highlight) }} />
       </div>
     </td>
   );
@@ -617,7 +617,7 @@ function InsertButton({ onInsert }) {
             onInsert();
             setTimeout(() => { insertRef.current = false; }, 500);
           }}
-            style={{ fontSize: '10px', color: '#534AB7', cursor: 'pointer', padding: '2px 6px', background: '#1a1a2a', borderRadius: '3px', display: 'inline-block', position: 'relative', zIndex: 1 }}>
+            style={{ fontSize: '10px', color: '#409CFF', cursor: 'pointer', padding: '2px 6px', background: 'rgba(10,132,255,0.16)', borderRadius: '6px', display: 'inline-block', position: 'relative', zIndex: 1 }}>
             + insert cue here
           </div>
         ) : (
@@ -641,28 +641,28 @@ function CueRow({ cue, isLastCue, spots, spotCues, characters, colorSlotsBySpot,
 
   return (
     <>
-      <tr style={{ borderBottom: '1px solid #141414' }}
-        onMouseEnter={e => e.currentTarget.style.background = '#0d0d0d'}
+      <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+        onMouseEnter={e => e.currentTarget.style.background = '#1E1E1E'}
         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-        <td style={{ padding: '8px 6px', borderRight: '1px solid #1e1e1e', verticalAlign: 'top', width: '90px', minWidth: '90px' }}>
+        <td style={{ padding: '8px 6px', borderRight: '1px solid rgba(255,255,255,0.06)', verticalAlign: 'top', width: '90px', minWidth: '90px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
             {editingLQ ? (
               <input autoFocus value={lqVal} onChange={e => setLqVal(e.target.value)}
                 onBlur={saveLQ} onKeyDown={e => e.key === 'Enter' && saveLQ()}
-                style={{ width: '64px', background: '#111', border: '1px solid #534AB7', borderRadius: '4px', color: '#f0f0f0', padding: '3px 6px', fontSize: '16px', fontWeight: '700', textAlign: 'center', outline: 'none' }} />
+                style={{ width: '64px', background: 'rgba(255,255,255,0.05)', border: '1px solid #0A84FF', borderRadius: '6px', color: '#FFFFFF', padding: '3px 6px', fontSize: '16px', fontWeight: '700', textAlign: 'center', outline: 'none' }} />
             ) : (
-              <div onClick={() => setEditingLQ(true)} style={{ fontSize: '20px', fontWeight: '700', color: lqVal ? '#f0f0f0' : '#2a2a2a', cursor: 'pointer', minHeight: '24px' }}>
+              <div onClick={() => setEditingLQ(true)} style={{ fontSize: '20px', fontWeight: '700', color: lqVal ? '#FFFFFF' : 'rgba(255,255,255,0.28)', cursor: 'pointer', minHeight: '24px' }}>
                 {lqVal || '—'}
               </div>
             )}
-            <div style={{ fontSize: '10px', color: '#3a3a3a' }}>T·{cue.track_number}</div>
+            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.28)' }}>T·{cue.track_number}</div>
             <select value={cue.scene_id || ''} onChange={e => onUpdateCue(cue.id, 'scene_id', e.target.value ? parseInt(e.target.value) : null)}
-              style={{ width: '72px', background: '#111', border: '1px solid #1e1e1e', borderRadius: '3px', color: '#444', padding: '2px 2px', fontSize: '9px', outline: 'none', marginTop: '2px' }}>
+              style={{ width: '72px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '6px', color: 'rgba(255,255,255,0.28)', padding: '2px 2px', fontSize: '10px', outline: 'none', marginTop: '2px' }}>
               <option value="">No scene</option>
               {scenes.map(s => <option key={s.id} value={s.id}>{s.label}{s.song ? ' · ' + s.song : ''}</option>)}
             </select>
             <div onClick={() => { if (window.confirm('Delete this cue?')) onDelete(cue.id); }}
-              style={{ fontSize: '10px', color: '#c44', cursor: 'pointer', marginTop: '2px', opacity: 0.4 }}
+              style={{ fontSize: '10px', color: '#FF453A', cursor: 'pointer', marginTop: '2px', opacity: 0.4 }}
               onMouseEnter={e => e.currentTarget.style.opacity = 1}
               onMouseLeave={e => e.currentTarget.style.opacity = 0.4}>
               del
@@ -933,10 +933,10 @@ const groupedCues = () => {
   };
 
       return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#0a0a0a' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#1E1E1E' }}>
     <AppHeader title="Cue List" onBack={() => navigate('show', show)} backLabel={show.title}>
         <div style={{ flex: 1 }} />
-         <span style={{ fontSize: '12px', color: '#555' }}>Jump to:</span>
+         <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)' }}>Jump to:</span>
         <select value={selectedSceneId || ''} onChange={e => {
           const sceneId = e.target.value ? parseInt(e.target.value) : null;
           setSelectedSceneId(sceneId);
@@ -950,12 +950,12 @@ const groupedCues = () => {
             }
           }
         }}
-          style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#ccc', padding: '5px 8px', fontSize: '12px', outline: 'none' }}>
+          style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '6px', color: 'rgba(255,255,255,0.78)', padding: '5px 8px', fontSize: '12px', outline: 'none' }}>
           <option value="">Jump to scene...</option>
           {(data?.scenes || []).map(s => <option key={s.id} value={s.id}>{s.label}{s.song ? ' · ' + s.song : ''}</option>)}
         </select>
-        <button onClick={() => setShowSceneModal(true)} style={{ padding: '5px 10px', background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#888', fontSize: '12px', cursor: 'pointer' }}>+ Scene</button>
-        <button onClick={() => setShowCharModal(true)} style={{ padding: '5px 10px', background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#888', fontSize: '12px', cursor: 'pointer' }}>+ Character</button>
+        <button onClick={() => setShowSceneModal(true)} style={{ padding: '5px 10px', background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '6px', color: 'rgba(255,255,255,0.62)', fontSize: '12px', cursor: 'pointer' }}>+ Scene</button>
+        <button onClick={() => setShowCharModal(true)} style={{ padding: '5px 10px', background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '6px', color: 'rgba(255,255,255,0.62)', fontSize: '12px', cursor: 'pointer' }}>+ Character</button>
       </AppHeader>
 
       <div ref={scrollRef} onScroll={() => {
@@ -965,21 +965,21 @@ const groupedCues = () => {
         }
       }} style={{ flex: 1, overflowY: 'auto', overflowX: 'auto' }}>
         {(data?.cues || []).length === 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60%', gap: '12px', color: '#333' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60%', gap: '12px', color: 'rgba(255,255,255,0.28)' }}>
             <div style={{ fontSize: '36px' }}>✦</div>
             <div style={{ fontSize: '15px' }}>No cues yet</div>
-            <div style={{ fontSize: '12px', color: '#2a2a2a' }}>Add a scene first, then create your first cue</div>
-            <button onClick={addCue} style={{ marginTop: '8px', padding: '8px 20px', background: '#534AB7', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer' }}>+ Add first cue</button>
+            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.28)' }}>Add a scene first, then create your first cue</div>
+            <button onClick={addCue} style={{ marginTop: '8px', padding: '8px 20px', background: '#0A84FF', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer' }}>+ Add first cue</button>
           </div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', position: 'relative' }}>
             <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
-              <tr style={{ background: '#141414', borderBottom: '1px solid #2a2a2a' }}>
-                <th style={{ padding: '8px', textAlign: 'left', fontSize: '10px', color: '#444', fontWeight: '600', width: '90px', borderRight: '1px solid #1e1e1e' }}>CUE</th>
+              <tr style={{ background: '#262626', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                <th style={{ padding: '8px', textAlign: 'left', fontSize: '10px', color: 'rgba(255,255,255,0.28)', fontWeight: '600', width: '90px', borderRight: '1px solid rgba(255,255,255,0.06)' }}>CUE</th>
                 {(data?.spots || []).map(spot => (
-                  <th key={spot.id} style={{ padding: '8px 10px', textAlign: 'left', borderRight: '1px solid #1e1e1e', minWidth: '260px', width: `${100 / (data?.spots || []).length}%` }}>
-                    <div style={{ fontSize: '13px', color: '#534AB7', fontWeight: '800' }}>SPOT {spot.spot_number}</div>
-                    {spot.operator_name && <div style={{ fontSize: '12px', color: '#888', fontWeight: '500', marginTop: '1px' }}>{spot.operator_name}</div>}
+                  <th key={spot.id} style={{ padding: '8px 10px', textAlign: 'left', borderRight: '1px solid rgba(255,255,255,0.06)', minWidth: '260px', width: `${100 / (data?.spots || []).length}%` }}>
+                    <div style={{ fontSize: '13px', color: '#409CFF', fontWeight: '700' }}>SPOT {spot.spot_number}</div>
+                    {spot.operator_name && <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.62)', fontWeight: '500', marginTop: '1px' }}>{spot.operator_name}</div>}
                   </th>
                 ))}
               </tr>
@@ -988,11 +988,11 @@ const groupedCues = () => {
               {groupedCues().map((group, groupIndex, groups) => (
                 <React.Fragment key={group.sceneId || 'unassigned'}>
                   <tr data-scene-id={group.sceneId}>
-                    <td colSpan={(data?.spots || []).length + 1} style={{ padding: '5px 12px', background: group.actBreak ? '#1a0a2e' : '#0a1a10',borderTop: `1px solid ${group.actBreak ? '#3a1a5a' : '#1a3a24'}`, borderBottom: `1px solid ${group.actBreak ? '#3a1a5a' : '#1a3a24'}` }}>
-                      <span style={{ fontSize: '11px', fontWeight: '600', color: group.actBreak ? '#9060c0' : '#1D9E75', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <td colSpan={(data?.spots || []).length + 1} style={{ padding: '5px 12px', background: group.actBreak ? 'rgba(255,159,10,0.10)' : 'rgba(255,255,255,0.05)',borderTop: `1px solid ${group.actBreak ? 'rgba(255,159,10,0.35)' : 'rgba(255,255,255,0.08)'}`, borderBottom: `1px solid ${group.actBreak ? 'rgba(255,159,10,0.35)' : 'rgba(255,255,255,0.08)'}` }}>
+                      <span style={{ fontSize: '11px', fontWeight: '600', color: group.actBreak ? '#FF9F0A' : '#30D158', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                         {group.sceneLabel}
                       </span>
-                      {group.sceneSong && <span style={{ fontSize: '11px', color: group.actBreak ? '#6040a0' : '#0F6E56', marginLeft: '8px' }}>· {group.sceneSong}</span>}
+                      {group.sceneSong && <span style={{ fontSize: '11px', color: group.actBreak ? '#FF9F0A' : '#30D158', marginLeft: '8px' }}>· {group.sceneSong}</span>}
                     </td>
                   </tr>
                   {group.cues.map((cue, cueIndex) => (
@@ -1016,7 +1016,7 @@ const groupedCues = () => {
                 </React.Fragment>
               ))}
               <tr>
-                <td colSpan={(data?.spots || []).length + 1} style={{ padding: '8px', borderTop: '1px solid #1e1e1e' }}>
+                <td colSpan={(data?.spots || []).length + 1} style={{ padding: '8px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                   <div
                     onClick={() => {
                       const cues = data?.cues || [];
@@ -1027,15 +1027,15 @@ const groupedCues = () => {
                         addCue();
                       }
                     }}
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '6px', borderRadius: '6px', cursor: 'pointer', color: '#333', fontSize: '11px', fontWeight: '600' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = '#1a1a2e'; e.currentTarget.style.color = '#534AB7'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#333'; }}>
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '6px', borderRadius: '6px', cursor: 'pointer', color: 'rgba(255,255,255,0.28)', fontSize: '11px', fontWeight: '600' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,132,255,0.16)'; e.currentTarget.style.color = '#409CFF'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.28)'; }}>
                     + Add cue at end
                   </div>
                 </td>
               </tr>
               <tr>
-                <td colSpan={(data?.spots || []).length + 1} style={{ textAlign: 'center', padding: '24px', color: '#333', fontSize: '12px', fontWeight: '600', letterSpacing: '0.1em', textTransform: 'uppercase', borderTop: '1px solid #2a2a2a' }}>
+                <td colSpan={(data?.spots || []).length + 1} style={{ textAlign: 'center', padding: '24px', color: 'rgba(255,255,255,0.28)', fontSize: '12px', fontWeight: '600', letterSpacing: '0.1em', textTransform: 'uppercase', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                   — End of Show —
                 </td>
               </tr>
@@ -1049,14 +1049,14 @@ const groupedCues = () => {
             if (ta && cuePopup.spotCue?.id) updateSpotCue(cuePopup.spotCue.id, 'spot_note', ta.value);
             setCuePopup(null);
           }}>
-          <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '16px', padding: '28px', width: '420px' }}
+          <div style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '28px', width: '420px' }}
             onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
               <div>
-                <div style={{ fontSize: '16px', fontWeight: '700', color: '#f0f0f0' }}>
+                <div style={{ fontSize: '16px', fontWeight: '700', color: '#FFFFFF' }}>
                   LQ {cuePopup.cue.lq_number || '—'} · Spot {cuePopup.spot.spot_number}
                 </div>
-                <div style={{ fontSize: '12px', color: '#555', marginTop: '2px' }}>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginTop: '2px' }}>
                   {cuePopup.spot.operator_name || 'No operator'}
                 </div>
               </div>
@@ -1064,7 +1064,7 @@ const groupedCues = () => {
                 const ta = document.getElementById('popup-note-textarea');
                 if (ta && cuePopup.spotCue?.id) updateSpotCue(cuePopup.spotCue.id, 'spot_note', ta.value);
                 setCuePopup(null);
-              }} style={{ background: 'none', border: 'none', color: '#555', fontSize: '20px', cursor: 'pointer' }}>×</button>
+              }} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.45)', fontSize: '20px', cursor: 'pointer' }}>×</button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
@@ -1078,23 +1078,23 @@ const groupedCues = () => {
                   }
                   setCuePopup(p => ({ ...p, spotCue: { ...p.spotCue, ignored: newVal } }));
                 }}
-                style={{ flex: 1, padding: '12px', background: cuePopup.spotCue?.ignored ? '#3a1a1a' : '#1e1e1e', border: `1px solid ${cuePopup.spotCue?.ignored ? '#c44' : '#3a3a3a'}`, borderRadius: '8px', color: cuePopup.spotCue?.ignored ? '#c44' : '#888', fontSize: '13px', fontWeight: '600', cursor: 'pointer', textAlign: 'left' }}>
+                style={{ flex: 1, padding: '12px', background: cuePopup.spotCue?.ignored ? 'rgba(255,69,58,0.18)' : 'rgba(255,255,255,0.06)', border: `1px solid ${cuePopup.spotCue?.ignored ? '#FF453A' : 'rgba(255,255,255,0.14)'}`, borderRadius: '8px', color: cuePopup.spotCue?.ignored ? '#FF453A' : 'rgba(255,255,255,0.62)', fontSize: '13px', fontWeight: '600', cursor: 'pointer', textAlign: 'left' }}>
                   <div>{cuePopup.spotCue?.ignored ? 'Ignored' : 'Ignore cue'}</div>
                   <div style={{ fontSize: '11px', fontWeight: '400', marginTop: '2px', opacity: 0.7 }}>Cross out this cue without deleting</div>
                 </button>
               </div>
 
               <div>
-                <div style={{ fontSize: '11px', fontWeight: '600', color: '#555', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Highlight</div>
+                <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Highlight</div>
                 {[{ field: 'highlight', label: 'Whole cue' }, { field: 'when_highlight', label: 'When line' }, { field: 'notes_highlight', label: 'Notes line' }].map(({ field, label }) => (
                   <div key={field} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
                     <div style={{ width: '80px', fontSize: '13px', color: 'rgba(255,255,255,0.55)' }}>{label}</div>
                     <div style={{ flex: 1, display: 'flex', gap: '2px', padding: '2px', height: '28px', boxSizing: 'border-box', background: 'rgba(255,255,255,0.07)', borderRadius: '6px' }}>
-                      {[{ value: null, text: 'None', color: '#fff', bg: 'rgba(255,255,255,0.14)' }, { value: 'yellow', text: 'Yellow', color: '#FFD600', bg: 'rgba(200,160,0,0.30)' }, { value: 'red', text: 'Red', color: '#FF4245', bg: 'rgba(200,60,60,0.30)' }].map(opt => {
+                      {[{ value: null, text: 'None', color: '#FFFFFF', bg: 'rgba(255,255,255,0.14)' }, { value: 'yellow', text: 'Yellow', color: '#FFD60A', bg: 'rgba(255,214,10,0.30)' }, { value: 'red', text: 'Red', color: '#FF453A', bg: 'rgba(255,69,58,0.30)' }].map(opt => {
                         const selected = (cuePopup.spotCue?.[field] || null) === opt.value;
                         return (
                           <div key={opt.text} onClick={() => setPopupSpotCueField(field, opt.value)}
-                            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: '500', background: selected ? opt.bg : 'transparent', color: selected ? opt.color : 'rgba(255,255,255,0.55)' }}>
+                            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '500', background: selected ? opt.bg : 'transparent', color: selected ? opt.color : 'rgba(255,255,255,0.55)' }}>
                             {opt.text}
                           </div>
                         );
@@ -1106,7 +1106,7 @@ const groupedCues = () => {
             </div>
 
             <div>
-              <div style={{ fontSize: '11px', fontWeight: '600', color: '#555', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Spot note</div>
+              <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Spot note</div>
               <textarea
                 key={cuePopup.spotCue?.id}
                 defaultValue={cuePopup.spotCue?.spot_note || ''}
@@ -1117,13 +1117,13 @@ const groupedCues = () => {
                   }
                 }}
                 placeholder="Type a note for this spot operator..."
-                style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: '8px', color: '#f0f0f0', padding: '10px 12px', fontSize: '13px', outline: 'none', resize: 'vertical', minHeight: '80px', boxSizing: 'border-box', fontFamily: 'inherit' }}
+                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#FFFFFF', padding: '10px 12px', fontSize: '13px', outline: 'none', resize: 'vertical', minHeight: '80px', boxSizing: 'border-box', fontFamily: 'inherit' }}
               />
               <button onClick={() => {
                 const ta = document.getElementById('popup-note-textarea');
                 if (ta && cuePopup.spotCue?.id) updateSpotCue(cuePopup.spotCue.id, 'spot_note', ta.value);
                 setCuePopup(null);
-              }} style={{ marginTop: '10px', width: '100%', padding: '10px', background: '#534AB7', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+              }} style={{ marginTop: '10px', width: '100%', padding: '10px', background: '#0A84FF', border: 'none', borderRadius: '8px', color: '#FFFFFF', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
                 Done
               </button>
             </div>
@@ -1132,12 +1132,12 @@ const groupedCues = () => {
       )}
         {showDragModal && dragSource && dragTarget && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '16px', padding: '28px', width: '400px' }}>
+          <div style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '28px', width: '400px' }}>
             {dragModalStep === 'action' ? (
               <>
-                <div style={{ fontSize: '16px', fontWeight: '700', color: '#f0f0f0', marginBottom: '8px' }}>Move cue data</div>
-                <div style={{ fontSize: '13px', color: '#666', marginBottom: '24px' }}>
-                  What do you want to do with <span style={{ color: '#534AB7' }}>Spot {dragSource.spot.spot_number} / {dragSource.cue.lq_number || 'T·' + dragSource.cue.track_number}</span>?
+                <div style={{ fontSize: '16px', fontWeight: '700', color: '#FFFFFF', marginBottom: '8px' }}>Move cue data</div>
+                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.52)', marginBottom: '24px' }}>
+                  What do you want to do with <span style={{ color: '#409CFF' }}>Spot {dragSource.spot.spot_number} / {dragSource.cue.lq_number || 'T·' + dragSource.cue.track_number}</span>?
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <button onClick={async () => {
@@ -1169,25 +1169,25 @@ const groupedCues = () => {
                     setDragSource(null);
                     setDragTarget(null);
                     setDragModalStep('action');
-                  }} style={{ padding: '12px', background: '#534AB7', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '14px', fontWeight: '600', cursor: 'pointer', textAlign: 'left' }}>
+                  }} style={{ padding: '12px', background: '#0A84FF', border: 'none', borderRadius: '8px', color: '#FFFFFF', fontSize: '14px', fontWeight: '600', cursor: 'pointer', textAlign: 'left' }}>
                     <div>Swap</div>
                     <div style={{ fontSize: '11px', fontWeight: '400', opacity: 0.7, marginTop: '2px' }}>Exchange data between both spots</div>
                   </button>
                   <button onClick={() => setDragModalStep('character')}
-                    style={{ padding: '12px', background: '#1e1e1e', border: '1px solid #3a3a3a', borderRadius: '8px', color: '#f0f0f0', fontSize: '14px', fontWeight: '600', cursor: 'pointer', textAlign: 'left' }}>
+                    style={{ padding: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.14)', borderRadius: '8px', color: '#FFFFFF', fontSize: '14px', fontWeight: '600', cursor: 'pointer', textAlign: 'left' }}>
                     <div>Copy</div>
                     <div style={{ fontSize: '11px', fontWeight: '400', opacity: 0.7, marginTop: '2px' }}>Copy source data into target spot</div>
                   </button>
                   <button onClick={() => { setShowDragModal(false); setDragSource(null); setDragTarget(null); setDragModalStep('action'); }}
-                    style={{ padding: '8px', background: 'none', border: 'none', color: '#555', fontSize: '13px', cursor: 'pointer' }}>
+                    style={{ padding: '8px', background: 'none', border: 'none', color: 'rgba(255,255,255,0.45)', fontSize: '13px', cursor: 'pointer' }}>
                     Cancel
                   </button>
                 </div>
               </>
             ) : (
               <>
-                <div style={{ fontSize: '16px', fontWeight: '700', color: '#f0f0f0', marginBottom: '8px' }}>Copy character?</div>
-                <div style={{ fontSize: '13px', color: '#666', marginBottom: '24px' }}>
+                <div style={{ fontSize: '16px', fontWeight: '700', color: '#FFFFFF', marginBottom: '8px' }}>Copy character?</div>
+                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.52)', marginBottom: '24px' }}>
                   Should the character name also be copied, or keep the existing character in the target spot?
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -1203,7 +1203,7 @@ const groupedCues = () => {
                     setDragSource(null);
                     setDragTarget(null);
                     setDragModalStep('action');
-                  }} style={{ padding: '12px', background: '#534AB7', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '14px', fontWeight: '600', cursor: 'pointer', textAlign: 'left' }}>
+                  }} style={{ padding: '12px', background: '#0A84FF', border: 'none', borderRadius: '8px', color: '#FFFFFF', fontSize: '14px', fontWeight: '600', cursor: 'pointer', textAlign: 'left' }}>
                     <div>Copy everything including character</div>
                     <div style={{ fontSize: '11px', fontWeight: '400', opacity: 0.7, marginTop: '2px' }}>Target spot will have the same character</div>
                   </button>
@@ -1219,12 +1219,12 @@ const groupedCues = () => {
                     setDragSource(null);
                     setDragTarget(null);
                     setDragModalStep('action');
-                  }} style={{ padding: '12px', background: '#1e1e1e', border: '1px solid #3a3a3a', borderRadius: '8px', color: '#f0f0f0', fontSize: '14px', fontWeight: '600', cursor: 'pointer', textAlign: 'left' }}>
+                  }} style={{ padding: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.14)', borderRadius: '8px', color: '#FFFFFF', fontSize: '14px', fontWeight: '600', cursor: 'pointer', textAlign: 'left' }}>
                     <div>Copy everything except character</div>
                     <div style={{ fontSize: '11px', fontWeight: '400', opacity: 0.7, marginTop: '2px' }}>Keep the existing character in the target spot</div>
                   </button>
                   <button onClick={() => setDragModalStep('action')}
-                    style={{ padding: '8px', background: 'none', border: 'none', color: '#555', fontSize: '13px', cursor: 'pointer' }}>
+                    style={{ padding: '8px', background: 'none', border: 'none', color: 'rgba(255,255,255,0.45)', fontSize: '13px', cursor: 'pointer' }}>
                     Back
                   </button>
                 </div>
@@ -1237,25 +1237,25 @@ const groupedCues = () => {
 
       {showSceneModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000 }}>
-          <div style={{ background: '#1a1a1a', border: '1px solid #3a3a3a', borderRadius: '12px', padding: '24px', width: '360px' }}>
-            <div style={{ fontSize: '15px', fontWeight: '600', marginBottom: '16px', color: '#f0f0f0' }}>Add Scene</div>
+          <div style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.14)', borderRadius: '12px', padding: '24px', width: '360px' }}>
+            <div style={{ fontSize: '15px', fontWeight: '600', marginBottom: '16px', color: '#FFFFFF' }}>Add Scene</div>
             <div style={{ marginBottom: '10px' }}>
-              <label style={{ fontSize: '11px', color: '#888', display: 'block', marginBottom: '4px' }}>Scene label *</label>
+              <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.62)', display: 'block', marginBottom: '4px' }}>Scene label *</label>
               <input autoFocus value={newSceneLabel} onChange={e => setNewSceneLabel(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addScene()}
-                style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#f0f0f0', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
+                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: '#FFFFFF', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
                 placeholder="e.g. Scene 1 - The Road" />
             </div>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ fontSize: '11px', color: '#888', display: 'block', marginBottom: '4px' }}>Song (optional)</label>
+              <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.62)', display: 'block', marginBottom: '4px' }}>Song (optional)</label>
               <input value={newSceneSong} onChange={e => setNewSceneSong(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addScene()}
-                style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#f0f0f0', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
+                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: '#FFFFFF', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
                 placeholder="e.g. Time Is My Enemy" />
             </div>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-              <button onClick={() => setShowSceneModal(false)} style={{ padding: '7px 14px', background: 'none', border: '1px solid #333', borderRadius: '6px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
-              <button onClick={addScene} style={{ padding: '7px 14px', background: '#534AB7', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer' }}>Add Scene</button>
+              <button onClick={() => setShowSceneModal(false)} style={{ padding: '7px 14px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={addScene} style={{ padding: '7px 14px', background: '#0A84FF', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer' }}>Add Scene</button>
             </div>
           </div>
         </div>
@@ -1263,25 +1263,25 @@ const groupedCues = () => {
 
       {showCharModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000 }}>
-          <div style={{ background: '#1a1a1a', border: '1px solid #3a3a3a', borderRadius: '12px', padding: '24px', width: '360px' }}>
-            <div style={{ fontSize: '15px', fontWeight: '600', marginBottom: '16px', color: '#f0f0f0' }}>Add Character</div>
+          <div style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.14)', borderRadius: '12px', padding: '24px', width: '360px' }}>
+            <div style={{ fontSize: '15px', fontWeight: '600', marginBottom: '16px', color: '#FFFFFF' }}>Add Character</div>
             <div style={{ marginBottom: '10px' }}>
-              <label style={{ fontSize: '11px', color: '#888', display: 'block', marginBottom: '4px' }}>Character name *</label>
+              <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.62)', display: 'block', marginBottom: '4px' }}>Character name *</label>
               <input autoFocus value={newCharName} onChange={e => setNewCharName(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addCharacter()}
-                style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#f0f0f0', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
+                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: '#FFFFFF', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
                 placeholder="e.g. MARIO" />
             </div>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ fontSize: '11px', color: '#888', display: 'block', marginBottom: '4px' }}>Actor name (optional)</label>
+              <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.62)', display: 'block', marginBottom: '4px' }}>Actor name (optional)</label>
               <input value={newCharActor} onChange={e => setNewCharActor(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addCharacter()}
-                style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#f0f0f0', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
+                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: '#FFFFFF', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
                 placeholder="e.g. John Smith" />
             </div>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-              <button onClick={() => setShowCharModal(false)} style={{ padding: '7px 14px', background: 'none', border: '1px solid #333', borderRadius: '6px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
-              <button onClick={addCharacter} style={{ padding: '7px 14px', background: '#534AB7', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer' }}>Add Character</button>
+              <button onClick={() => setShowCharModal(false)} style={{ padding: '7px 14px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={addCharacter} style={{ padding: '7px 14px', background: '#0A84FF', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer' }}>Add Character</button>
             </div>
           </div>
         </div>

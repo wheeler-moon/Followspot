@@ -6,7 +6,7 @@ export default function CopyColorsSelect({ otherSpots, onPick }) {
   return (
     <select value="" onChange={e => { if (e.target.value !== '') onPick(e.target.value); }}
       title="Copy every color frame from another spot"
-      style={{ height: '24px', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '12px', fontWeight: '500', padding: '0 8px', outline: 'none', cursor: 'pointer' }}>
+      style={{ height: '24px', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '12px', fontWeight: '500', padding: '0 8px', outline: 'none', cursor: 'pointer' }}>
       <option value="">Copy colors from…</option>
       {otherSpots.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
     </select>

@@ -12,8 +12,8 @@ const imageSrc = (filePath) => {
     return `data:${mime};base64,${window.require('fs').readFileSync(filePath).toString('base64')}`;
   } catch(e) { return ''; }
 };
-const labelStyle = { fontSize: '11px', color: '#888', display: 'block', marginBottom: '4px', fontWeight: '500' };
-const inputStyle = { width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#f0f0f0', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' };
+const labelStyle = { fontSize: '11px', color: 'rgba(255,255,255,0.62)', display: 'block', marginBottom: '4px', fontWeight: '500' };
+const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: '#FFFFFF', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' };
 
 function GelPicker({ value, onChange, placeholder }) {
   const [query, setQuery] = useState(value || '');
@@ -52,15 +52,15 @@ function GelPicker({ value, onChange, placeholder }) {
         onFocus={() => query.length > 0 && results.length > 0 && setOpen(true)}
       />
       {open && (
-        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1000, background: '#1a1a1a', border: '1px solid #3a3a3a', borderRadius: '6px', maxHeight: '180px', overflowY: 'auto', marginTop: '2px' }}>
+        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1000, background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.14)', borderRadius: '6px', maxHeight: '180px', overflowY: 'auto', marginTop: '2px' }}>
           {results.map((gel, i) => (
             <div key={i} onMouseDown={() => select(gel)}
-              style={{ padding: '6px 10px', cursor: 'pointer', fontSize: '12px', borderBottom: '1px solid #2a2a2a', display: 'flex', gap: '8px' }}
-              onMouseEnter={e => e.currentTarget.style.background = '#2a2a2a'}
+              style={{ padding: '6px 10px', cursor: 'pointer', fontSize: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', gap: '8px' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-              <span style={{ color: '#534AB7', fontWeight: '600', minWidth: '50px' }}>{gel.gel_number}</span>
-              <span style={{ color: '#ccc' }}>{gel.gel_name}</span>
-              <span style={{ color: '#555', marginLeft: 'auto' }}>{gel.manufacturer}</span>
+              <span style={{ color: '#409CFF', fontWeight: '600', minWidth: '50px' }}>{gel.gel_number}</span>
+              <span style={{ color: 'rgba(255,255,255,0.78)' }}>{gel.gel_name}</span>
+              <span style={{ color: 'rgba(255,255,255,0.45)', marginLeft: 'auto' }}>{gel.manufacturer}</span>
             </div>
           ))}
         </div>
@@ -92,12 +92,12 @@ function SpotSetup({ spot, spotNumber, onChange, onRemove, otherSpots, onCopyCol
   };
 
   return (
-    <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
+    <div style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-        <span style={{ fontSize: '15px', fontWeight: '600', color: '#534AB7' }}>Spot {spotNumber}</span>
+        <span style={{ fontSize: '15px', fontWeight: '600', color: '#409CFF' }}>Spot {spotNumber}</span>
         <div style={{ flex: 1 }} />
         <CopyColorsSelect otherSpots={otherSpots} onPick={key => { if (onCopyColorsFrom(parseInt(key))) setCopyCount(c => c + 1); }} />
-        <button onClick={onRemove} style={{ background: 'none', border: '1px solid #3a2a2a', borderRadius: '6px', color: '#c44', padding: '4px 10px', fontSize: '12px', cursor: 'pointer', marginLeft: '8px' }}>Remove</button>
+        <button onClick={onRemove} style={{ background: 'rgba(255,69,58,0.14)', border: 'none', borderRadius: '6px', color: '#FF453A', padding: '4px 10px', fontSize: '12px', cursor: 'pointer', marginLeft: '8px' }}>Remove</button>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
         <div>
@@ -123,7 +123,7 @@ function SpotSetup({ spot, spotNumber, onChange, onRemove, otherSpots, onCopyCol
               autoFocus
             />
             <div onClick={() => onChange({ ...spot, fixture_type: '', fixture_other: '' })}
-              style={{ fontSize: '11px', color: '#534AB7', cursor: 'pointer', marginTop: '4px' }}>
+              style={{ fontSize: '11px', color: '#409CFF', cursor: 'pointer', marginTop: '4px' }}>
               Choose from list instead
             </div>
           </div>
@@ -138,8 +138,8 @@ function SpotSetup({ spot, spotNumber, onChange, onRemove, otherSpots, onCopyCol
       <label style={{ ...labelStyle, marginBottom: '8px', display: 'block' }}>Color frames</label>
       <div key={copyCount} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '8px' }}>
         {spot.gels.map((gel, i) => (
-          <div key={i} style={{ background: '#111', borderRadius: '8px', padding: '8px' }}>
-            <div style={{ fontSize: '10px', color: '#555', marginBottom: '4px', fontWeight: '600' }}>Frame {gel.slot}</div>
+          <div key={i} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '8px' }}>
+            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', marginBottom: '4px', fontWeight: '600' }}>Frame {gel.slot}</div>
             <GelPicker
               value={gel.gel_number ? gel.gel_number + ' ' + gel.gel_name : ''}
               onChange={gelData => updateGel(i, gelData)}
@@ -147,9 +147,9 @@ function SpotSetup({ spot, spotNumber, onChange, onRemove, otherSpots, onCopyCol
           </div>
         ))}
       </div>
-      <div style={{ background: '#111', borderRadius: '8px', padding: '8px', border: '1px solid #3a3020' }}>
-        <div style={{ fontSize: '10px', color: '#8a6a20', marginBottom: '6px', fontWeight: '600' }}>
-          Permanent frame <span style={{ color: '#555', fontWeight: '400' }}>(optional)</span>
+      <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '8px', border: '1px solid rgba(255,214,10,0.25)' }}>
+        <div style={{ fontSize: '10px', color: '#C8A26B', marginBottom: '6px', fontWeight: '600' }}>
+          Permanent frame <span style={{ color: 'rgba(255,255,255,0.45)', fontWeight: '400' }}>(optional)</span>
         </div>
         <GelPicker key={copyCount}
           value={spot.perm_gel_number ? spot.perm_gel_number + ' ' + spot.perm_gel_name : ''}
@@ -195,8 +195,8 @@ export default function NewShowScreen({ navigate }) {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <AppHeader title="New Show" onBack={() => navigate('home')} backLabel="Back">
         <div style={{ flex: 1 }} />
-        {error && <span style={{ fontSize: '12px', color: '#f55' }}>{error}</span>}
-        <button onClick={handleSave} disabled={saving} style={{ padding: '8px 20px', background: '#534AB7', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: 'pointer', opacity: saving ? 0.6 : 1 }}>
+        {error && <span style={{ fontSize: '12px', color: '#FF453A' }}>{error}</span>}
+        <button onClick={handleSave} disabled={saving} style={{ padding: '8px 20px', background: '#0A84FF', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: 'pointer', opacity: saving ? 0.6 : 1 }}>
           {saving ? 'Saving...' : 'Save Show'}
         </button>
       </AppHeader>
@@ -204,15 +204,15 @@ export default function NewShowScreen({ navigate }) {
       <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
         <div style={{ maxWidth: '760px', margin: '0 auto' }}>
 
-          <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '12px', padding: '20px', marginBottom: '20px' }}>
-            <div style={{ fontSize: '11px', fontWeight: '600', color: '#555', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Show info</div>
+          <div style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px', marginBottom: '20px' }}>
+            <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Show info</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                             <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '4px' }}>
-                <div style={{ width: '80px', height: '80px', borderRadius: '8px', background: '#111', border: '1px solid #2a2a2a', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                <div style={{ width: '80px', height: '80px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
                   {form.logo_path ? (
                     <img src={imageSrc(form.logo_path)} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                   ) : (
-                    <span style={{ fontSize: '10px', color: '#444', textAlign: 'center', padding: '8px' }}>No logo</span>
+                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.28)', textAlign: 'center', padding: '8px' }}>No logo</span>
                   )}
                 </div>
                 <div>
@@ -223,15 +223,14 @@ export default function NewShowScreen({ navigate }) {
                       const result = ipcRenderer.sendSync('dialog-open-image');
                       if (result) updateForm('logo_path', result);
                     }}
-                    style={{ padding: '6px 12px', background: '#111', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#888', fontSize: '12px', cursor: 'pointer', display: 'block', marginBottom: '4px' }}>
+                    style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: 'rgba(255,255,255,0.62)', fontSize: '12px', cursor: 'pointer', display: 'block', marginBottom: '4px' }}>
                     Choose image...
                   </button>
-                  {form.logo_path && <div style={{ fontSize: '11px', color: '#534AB7', marginTop: '2px' }}>✓ Image selected</div>}
-                  <div style={{ fontSize: '11px', color: '#444', marginTop: '4px' }}>PNG, JPG or SVG</div>
+                  {form.logo_path && <div style={{ fontSize: '11px', color: '#409CFF', marginTop: '2px' }}>✓ Image selected</div>}
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.28)', marginTop: '4px' }}>PNG, JPG or SVG</div>
                 </div>
               </div>
               <div style={{ gridColumn: '1 / -1' }}>
-                <label style={labelStyle}>Show title *</label>
                 <label style={labelStyle}>Show title *</label>
                 <input style={{ ...inputStyle, fontSize: '15px' }} value={form.title}
                   onChange={e => updateForm('title', e.target.value)} placeholder="e.g. Hamilton" />
@@ -249,8 +248,8 @@ export default function NewShowScreen({ navigate }) {
             </div>
           </div>
 
-          <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '12px', padding: '20px', marginBottom: '20px' }}>
-            <div style={{ fontSize: '11px', fontWeight: '600', color: '#555', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Lighting team</div>
+          <div style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px', marginBottom: '20px' }}>
+            <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Lighting team</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               {[
                 ['designer','Lighting designer'],
@@ -270,9 +269,9 @@ export default function NewShowScreen({ navigate }) {
 
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <div style={{ fontSize: '11px', fontWeight: '600', color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Spots ({spots.length})</div>
+              <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Spots ({spots.length})</div>
               {spots.length < 4 && (
-                <button onClick={addSpot} style={{ background: 'none', border: '1px solid #534AB7', borderRadius: '6px', color: '#534AB7', padding: '5px 12px', fontSize: '12px', cursor: 'pointer' }}>+ Add spot</button>
+                <button onClick={addSpot} style={{ background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', padding: '5px 12px', fontSize: '12px', cursor: 'pointer' }}>+ Add spot</button>
               )}
             </div>
             {spots.map((spot, i) => (

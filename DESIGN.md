@@ -2,13 +2,13 @@
 
 Values come from Apple's **macOS 27 UI Kit** (Sketch, v12, 2026-06-23) and are adapted for SpotPlot. The kit itself is not in this repo. Apple's license doesn't allow redistributing it, and the repo is public, so never commit kit files.
 
-The existing screens don't follow this guide yet. Bringing them in line is the "pre-launch design refresh" item in `TODO.md`. New or reworked UI should follow it now.
+All screens follow this guide as of the design refresh (2026-09-30). New or reworked UI must follow it too.
 
 ## Principles
 
 - **Dark only.** SpotPlot is used at tech tables and in dark booths. There is no light mode.
 - **Show content beats chrome.** Cue content (LQ numbers, actions, characters) is read quickly, at a distance, during tech. Make it bigger and higher-contrast than buttons, labels and headers.
-- **One accent color.** SpotPlot purple marks what's interactive or selected. Other colors only carry meaning (delete, warning, highlight).
+- **One accent color: Apple Blue.** It marks what's interactive or selected. Other colors only carry meaning (delete, warning, highlight). No purple anywhere in the UI.
 - **Native Mac feel.** Use the system font, macOS control heights and corner radii, and capsule-shaped switches.
 - **Gel colors are data, not UI.** Gel swatches show the real gel color. Never tint, restyle or theme them.
 
@@ -19,7 +19,9 @@ Apple layers dark UI by putting translucent white fills on top of the window bac
 
 | Token | Value | Use |
 |---|---|---|
-| Window background | `#1E1E1E` (Apple) / `#0F0F0F` (SpotPlot today) | Page background. The refresh should pick one; see note below. |
+| Window background | `#1E1E1E` | Page background (Apple's dark window color) |
+| Panel | `#2A2A2A` | Cards, modals, grouped sections |
+| Toolbar | `#282828` | Top bar (`AppHeader`), hairline `rgba(0,0,0,0.45)` below |
 | Fill 1 | `rgba(255,255,255,0.10)` | Switch-off track, strongest raised surface |
 | Fill 2 | `rgba(255,255,255,0.08)` | Bordered buttons (Apple uses 7%), cards |
 | Fill 3 | `rgba(255,255,255,0.05)` | Table cells, hover |
@@ -27,8 +29,6 @@ Apple layers dark UI by putting translucent white fills on top of the window bac
 | Fill 5 | `rgba(255,255,255,0.02)` | Barely-there grouping |
 | Separator | `rgba(255,255,255,0.10)` | Dividers, cell borders |
 | Popover / menu | `#1A1A1A`, shadow `0 18px 48px rgba(0,0,0,0.45)` | Floating panels |
-
-On the window background: Apple's is `#1E1E1E`, while SpotPlot uses the darker `#0F0F0F`. The darker one is easier on the eyes in a dark booth. Either works as long as one value is used everywhere.
 
 ### Text
 | Token | Value | Use |
@@ -38,25 +38,24 @@ On the window background: Apple's is `#1E1E1E`, while SpotPlot uses the darker `
 | Label 3 (tertiary) | `rgba(255,255,255,0.25)` | Placeholders, disabled text |
 | Label 4 (quaternary) | `rgba(255,255,255,0.10)` | Faint markers, like "—" in empty cells |
 
-### Accent: SpotPlot purple
+### Accent: Apple Blue
 | Token | Value | Use |
 |---|---|---|
-| Accent | `#534AB7` | Filled controls: default buttons, switch-on track, selection, focus ring |
-| Accent text | `#8A82E0` | Purple **text or icons** on dark backgrounds. `#534AB7` text is too low-contrast on dark. |
-| Accent hover | `#1A1A2E` | Tinted hover background (already used in the cue list) |
-
-Apple's closest system color is Indigo (dark mode) `#6D7CFF`.
+| Accent | `#0A84FF` | Filled controls: default buttons, switch-on track, selected chips, focus ring |
+| Accent text | `#409CFF` | Blue **text or icons** on dark backgrounds (spot names, links) |
+| Accent tint | `rgba(10,132,255,0.16)` | Selected-row / drag-target background |
 
 ### Meaning colors (Apple dark-mode system colors)
 Only use these when the color carries meaning.
 
 | Color | Value | SpotPlot meaning |
 |---|---|---|
-| Red | `#FF4245` | Delete / destructive actions, the red cue highlight |
-| Orange | `#FF9230` | Warnings |
-| Yellow | `#FFD600` | The yellow cue highlight |
+| Red | `#FF453A` | Delete / destructive actions, the red cue highlight |
+| Orange | `#FF9F0A` | Warnings |
+| Yellow | `#FFD60A` | The yellow cue highlight |
 | Green | `#30D158` | Success, confirmations |
-| Blue | `#0091FF` | Apple's default accent. Don't use it; SpotPlot uses purple. |
+| Brown | `#AC8E68` | No-color (NC) and color-change actions |
+| Cyan / Indigo | `#64D2FF` / `#5E5CE6` | Action families only: swap/slide/stay, and iris moves |
 
 For highlight **backgrounds**, use the color at 15% opacity (for example `rgba(255,66,69,0.15)`) so the text stays readable.
 
@@ -95,14 +94,14 @@ macOS controls come in five heights. Use **Regular (24px)** by default, **Large 
 
 ### Buttons
 - **Bordered (standard):** fill `rgba(255,255,255,0.07)`, no border, label white Medium 13.
-- **Default (primary):** accent fill `#534AB7`, label white. Use one per dialog, for the main action.
+- **Default (primary):** accent fill `#0A84FF`, label white. Use one per dialog, for the main action.
 - **Destructive:** use a red label (`#FF4245`) on a bordered button, or a red fill if it's the dialog's main action.
 - **Borderless:** text only. It gets a bezel (Fill 3) on hover.
 - **Pressed:** add about 5% more white fill. **Disabled:** 50% opacity.
 
 ### Switches (on/off settings)
 Use a switch for any setting that is simply on or off, like the w/LQ toggle.
-- Off track: `rgba(255,255,255,0.10)`. On track: accent `#534AB7`.
+- Off track: `rgba(255,255,255,0.10)`. On track: accent `#0A84FF`.
 - Knob: a **pill**, not a circle. It's `rgba(255,255,255,0.85)` with a soft shadow, 32 × 20 inside a 54 × 24 track (2px inset).
 - Put the label next to the switch. Clicking the label toggles it too.
 
@@ -113,7 +112,7 @@ Use a switch for any setting that is simply on or off, like the w/LQ toggle.
 - Disabled: 50% opacity.
 
 ### Segmented controls
-Use one to pick between 2–5 options, like highlight: None / Yellow / Red. Regular height is 24px with radius 6, and the selected segment is filled with the accent.
+Use one to pick between 2–5 options, like highlight: None / Yellow / Red. Regular height is 24px with radius 6, and the selected segment is a lighter fill (`rgba(255,255,255,0.14)`) or the accent.
 
 ### Pop-up buttons (dropdowns)
 Height 24px, radius 6, bordered-button fill, with a chevron on the right.

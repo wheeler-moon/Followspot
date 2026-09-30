@@ -72,26 +72,26 @@ const startEdit = () => {
 
   const updateEdit = (field, value) => setEditForm(f => ({ ...f, [field]: value }));
   const navCards = [
-    { label: 'Cue list', icon: '≡', desc: 'Enter and edit followspot cues', dest: 'cue-list', color: '#534AB7' },
-    { label: 'Scenes', icon: '◎', desc: 'Manage scenes and act breaks', dest: 'scenes', color: '#0F6E56' },
-    { label: 'Characters', icon: '◈', desc: 'Characters and cast list', dest: 'characters', color: '#854F0B' },
-    { label: 'Spot Notes', icon: '✎', desc: 'View and manage spot notes', dest: 'spot-notes', color: '#C8A000' },
-    { label: 'Print options', icon: '⎙', desc: 'Generate PDF paperwork', dest: 'print', color: '#3B6D11' },
+    { label: 'Cue list', icon: '≡', desc: 'Enter and edit followspot cues', dest: 'cue-list', color: '#409CFF' },
+    { label: 'Scenes', icon: '◎', desc: 'Manage scenes and act breaks', dest: 'scenes', color: '#30D158' },
+    { label: 'Characters', icon: '◈', desc: 'Characters and cast list', dest: 'characters', color: '#AC8E68' },
+    { label: 'Spot Notes', icon: '✎', desc: 'View and manage spot notes', dest: 'spot-notes', color: '#FFD60A' },
+    { label: 'Print options', icon: '⎙', desc: 'Generate PDF paperwork', dest: 'print', color: '#30D158' },
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#0f0f0f' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#1E1E1E' }}>
            <AppHeader title={show.title} onBack={() => navigate('home')} backLabel="All shows">
-        <span style={{ fontSize: '12px', color: '#555' }}>{show.theatre}</span>
+        <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)' }}>{show.theatre}</span>
         <div style={{ flex: 1 }} />
         <button onClick={() => {
           const result = ipcRenderer.sendSync('db-export-show', show.id);
           if (result.success) alert(`Show exported successfully!`);
           else if (!result.cancelled) alert('Export failed: ' + result.error);
-        }} style={{ padding: '8px 14px', background: 'none', border: '1px solid #2a2a2a', borderRadius: '8px', color: '#666', fontSize: '13px', cursor: 'pointer' }}>
+        }} style={{ padding: '8px 14px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '8px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer' }}>
           ↑ Export
         </button>
-        <button onClick={() => navigate('cue-list', show)} style={{ padding: '8px 18px', background: '#534AB7', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
+        <button onClick={() => navigate('cue-list', show)} style={{ padding: '8px 18px', background: '#0A84FF', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
           Open cue list →
         </button>
       </AppHeader>
@@ -101,26 +101,26 @@ const startEdit = () => {
 
           <div style={{ marginBottom: '32px' }}>
             {editing ? (
-              <div style={{ background: '#1a1a1a', border: '1px solid #534AB7', borderRadius: '12px', padding: '20px', marginBottom: '8px' }}>
-                <div style={{ fontSize: '11px', fontWeight: '600', color: '#534AB7', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Edit show info</div>
+              <div style={{ background: '#2A2A2A', border: '1px solid #0A84FF', borderRadius: '12px', padding: '20px', marginBottom: '8px' }}>
+                <div style={{ fontSize: '11px', fontWeight: '600', color: '#409CFF', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Edit show info</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
                   <div style={{ gridColumn: '1 / -1' }}>
-                    <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>Show title</div>
+                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Show title</div>
                     <input value={editForm.title} onChange={e => updateEdit('title', e.target.value)}
-                      style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#f0f0f0', padding: '7px 10px', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }} />
+                      style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: '#FFFFFF', padding: '7px 10px', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }} />
                   </div>
                   <div>
-                    <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>Theatre</div>
+                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Theatre</div>
                     <input value={editForm.theatre} onChange={e => updateEdit('theatre', e.target.value)}
-                      style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#f0f0f0', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
+                      style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: '#FFFFFF', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
                   </div>
                   <div>
-                    <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>Producer</div>
+                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Producer</div>
                     <input value={editForm.producer} onChange={e => updateEdit('producer', e.target.value)}
-                      style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#f0f0f0', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
+                      style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: '#FFFFFF', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
                   </div>
                 </div>
-                <div style={{ fontSize: '11px', fontWeight: '600', color: '#555', marginBottom: '10px', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Lighting team</div>
+                <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', marginBottom: '10px', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Lighting team</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                   {[
                     ['designer', 'Lighting designer'],
@@ -130,25 +130,25 @@ const startEdit = () => {
                     ['programmer', 'Programmer'],
                   ].map(([field, label]) => (
                     <div key={field}>
-                      <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>{label}</div>
+                      <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>{label}</div>
                       <input value={editForm[field]} onChange={e => updateEdit(field, e.target.value)}
-                        style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#f0f0f0', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
+                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: '#FFFFFF', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
                     </div>
                   ))}
                 </div>
                 <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                  <button onClick={() => setEditing(false)} style={{ padding: '7px 14px', background: 'none', border: '1px solid #333', borderRadius: '6px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
-                  <button onClick={saveEdit} disabled={saving} style={{ padding: '7px 14px', background: '#534AB7', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer' }}>{saving ? 'Saving...' : 'Save'}</button>
+                  <button onClick={() => setEditing(false)} style={{ padding: '7px 14px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+                  <button onClick={saveEdit} disabled={saving} style={{ padding: '7px 14px', background: '#0A84FF', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer' }}>{saving ? 'Saving...' : 'Save'}</button>
                 </div>
                 <div style={{ gridColumn: '1 / -1', marginBottom: '4px' }}>
-                  <div style={{ fontSize: '11px', color: '#666', marginBottom: '6px' }}>Show logo (optional)</div>
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '6px' }}>Show logo (optional)</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div
-                      onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = '#534AB7'; }}
-                      onDragLeave={e => { e.currentTarget.style.borderColor = '#2a2a2a'; }}
+                      onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = '#0A84FF'; }}
+                      onDragLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
                       onDrop={e => {
                         e.preventDefault();
-                        e.currentTarget.style.borderColor = '#2a2a2a';
+                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
                         const file = e.dataTransfer.files[0];
                         if (file && file.type.startsWith('image/')) {
                           const result = ipcRenderer.sendSync('dialog-open-image');
@@ -159,19 +159,19 @@ const startEdit = () => {
                         const result = ipcRenderer.sendSync('dialog-open-image');
                         if (result) updateEdit('logo_path', result);
                       }}
-                      style={{ width: '80px', height: '80px', background: '#111', borderRadius: '8px', border: '2px dashed #2a2a2a', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', cursor: 'pointer', flexShrink: 0 }}>
+                      style={{ width: '80px', height: '80px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', border: '2px dashed rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', cursor: 'pointer', flexShrink: 0 }}>
                       {editForm.logo_path ? (
                         <img src={getImageSrc(editForm.logo_path)} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                       ) : (
                         <div style={{ textAlign: 'center', padding: '8px' }}>
-                          <div style={{ fontSize: '20px', color: '#333' }}>+</div>
-                          <div style={{ fontSize: '8px', color: '#444' }}>Drop or click</div>
+                          <div style={{ fontSize: '20px', color: 'rgba(255,255,255,0.28)' }}>+</div>
+                          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.28)' }}>Drop or click</div>
                         </div>
                       )}
                     </div>
                     {editForm.logo_path && (
                       <button onClick={() => updateEdit('logo_path', '')}
-                        style={{ padding: '5px 10px', background: 'none', border: '1px solid #3a2a2a', borderRadius: '6px', color: '#c44', fontSize: '11px', cursor: 'pointer' }}>
+                        style={{ padding: '5px 10px', background: 'rgba(255,69,58,0.14)', border: 'none', borderRadius: '6px', color: '#FF453A', fontSize: '11px', cursor: 'pointer' }}>
                         Remove logo
                       </button>
                     )}
@@ -185,14 +185,14 @@ const startEdit = () => {
                     <img src={getImageSrc(show.logo_path)} style={{ height: '60px', maxWidth: '120px', objectFit: 'contain', borderRadius: '6px' }} />
                   )}
                   <div>
-                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#f0f0f0', marginBottom: '4px' }}>{show.title}</div>
-                    <div style={{ fontSize: '14px', color: '#666' }}>{show.theatre}{show.producer ? ` · ${show.producer}` : ''}</div>
+                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#FFFFFF', marginBottom: '4px' }}>{show.title}</div>
+                    <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.52)' }}>{show.theatre}{show.producer ? ` · ${show.producer}` : ''}</div>
                   </div>
                 </div>
                   <button onClick={() => setShowSettings(true)}
                     onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.14)'; }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.10)'; }}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', height: '28px', padding: '0 14px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '14px', color: '#fff', fontSize: '13px', fontWeight: '500', cursor: 'pointer', marginTop: '4px' }}>
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', height: '28px', padding: '0 14px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '14px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer', marginTop: '4px' }}>
                     <span style={{ fontSize: '14px' }}>⚙︎</span> Show Settings
                   </button>
               </div>
@@ -206,16 +206,16 @@ const startEdit = () => {
               { label: 'Scenes', value: stats.scenes },
               { label: 'Characters', value: stats.characters },
             ].map(stat => (
-              <div key={stat.label} style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '12px', padding: '16px 20px' }}>
-                <div style={{ fontSize: '28px', fontWeight: '700', color: '#f0f0f0', marginBottom: '4px' }}>{stat.value}</div>
-                <div style={{ fontSize: '12px', color: '#555' }}>{stat.label}</div>
+              <div key={stat.label} style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px 20px' }}>
+                <div style={{ fontSize: '28px', fontWeight: '700', color: '#FFFFFF', marginBottom: '4px' }}>{stat.value}</div>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)' }}>{stat.label}</div>
               </div>
             ))}
           </div>
 
           <div style={{ marginBottom: '24px' }}>
-            <div style={{ fontSize: '11px', fontWeight: '600', color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>Lighting team</div>
-            <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '12px', padding: '16px 20px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+            <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>Lighting team</div>
+            <div style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px 20px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
               {[
                 ['Designer', show.designer],
                 ['Associate LD', show.associate_ld],
@@ -224,38 +224,38 @@ const startEdit = () => {
                 ['Programmer', show.programmer],
               ].filter(([, val]) => val).map(([label, val]) => (
                 <div key={label}>
-                  <div style={{ fontSize: '10px', color: '#555', marginBottom: '2px', fontWeight: '500' }}>{label}</div>
-                  <div style={{ fontSize: '13px', color: '#ccc' }}>{val}</div>
+                  <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', marginBottom: '2px', fontWeight: '500' }}>{label}</div>
+                  <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.78)' }}>{val}</div>
                 </div>
               ))}
             </div>
           </div>
 
           <div style={{ marginBottom: '24px' }}>
-            <div style={{ fontSize: '11px', fontWeight: '600', color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>Spots</div>
+            <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>Spots</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '10px' }}>
               {stats.spots.map(spot => (
-                <div key={spot.id} style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '10px', padding: '14px 16px' }}>
-                  <div style={{ fontSize: '11px', color: '#534AB7', fontWeight: '600', marginBottom: '4px' }}>Spot {spot.spot_number}</div>
-                  <div style={{ fontSize: '13px', color: '#f0f0f0', fontWeight: '500', marginBottom: '2px' }}>{spot.operator_name || 'No operator'}</div>
-                  <div style={{ fontSize: '11px', color: '#555' }}>{spot.location || 'No location'}</div>
-                  <div style={{ fontSize: '11px', color: '#444', marginTop: '4px' }}>{spot.fixture_type || 'No fixture'}</div>
+                <div key={spot.id} style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '14px 16px' }}>
+                  <div style={{ fontSize: '11px', color: '#409CFF', fontWeight: '600', marginBottom: '4px' }}>Spot {spot.spot_number}</div>
+                  <div style={{ fontSize: '13px', color: '#FFFFFF', fontWeight: '500', marginBottom: '2px' }}>{spot.operator_name || 'No operator'}</div>
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>{spot.location || 'No location'}</div>
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.28)', marginTop: '4px' }}>{spot.fixture_type || 'No fixture'}</div>
                 </div>
               ))}
             </div>
           </div>
 
           <div>
-            <div style={{ fontSize: '11px', fontWeight: '600', color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>Navigate</div>
+            <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>Navigate</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '10px' }}>
               {navCards.map(card => (
                 <div key={card.dest} onClick={() => navigate(card.dest, show)}
-                  style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '12px', padding: '16px', cursor: 'pointer', transition: 'border-color 0.15s' }}
+                  style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', cursor: 'pointer', transition: 'border-color 0.15s' }}
                   onMouseEnter={e => e.currentTarget.style.borderColor = card.color}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = '#2a2a2a'}>
+                  onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}>
                   <div style={{ fontSize: '24px', marginBottom: '8px' }}>{card.icon}</div>
-                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#f0f0f0', marginBottom: '4px' }}>{card.label}</div>
-                  <div style={{ fontSize: '11px', color: '#555' }}>{card.desc}</div>
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#FFFFFF', marginBottom: '4px' }}>{card.label}</div>
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>{card.desc}</div>
                 </div>
               ))}
 
