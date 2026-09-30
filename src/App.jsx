@@ -37,7 +37,7 @@ export default function App() {
         setLicenseStatus('valid');
         return;
       } else if (result && !result.valid) {
-        setLicenseStatus('expired');
+        markInvalid(cached, result);
         return;
       } else {
         if (cached.valid) {
@@ -50,15 +50,31 @@ export default function App() {
     setLicenseStatus('unlicensed');
   };
 
+  // The server said no: expired, revoked, or this Mac would be a 3rd device on the license
+  const markInvalid = (cached, result) => {
+    setCachedLicense({ ...cached, valid: false });
+    setLicenseStatus(result.code === 'device_limit' ? 'device_limit' : 'expired');
+  };
+
   const validateInBackground = async (licenseKey) => {
     const result = await validateLicense(licenseKey);
     if (result && !result.valid) {
-      setLicenseStatus('expired');
+      markInvalid(getCachedLicense(), result);
     } else if (result && result.valid) {
       const cached = getCachedLicense();
       setCachedLicense({ ...cached, valid: true, cached_at: new Date().toISOString() });
     }
   };
+
+  // While SpotPlot is open, check in every 15 minutes so the license admin can see this Mac is in use
+  useEffect(() => {
+    if (licenseStatus !== 'valid') return;
+    const timer = setInterval(() => {
+      const cached = getCachedLicense();
+      if (cached && cached.license_key) validateInBackground(cached.license_key);
+    }, 15 * 60 * 1000);
+    return () => clearInterval(timer);
+  }, [licenseStatus]);
 
   const navigate = (dest, data) => {
     setCurrentShow(data || null);
@@ -74,6 +90,18 @@ export default function App() {
 
   if (licenseStatus === 'unlicensed') {
     return <LicenseScreen onActivated={() => setLicenseStatus('valid')} />;
+  }
+
+  if (licenseStatus === 'device_limit') {
+    return <ExpiredScreen
+      title="License in use on 2 Macs"
+      message="This SpotPlot license is already active on 2 other Macs, which is the limit. To use it here, stop using it on one of them and contact support to free a slot, or use a different license."
+      onRetry={checkLicense}
+      onNewLicense={() => {
+        localStorage.removeItem('spotplot_license');
+        setLicenseStatus('unlicensed');
+      }}
+    />;
   }
 
   if (licenseStatus === 'expired') {

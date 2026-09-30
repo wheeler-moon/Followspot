@@ -29,17 +29,24 @@ export function isCacheValid(cached) {
   return cached.valid === true;
 }
 
+// This Mac's anonymous ID and SpotPlot version, sent with every license check (2-Mac limit)
+let deviceInfo = null;
+function device() {
+  if (!deviceInfo) {
+    const info = ipcRenderer.sendSync('get-device-info');
+    deviceInfo = { device_id: info.deviceId, app_version: info.appVersion };
+  }
+  return deviceInfo;
+}
+
 export async function validateLicense(licenseKey) {
   try {
-    console.log('Validating license:', licenseKey);
-    const response = await fetch('https://spotplot-server.onrender.com/validate', {
+    const response = await fetch(SERVER_URL + '/validate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ license_key: licenseKey }),
+      body: JSON.stringify({ license_key: licenseKey, ...device() }),
     });
-    const data = await response.json();
-    console.log('Validation result:', data);
-    return data;
+    return await response.json();
   } catch(e) {
     console.error('Validation error:', e);
     return null;
@@ -51,7 +58,7 @@ export async function activateLicense(licenseKey, email) {
     const response = await fetch(SERVER_URL + '/activate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ license_key: licenseKey, email }),
+      body: JSON.stringify({ license_key: licenseKey, email, ...device() }),
     });
     const data = await response.json();
     return data;

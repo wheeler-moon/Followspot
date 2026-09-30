@@ -8,6 +8,7 @@ Current version: Beta 0.2.1
 - [ ] After installing the new build: `.spotplot` files show the SpotPlot icon in Finder. **To test (needs a log out):** rebuild with `npm run make` (the JSON→data file-type fix), install, run `lsregister -f /Applications/SpotPlot.app` and `qlmanage -r cache && killall Finder`, then log out and back in (Apple menu → Log Out) if a file still shows a text preview.
 - [x] After installing the new build: double-clicking a `.spotplot` file opens SpotPlot and imports the show
 - [x] After installing the new build: File → Import Show (Cmd+I) still works
+- [ ] After installing the new build: SpotPlot opens past the license screen, and the license admin page shows this Mac under Devices (1/2)
 - [ ] After installing the new build: Print page shows the real PDF preview with page breaks (not blank), options update it, and Export PDF… saves
 
 ## Bugs
@@ -41,7 +42,7 @@ Current version: Beta 0.2.1
 
 ## Business
 - [ ] Stripe integration: monthly/yearly, standard/student ($15/$170 and $10/$115)
-- [ ] Device limits per license key (max 2 devices)
+- [x] Device limits per license key (max 2 devices)
 - [ ] Windows distribution
 
 ## Design

@@ -662,6 +662,19 @@ function setupIPC() {
       event.returnValue = { success: false, error: e.message };
     }
   });
+  // Anonymous ID for this Mac (the license server allows each license on 2 Macs).
+  // Random, created once, kept in SpotPlot's data folder: no names or hardware info.
+  ipcMain.on('get-device-info', (event) => {
+    const fs = require('fs');
+    const file = path.join(app.getPath('userData'), 'device.json');
+    let deviceId = null;
+    try { deviceId = JSON.parse(fs.readFileSync(file, 'utf8')).device_id; } catch(e) {}
+    if (!deviceId) {
+      deviceId = require('crypto').randomUUID();
+      try { fs.writeFileSync(file, JSON.stringify({ device_id: deviceId })); } catch(e) {}
+    }
+    event.returnValue = { deviceId, appVersion: app.getVersion() };
+  });
   ipcMain.on('reveal-file', (event, filePath) => {
     require('electron').shell.showItemInFolder(filePath);
   });
