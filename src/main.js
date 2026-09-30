@@ -1335,28 +1335,17 @@ app.whenReady().then(async () => {
         global.chromiumPath = puppeteer.executablePath();
       }
     } else {
-      // Dev mode - use cached Chromium or download
-      const chromePath = puppeteer.executablePath();
-      if (!fs.existsSync(chromePath)) {
-        console.log('Downloading Chromium...');
-        const { install, resolveBuildId, detectBrowserPlatform } = require('@puppeteer/browsers');
-        const os = require('os');
-        const platform = detectBrowserPlatform();
-        const buildId = await resolveBuildId('chrome', platform, 'stable');
-        const installedBrowser = await install({
-          browser: 'chrome',
-          buildId,
-          cacheDir: path.join(os.homedir(), '.cache', 'puppeteer'),
-          platform,
-          downloadProgressCallback: (downloaded, total) => {
-            const pct = Math.round((downloaded / total) * 100);
-            console.log('Download progress:', pct + '%');
-          },
-        });
-        global.chromiumPath = installedBrowser.executablePath;
-      } else {
-        global.chromiumPath = chromePath;
+      // Dev mode: use the same pinned Chrome build the app bundles (src/chromeVersion.js),
+      // downloading it once if missing, instead of fetching the latest stable on every update
+      const { install, computeExecutablePath, detectBrowserPlatform } = require('@puppeteer/browsers');
+      const { CHROME_BUILD } = require('./chromeVersion');
+      const cacheDir = path.join(require('os').homedir(), '.cache', 'puppeteer');
+      const pinned = computeExecutablePath({ browser: 'chrome', buildId: CHROME_BUILD, cacheDir });
+      if (!fs.existsSync(pinned)) {
+        console.log('Downloading Chrome for Testing ' + CHROME_BUILD + '...');
+        await install({ browser: 'chrome', buildId: CHROME_BUILD, cacheDir, platform: detectBrowserPlatform() });
       }
+      global.chromiumPath = pinned;
     }
   } catch(e) {
     console.log('Chromium setup error:', e.message);

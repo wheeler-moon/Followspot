@@ -47,7 +47,7 @@ The SQLite file lives at `app.getPath('userData')/followspot.db`, with the schem
 ## Build, signing and release
 
 - `forge.config.js` signs with the owner's Developer ID and notarizes with the keychain profile `AC_PASSWORD`. The `postPackage` hook re-signs, notarizes, staples and writes `make/zip/darwin/arm64/SpotPlot-darwin.zip`. The `postMake` hook rebuilds the DMG with `dmgbuild` (Python) and `dmgbuild_settings.py` to embed the EULA (`LICENSE.rtf`/`LICENSE.txt`).
-- PDFs need Chromium. The packaged app bundles "Google Chrome for Testing.app" from a **hard-coded** version path under `~/.cache/puppeteer` in `forge.config.js` `extraResource`. If Puppeteer is upgraded, that path must be updated or the build breaks. In dev, `main.js` downloads Chromium if it's missing. The path is passed through `global.chromiumPath`.
+- PDFs need Chromium. One Chrome for Testing build is pinned in `src/chromeVersion.js` (`CHROME_BUILD`). The packaged app bundles it from `~/.cache/puppeteer/chrome/mac_arm-<CHROME_BUILD>/` (`forge.config.js` `extraResource`), and `npm start` uses the same build, downloading it once if missing. To change versions, edit `CHROME_BUILD` and run `npx @puppeteer/browsers install chrome@<version>` before building. The path is passed through `global.chromiumPath`.
 - Auto-update uses `update.electronjs.org` against the GitHub repo `wheeler-moon/Followspot` (public). It only runs when `app.isPackaged`.
 - Build output (`out/`, `make/`, `.webpack/`, `*.zip`, `*.dmg`) is gitignored.
 

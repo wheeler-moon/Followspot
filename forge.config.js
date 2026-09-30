@@ -1,5 +1,6 @@
 const { FusesPlugin } = require('@electron-forge/plugin-fuses');
 const { FuseV1Options, FuseVersion } = require('@electron/fuses');
+const { CHROME_BUILD } = require('./src/chromeVersion');
 
 module.exports = {
   packagerConfig: {
@@ -9,7 +10,7 @@ module.exports = {
     extraResource: [
       './src/icon.png',
       './src/icons/icons/mac/icon.icns',
-      `${process.env.HOME}/.cache/puppeteer/chrome/mac_arm-151.0.7922.77/chrome-mac-arm64/Google Chrome for Testing.app`,
+      `${process.env.HOME}/.cache/puppeteer/chrome/mac_arm-${CHROME_BUILD}/chrome-mac-arm64/Google Chrome for Testing.app`,
     ],
     osxSign: {
       identity: 'Developer ID Application: WHEELER DAVID MOON (299TQ9H5QB)',
