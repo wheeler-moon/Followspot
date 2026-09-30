@@ -5,14 +5,14 @@ Current version: Beta 0.2.1
 ## Next release checklist
 - [x] Before building: fix show import dropping per-cell data (see Bugs)
 - [x] Before building: include character photos in `.spotplot` exports and restore them on import (see Bugs)
-- [ ] After installing the new build: `.spotplot` files show the SpotPlot icon in Finder. **To test (needs a log out):** rebuild with `npm run make` (the JSON→data file-type fix), install, run `lsregister -f /Applications/SpotPlot.app` and `qlmanage -r cache && killall Finder`, then log out and back in (Apple menu → Log Out) if a file still shows a text preview.
+- [x] After installing the new build: `.spotplot` files show the SpotPlot icon in Finder. **To test (needs a log out):** rebuild with `npm run make` (the JSON→data file-type fix), install, run `lsregister -f /Applications/SpotPlot.app` and `qlmanage -r cache && killall Finder`, then log out and back in (Apple menu → Log Out) if a file still shows a text preview.
 - [x] After installing the new build: double-clicking a `.spotplot` file opens SpotPlot and imports the show
 - [x] After installing the new build: File → Import Show (Cmd+I) still works
 - [ ] After installing the new build: SpotPlot opens past the license screen, and the license admin page shows this Mac under Devices (1/2)
 - [ ] After installing the new build: Print page shows the real PDF preview with page breaks (not blank), options update it, and Export PDF… saves
 
 ## Bugs
-- [ ] `.spotplot` file icon not showing the SpotPlot logo in Finder — *fix in forge.config.js (Info.plist document type); verify after the next build*
+- [x] `.spotplot` file icon not showing the SpotPlot logo in Finder — *fix in forge.config.js (Info.plist document type); verify after the next build*
 - [x] **Fix before next release.** Show import drops per-cell data: highlights, spot notes, no-color, ignore, note-checked and custom character names are lost when importing a `.spotplot` file (import INSERT in `db-import-show` only copies some `spot_cues` columns)
 - [x] Characters screen: dropping an image onto the photo box opens a file picker instead of using the dropped file
 - [x] `.spotplot` exports only carry the show logo, not character photos (or custom action icons), so a shared show arrives without cast photos. Embed them in the export like the logo and save them into `userData/images` on import.
