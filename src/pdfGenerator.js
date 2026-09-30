@@ -1527,23 +1527,49 @@ const PAGE_MARGINS = {
   characters: { top: '0.5in', right: '0.4in', bottom: '0.4in', left: '0.4in' },
 };
 
-// Saves a sheet's HTML as a Letter-size PDF
-async function renderPDF(html, { landscape, margin }, outputPath) {
-  const browser = await puppeteer.launch({ headless: true, executablePath: global.chromiumPath || puppeteer.executablePath() });
+// One headless Chrome is kept running between renders so live print previews stay fast
+// (starting Chrome takes ~3s; a render with it already running takes ~0.25s)
+let browserPromise = null;
+async function getBrowser() {
+  if (browserPromise) {
+    const running = await browserPromise.catch(() => null);
+    if (running && running.connected) return running;
+  }
+  browserPromise = puppeteer.launch({ headless: true, executablePath: global.chromiumPath || puppeteer.executablePath() });
+  return browserPromise;
+}
+async function closeBrowser() {
+  if (!browserPromise) return;
+  const running = await browserPromise.catch(() => null);
+  browserPromise = null;
+  if (running) await running.close().catch(() => {});
+}
+
+// Renders a sheet's HTML as a Letter-size PDF and returns the bytes
+async function renderPDFBuffer(html, { landscape, margin }) {
+  const browser = await getBrowser();
+  const page = await browser.newPage();
   try {
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
-    await page.pdf({
-      path: outputPath,
+    await page.setContent(html, { waitUntil: 'load' });
+    return Buffer.from(await page.pdf({
       width: landscape ? '11in' : '8.5in',
       height: landscape ? '8.5in' : '11in',
       printBackground: true,
       margin,
-    });
+    }));
   } finally {
-    await browser.close();
+    await page.close().catch(() => {});
   }
+}
+
+// Saves a sheet's HTML as a Letter-size PDF
+async function renderPDF(html, options, outputPath) {
+  fs.writeFileSync(outputPath, await renderPDFBuffer(html, options));
   return outputPath;
 }
 
-module.exports = { buildSpotSheetHTML, buildCallerSheetHTML, buildColorLoadHTML, buildSpotNotesHTML, buildCharactersHTML, renderPDF, PAGE_MARGINS };
+function countPages(pdf) {
+  return (Buffer.from(pdf).toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length;
+}
+
+module.exports = { buildSpotSheetHTML, buildCallerSheetHTML, buildColorLoadHTML, buildSpotNotesHTML, buildCharactersHTML, renderPDF, renderPDFBuffer, countPages, closeBrowser, PAGE_MARGINS };

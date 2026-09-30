@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('node:path');
 const Database = require('better-sqlite3');
 const { exportShow, importShow } = require('./showFile');
-const { buildSpotSheetHTML, buildCallerSheetHTML, buildColorLoadHTML, buildSpotNotesHTML, buildCharactersHTML, renderPDF, PAGE_MARGINS } = require('./pdfGenerator');
+const { buildSpotSheetHTML, buildCallerSheetHTML, buildColorLoadHTML, buildSpotNotesHTML, buildCharactersHTML, renderPDF, renderPDFBuffer, countPages, closeBrowser, PAGE_MARGINS } = require('./pdfGenerator');
 
 if (require('electron-squirrel-startup')) app.quit();
 const { autoUpdater } = require('electron');
@@ -536,6 +536,8 @@ function importShowFile(filePath) {
 }
 
 // Double-clicking a .spotplot file in Finder: import it and tell the user
+app.on('will-quit', () => { closeBrowser(); });
+
 let pendingOpenFile = null;
 let windowReady = false;
 function openShowFile(filePath) {
@@ -629,15 +631,20 @@ function buildSheet(kind, opts) {
 }
 
 function setupIPC() {
-  ipcMain.on('print-preview', (event, { kind, ...opts }) => {
+  // Live print preview: the real PDF, so page breaks show exactly as they'll print.
+  // Async (invoke) so the screen stays responsive while it renders.
+  ipcMain.handle('print-preview', async (event, { kind, ...opts }) => {
     try {
-      const { html, landscape, margin } = buildSheet(kind, opts);
-      event.returnValue = { success: true, html, landscape, margin };
+      const sheet = buildSheet(kind, opts);
+      const pdf = await renderPDFBuffer(sheet.html, sheet);
+      return { success: true, pdf, pages: countPages(pdf) };
     } catch(e) {
       console.error('Print preview error:', e);
-      event.returnValue = { success: false, error: e.message };
+      return { success: false, error: e.message };
     }
   });
+  // Leaving the print screen: shut down the preview's background Chrome
+  ipcMain.on('print-closed', () => { closeBrowser(); });
   ipcMain.on('print-export', async (event, { kind, ...opts }) => {
     try {
       const { dialog } = require('electron');
@@ -1184,14 +1191,18 @@ const createWindow = () => {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
       nodeIntegration: true,
       contextIsolation: false,
+      plugins: true, // built-in PDF viewer for the print preview
     },
   });
 
 mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    // Only SpotPlot's own pages; the built-in PDF viewer (print preview) loads internal pages
+    // that break if their headers are replaced
+    if (!/^(https?|file):/.test(details.url)) return callback({ responseHeaders: details.responseHeaders });
     callback({
       responseHeaders: {
         ...details.responseHeaders,
-        'Content-Security-Policy': ["default-src 'self' 'unsafe-inline' 'unsafe-eval' data:; connect-src 'self' https://spotplot-server.onrender.com"],
+        'Content-Security-Policy': ["default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src 'self' https://spotplot-server.onrender.com"],
         'Content-Type': ['text/html; charset=utf-8'],
       }
     });

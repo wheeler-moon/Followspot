@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import AppHeader from '../components/AppHeader';
 const { ipcRenderer } = window.require('electron');
 
-const PX_PER_INCH = 96;
 const sectionLabel = { fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' };
 const fieldStyle = { width: '100%', boxSizing: 'border-box', height: '28px', background: '#0f0f0f', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '6px', color: '#fff', padding: '0 10px', fontSize: '13px', outline: 'none' };
 
@@ -21,38 +20,22 @@ function Switch({ on, onChange, label, hint }) {
   );
 }
 
-// The sheet's HTML on a white "paper" at its real page width, scaled to fit the preview area
-function SheetPreview({ sheet }) {
-  const box = useRef();
-  const frame = useRef();
-  const [scale, setScale] = useState(1);
-  const [contentHeight, setContentHeight] = useState(800);
-
-  const pageWidth = (sheet.landscape ? 11 : 8.5) * PX_PER_INCH;
-  const m = side => parseFloat(sheet.margin[side]) * PX_PER_INCH;
-  const paperHeight = contentHeight + m('top') + m('bottom');
-
+// The real PDF in the built-in viewer: scroll to see every page and exactly where it breaks
+function PdfPreview({ preview, updating }) {
+  const [url, setUrl] = useState(null);
   useEffect(() => {
-    const ro = new ResizeObserver(() => {
-      if (box.current) setScale(Math.min(1.25, (box.current.clientWidth - 48) / pageWidth));
-    });
-    ro.observe(box.current);
-    return () => ro.disconnect();
-  }, [pageWidth]);
-
-  const measure = () => {
-    const doc = frame.current?.contentDocument;
-    if (doc) setContentHeight(doc.documentElement.scrollHeight);
-  };
+    const u = URL.createObjectURL(new Blob([preview.pdf], { type: 'application/pdf' }));
+    setUrl(u);
+    return () => URL.revokeObjectURL(u);
+  }, [preview]);
 
   return (
-    <div ref={box} style={{ flex: 1, overflow: 'auto', padding: '24px', background: '#262626' }}>
-      <div style={{ width: pageWidth * scale, height: paperHeight * scale, margin: '0 auto' }}>
-        <div style={{ width: pageWidth, height: paperHeight, transform: `scale(${scale})`, transformOrigin: 'top left', background: '#fff', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', boxSizing: 'border-box', padding: `${m('top')}px ${m('right')}px ${m('bottom')}px ${m('left')}px` }}>
-          <iframe ref={frame} srcDoc={sheet.html} onLoad={measure} title="Print preview" scrolling="no"
-            style={{ display: 'block', width: '100%', height: contentHeight, border: 'none' }} />
-        </div>
+    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: '#262626' }}>
+      <div style={{ flexShrink: 0, height: '32px', display: 'flex', alignItems: 'center', gap: '10px', padding: '0 16px', borderBottom: '1px solid rgba(255,255,255,0.10)', fontSize: '12px', color: 'rgba(255,255,255,0.55)' }}>
+        <span>{preview.pages} page{preview.pages === 1 ? '' : 's'}</span>
+        {updating && <span style={{ color: '#8A82E0' }}>Updating…</span>}
       </div>
+      {url && <iframe key={url} src={url + '#toolbar=0&navpanes=0&view=FitH'} title="Print preview" style={{ flex: 1, width: '100%', border: 'none' }} />}
     </div>
   );
 }
@@ -67,7 +50,9 @@ export default function PrintScreen({ show, navigate }) {
   const [rangeEnd, setRangeEnd] = useState('');
   const [notesSpotId, setNotesSpotId] = useState(null); // null = all spots
   const [showCostumeNotes, setShowCostumeNotes] = useState(true);
-  const [sheet, setSheet] = useState(null);
+  const [preview, setPreview] = useState(null); // { pdf, pages }
+  const [updating, setUpdating] = useState(false);
+  const latestRequest = useRef(0);
   const [previewError, setPreviewError] = useState('');
   const [exporting, setExporting] = useState(false);
   const [message, setMessage] = useState(null); // { ok, text, path }
@@ -97,17 +82,25 @@ export default function PrintScreen({ show, navigate }) {
     return req;
   };
 
-  // Re-render the preview whenever the sheet or an option changes (short pause so typing stays smooth)
+  // Re-render the preview PDF whenever the sheet or an option changes (short pause so typing stays smooth).
+  // Only the newest request's result is shown.
   useEffect(() => {
     const req = request();
-    if (!req) { setSheet(null); return; }
-    const t = setTimeout(() => {
-      const result = ipcRenderer.sendSync('print-preview', req);
-      if (result?.success) { setSheet(result); setPreviewError(''); }
+    if (!req) { setPreview(null); setUpdating(false); return; }
+    const id = ++latestRequest.current;
+    setUpdating(true);
+    const t = setTimeout(async () => {
+      const result = await ipcRenderer.invoke('print-preview', req);
+      if (id !== latestRequest.current) return;
+      setUpdating(false);
+      if (result?.success) { setPreview(result); setPreviewError(''); }
       else setPreviewError(result?.error || 'Could not build the preview.');
-    }, 200);
+    }, 250);
     return () => clearTimeout(t);
   }, [selected?.key, label, hideOff, hideTracked, rangeStart, rangeEnd, notesSpotId, showCostumeNotes]);
+
+  // Leaving the print screen: let the app shut down the preview's background Chrome
+  useEffect(() => () => ipcRenderer.send('print-closed'), []);
 
   const exportPDF = () => {
     const req = request();
@@ -211,10 +204,12 @@ export default function PrintScreen({ show, navigate }) {
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#262626', color: '#FF4245', fontSize: '13px' }}>
             {previewError}
           </div>
-        ) : sheet ? (
-          <SheetPreview sheet={sheet} />
+        ) : preview ? (
+          <PdfPreview preview={preview} updating={updating} />
         ) : (
-          <div style={{ flex: 1, background: '#262626' }} />
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#262626', color: 'rgba(255,255,255,0.55)', fontSize: '13px' }}>
+            Preparing preview…
+          </div>
         )}
       </div>
     </div>
