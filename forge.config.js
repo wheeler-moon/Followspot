@@ -46,7 +46,8 @@ module.exports = {
         {
           UTTypeIdentifier: 'com.electron.spotplot.show',
           UTTypeDescription: 'SpotPlot Show File',
-          UTTypeConformsTo: ['public.json', 'public.data'],
+          // Not public.json: Finder would show a text preview of the file instead of the SpotPlot icon
+          UTTypeConformsTo: ['public.data', 'public.content'],
           UTTypeIconFile: 'icon.icns',
           UTTypeTagSpecification: { 'public.filename-extension': ['spotplot'] },
         },
