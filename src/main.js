@@ -918,9 +918,9 @@ ipcMain.on('get-app-icon', (event) => {
       const database = getDb();
       const showStmt = database.prepare(`
         INSERT INTO shows (title, theatre, producer, designer, associate_ld,
-          assistant_ld, production_electrician, programmer, num_spots)
+          assistant_ld, production_electrician, programmer, num_spots, logo_path)
         VALUES (@title, @theatre, @producer, @designer, @associate_ld,
-          @assistant_ld, @production_electrician, @programmer, @num_spots)
+          @assistant_ld, @production_electrician, @programmer, @num_spots, @logo_path)
       `);
       const spotStmt = database.prepare(`
         INSERT INTO spots (show_id, spot_number, fixture_type, location, operator_name)
@@ -931,13 +931,13 @@ ipcMain.on('get-app-icon', (event) => {
         VALUES (@spot_id, @slot_number, @is_permanent, @gel_number, @gel_name)
       `);
       const create = database.transaction(() => {
-        const showResult = showStmt.run({ ...form, num_spots: spots.length });
+        const showResult = showStmt.run({ ...form, num_spots: spots.length, logo_path: form.logo_path || null });
         const showId = showResult.lastInsertRowid;
         for (const spot of spots) {
           const spotResult = spotStmt.run({
             show_id: showId,
             spot_number: spot.spot_number,
-            fixture_type: spot.fixture_type || '',
+            fixture_type: (spot.fixture_type === 'Other' ? spot.fixture_other : spot.fixture_type) || '',
             location: spot.location || '',
             operator_name: spot.operator_name || '',
           });

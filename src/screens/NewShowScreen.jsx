@@ -4,6 +4,14 @@ import CopyColorsSelect from '../components/CopyColorsSelect';
 const { ipcRenderer } = window.require('electron');
 
 const FIXTURES = ['Strong Super Trouper','Strong Gladiator','Lycian 1290','Lycian Starklite','Robert Juliat Lancelot','Robert Juliat Merlin','Altman Comet','Robe BMFL','Robe Esprite','High End SolaSpot','Moving Light - Other','Other'];
+// Picked images are shown from their file data (a plain file path doesn't load in the dev window)
+const imageSrc = (filePath) => {
+  try {
+    const ext = filePath.split('.').pop().toLowerCase();
+    const mime = { png: 'image/png', gif: 'image/gif', svg: 'image/svg+xml' }[ext] || 'image/jpeg';
+    return `data:${mime};base64,${window.require('fs').readFileSync(filePath).toString('base64')}`;
+  } catch(e) { return ''; }
+};
 const labelStyle = { fontSize: '11px', color: '#888', display: 'block', marginBottom: '4px', fontWeight: '500' };
 const inputStyle = { width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#f0f0f0', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' };
 
@@ -175,7 +183,6 @@ export default function NewShowScreen({ navigate }) {
 
   const handleSave = () => {
     if (!form.title.trim()) { setError('Show title is required.'); return; }
-    console.log('Saving form with logo_path:', form.logo_path);
     setSaving(true);
     if (!form.title.trim()) { setError('Show title is required.'); return; }
     setSaving(true);
@@ -203,7 +210,7 @@ export default function NewShowScreen({ navigate }) {
                             <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '4px' }}>
                 <div style={{ width: '80px', height: '80px', borderRadius: '8px', background: '#111', border: '1px solid #2a2a2a', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
                   {form.logo_path ? (
-                    <img src={form.logo_path} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    <img src={imageSrc(form.logo_path)} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                   ) : (
                     <span style={{ fontSize: '10px', color: '#444', textAlign: 'center', padding: '8px' }}>No logo</span>
                   )}
