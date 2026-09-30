@@ -135,7 +135,8 @@ export default function ScenesScreen({ show, navigate }) {
               No scenes yet — add your first scene above
             </div>
           ) : (
-            <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+            // Acts wrap two per row so extra act breaks don't squeeze the columns
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(420px, 1fr))', gap: '20px 16px', alignItems: 'start' }}>
               {(() => {
                 const columns = [];
                 let currentColumn = [];
@@ -148,7 +149,7 @@ export default function ScenesScreen({ show, navigate }) {
                 });
                 if (currentColumn.length > 0) columns.push(currentColumn);
                 return columns.map((col, colIndex) => (
-                  <div key={colIndex} style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: '200px' }}>
+                  <div key={colIndex} style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
                     <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 6px 14px' }}>Act {colIndex + 1}</div>
                     {/* Apple grouped list: one rounded panel, rows divided by hairlines */}
                     <div style={{ background: '#2A2A2A', borderRadius: '10px', overflow: 'hidden' }}>
