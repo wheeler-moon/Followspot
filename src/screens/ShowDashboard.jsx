@@ -71,35 +71,50 @@ const startEdit = () => {
   };
 
   const updateEdit = (field, value) => setEditForm(f => ({ ...f, [field]: value }));
-  const navCards = [
-    { label: 'Cue list', icon: '≡', desc: 'Enter and edit followspot cues', dest: 'cue-list', color: '#409CFF' },
-    { label: 'Scenes', icon: '◎', desc: 'Manage scenes and act breaks', dest: 'scenes', color: '#30D158' },
-    { label: 'Characters', icon: '◈', desc: 'Characters and cast list', dest: 'characters', color: '#AC8E68' },
-    { label: 'Spot Notes', icon: '✎', desc: 'View and manage spot notes', dest: 'spot-notes', color: '#FFD60A' },
-    { label: 'Print options', icon: '⎙', desc: 'Generate PDF paperwork', dest: 'print', color: '#30D158' },
+  // Small white glyphs for the System Settings-style icon tiles
+  const Glyph = ({ name }) => {
+    const p = { fill: 'none', stroke: '#fff', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' };
+    const icons = {
+      list: <><path d="M8 6h10M8 12h10M8 18h10" {...p} /><circle cx="4.5" cy="6" r="1" fill="#fff" /><circle cx="4.5" cy="12" r="1" fill="#fff" /><circle cx="4.5" cy="18" r="1" fill="#fff" /></>,
+      scenes: <><rect x="3.5" y="5" width="17" height="14" rx="2" {...p} /><path d="M3.5 9h17M8 5v4M13 5v4" {...p} /></>,
+      person: <><circle cx="12" cy="8" r="3.5" {...p} /><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5" {...p} /></>,
+      note: <><path d="M6 4h9l4 4v12H6z" {...p} /><path d="M9 12h7M9 16h5" {...p} /></>,
+      print: <><path d="M7 9V4h10v5" {...p} /><rect x="3.5" y="9" width="17" height="8" rx="2" {...p} /><path d="M7 14h10v6H7z" {...p} /></>,
+    };
+    return <svg width="16" height="16" viewBox="0 0 24 24">{icons[name]}</svg>;
+  };
+  const navRows = [
+    { label: 'Cue List', icon: 'list', tint: '#0A84FF', dest: 'cue-list', detail: `${stats.cues} cues` },
+    { label: 'Scenes', icon: 'scenes', tint: '#30D158', dest: 'scenes', detail: `${stats.scenes} scenes` },
+    { label: 'Characters', icon: 'person', tint: '#FF9F0A', dest: 'characters', detail: `${stats.characters} characters` },
+    { label: 'Spot Notes', icon: 'note', tint: '#FFD60A', dest: 'spot-notes', detail: '' },
+    { label: 'Print', icon: 'print', tint: '#8E8E93', dest: 'print', detail: '' },
   ];
+  // Apple grouped list pieces
+  const sectionLabel = { fontSize: '13px', fontWeight: '600', color: 'rgba(255,255,255,0.55)', margin: '0 0 6px 14px' };
+  const group = { background: '#2A2A2A', borderRadius: '10px', overflow: 'hidden', marginBottom: '28px' };
+  const row = (i) => ({ display: 'flex', alignItems: 'center', gap: '12px', minHeight: '44px', padding: '0 14px', borderTop: i > 0 ? '1px solid rgba(255,255,255,0.07)' : 'none' });
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#1E1E1E' }}>
            <AppHeader title={show.title} onBack={() => navigate('home')} backLabel="All shows">
-        <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)' }}>{show.theatre}</span>
         <div style={{ flex: 1 }} />
         <button onClick={() => {
           const result = ipcRenderer.sendSync('db-export-show', show.id);
           if (result.success) alert(`Show exported successfully!`);
           else if (!result.cancelled) alert('Export failed: ' + result.error);
-        }} style={{ padding: '8px 14px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '8px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer' }}>
+        }} style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
           ↑ Export
         </button>
-        <button onClick={() => navigate('cue-list', show)} style={{ padding: '8px 18px', background: '#0A84FF', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
-          Open cue list →
+        <button onClick={() => navigate('cue-list', show)} style={{ height: '28px', padding: '0 14px', background: '#0A84FF', color: '#FFFFFF', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
+          Open Cue List
         </button>
       </AppHeader>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '32px 24px' }}>
-        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '36px 24px' }}>
+        <div style={{ maxWidth: '680px', margin: '0 auto' }}>
 
-          <div style={{ marginBottom: '32px' }}>
+          <div style={{ marginBottom: '28px' }}>
             {editing ? (
               <div style={{ background: '#2A2A2A', border: '1px solid #0A84FF', borderRadius: '12px', padding: '20px', marginBottom: '8px' }}>
                 <div style={{ fontSize: '11px', fontWeight: '600', color: '#409CFF', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Edit show info</div>
@@ -179,88 +194,72 @@ const startEdit = () => {
                 </div>
               </div>
             ) : (
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  {show.logo_path && getImageSrc(show.logo_path) && (
-                    <img src={getImageSrc(show.logo_path)} style={{ height: '60px', maxWidth: '120px', objectFit: 'contain', borderRadius: '6px' }} />
-                  )}
-                  <div>
-                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#FFFFFF', marginBottom: '4px' }}>{show.title}</div>
-                    <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.52)' }}>{show.theatre}{show.producer ? ` · ${show.producer}` : ''}</div>
-                  </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
+                {show.logo_path && getImageSrc(show.logo_path) && (
+                  <img src={getImageSrc(show.logo_path)} style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '14px', flexShrink: 0, boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }} />
+                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '26px', fontWeight: '700', color: '#FFFFFF', lineHeight: 1.15 }}>{show.title}</div>
+                  <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.55)', marginTop: '3px' }}>{show.theatre}{show.producer ? ` · ${show.producer}` : ''}</div>
                 </div>
-                  <button onClick={() => setShowSettings(true)}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.14)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.10)'; }}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', height: '28px', padding: '0 14px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '14px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer', marginTop: '4px' }}>
-                    <span style={{ fontSize: '14px' }}>⚙︎</span> Show Settings
-                  </button>
+                <button onClick={() => setShowSettings(true)}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.14)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.10)'; }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer', flexShrink: 0 }}>
+                  <span style={{ fontSize: '14px' }}>⚙︎</span> Show Settings
+                </button>
               </div>
             )}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '32px' }}>
-            {[
-              { label: 'Spots', value: stats.spots.length },
-              { label: 'Cues', value: stats.cues },
-              { label: 'Scenes', value: stats.scenes },
-              { label: 'Characters', value: stats.characters },
-            ].map(stat => (
-              <div key={stat.label} style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px 20px' }}>
-                <div style={{ fontSize: '28px', fontWeight: '700', color: '#FFFFFF', marginBottom: '4px' }}>{stat.value}</div>
-                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)' }}>{stat.label}</div>
+          <div style={group}>
+            {navRows.map((r, i) => (
+              <div key={r.dest} onClick={() => navigate(r.dest, show)}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                style={{ ...row(i), cursor: 'pointer' }}>
+                <div style={{ width: '26px', height: '26px', borderRadius: '7px', background: r.tint, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Glyph name={r.icon} />
+                </div>
+                <div style={{ flex: 1, fontSize: '14px', color: '#FFFFFF' }}>{r.label}</div>
+                {r.detail && <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', fontVariantNumeric: 'tabular-nums' }}>{r.detail}</div>}
+                <div style={{ fontSize: '18px', color: 'rgba(255,255,255,0.28)', lineHeight: 1, marginTop: '-2px' }}>›</div>
               </div>
             ))}
           </div>
 
-          <div style={{ marginBottom: '24px' }}>
-            <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>Lighting team</div>
-            <div style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px 20px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
-              {[
-                ['Designer', show.designer],
-                ['Associate LD', show.associate_ld],
-                ['Assistant LD', show.assistant_ld],
-                ['Prod. electrician', show.production_electrician],
-                ['Programmer', show.programmer],
-              ].filter(([, val]) => val).map(([label, val]) => (
-                <div key={label}>
-                  <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', marginBottom: '2px', fontWeight: '500' }}>{label}</div>
-                  <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.78)' }}>{val}</div>
+          <div style={sectionLabel}>Spots</div>
+          <div style={group}>
+            {stats.spots.map((spot, i) => (
+              <div key={spot.id} style={row(i)}>
+                <div style={{ width: '52px', fontSize: '13px', fontWeight: '600', color: '#409CFF', flexShrink: 0 }}>Spot {spot.spot_number}</div>
+                <div style={{ flex: 1, fontSize: '14px', color: spot.operator_name ? '#FFFFFF' : 'rgba(255,255,255,0.35)' }}>{spot.operator_name || 'No operator'}</div>
+                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', textAlign: 'right' }}>
+                  {[spot.location, spot.fixture_type].filter(Boolean).join(' · ') || 'No location or fixture'}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
 
-          <div style={{ marginBottom: '24px' }}>
-            <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>Spots</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '10px' }}>
-              {stats.spots.map(spot => (
-                <div key={spot.id} style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '14px 16px' }}>
-                  <div style={{ fontSize: '11px', color: '#409CFF', fontWeight: '600', marginBottom: '4px' }}>Spot {spot.spot_number}</div>
-                  <div style={{ fontSize: '13px', color: '#FFFFFF', fontWeight: '500', marginBottom: '2px' }}>{spot.operator_name || 'No operator'}</div>
-                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>{spot.location || 'No location'}</div>
-                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.28)', marginTop: '4px' }}>{spot.fixture_type || 'No fixture'}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>Navigate</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '10px' }}>
-              {navCards.map(card => (
-                <div key={card.dest} onClick={() => navigate(card.dest, show)}
-                  style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', cursor: 'pointer', transition: 'border-color 0.15s' }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = card.color}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}>
-                  <div style={{ fontSize: '24px', marginBottom: '8px' }}>{card.icon}</div>
-                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#FFFFFF', marginBottom: '4px' }}>{card.label}</div>
-                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>{card.desc}</div>
-                </div>
-              ))}
-
-            </div>
-          </div>
+          {[show.designer, show.associate_ld, show.assistant_ld, show.production_electrician, show.programmer].some(Boolean) && (
+            <>
+              <div style={sectionLabel}>Lighting Team</div>
+              <div style={group}>
+                {[
+                  ['Lighting Designer', show.designer],
+                  ['Associate LD', show.associate_ld],
+                  ['Assistant LD', show.assistant_ld],
+                  ['Production Electrician', show.production_electrician],
+                  ['Programmer', show.programmer],
+                ].filter(([, val]) => val).map(([label, val], i) => (
+                  <div key={label} style={row(i)}>
+                    <div style={{ flex: 1, fontSize: '14px', color: '#FFFFFF' }}>{label}</div>
+                    <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.55)' }}>{val}</div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
       {showSettings && (

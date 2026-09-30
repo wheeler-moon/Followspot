@@ -46,7 +46,7 @@ Current version: Beta 0.2.1
 - [ ] Windows distribution
 
 ## Design
-- [ ] Pre-launch design refresh: make it feel premium and original
+- [x] Pre-launch design refresh: make it feel premium and original
 
 ## Future / roadmap
 - [ ] SpotPlot Live Sync: cloud upload from desktop + iPad companion app for operators
