@@ -292,11 +292,12 @@ function IrisStrip({ sizes, selected, onPick }) {
   );
 }
 
-function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, lqNumber, onDragStart, onDragOver, onDragLeave, onDrop, isDragTarget, onDoubleClick, customIrisSizes, customActions }) {
+function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, onNewCustomCharacter, lqNumber, onDragStart, onDragOver, onDragLeave, onDrop, isDragTarget, onDoubleClick, customIrisSizes, customActions }) {
   const [showActionPicker, setShowActionPicker] = useState(false);
   const [hoveredFrame, setHoveredFrame] = useState(null);
   const [showCustomTime, setShowCustomTime] = useState(false);
   const [showCustomChar, setShowCustomChar] = useState(!!spotCue?.custom_character);
+  const customCharDone = useRef(false);
   const [customTimeVal, setCustomTimeVal] = useState('');
   const [pickerPos, setPickerPos] = useState({ top: 0, left: 0 });
   const ref = useRef();
@@ -347,6 +348,23 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
     onUpdate(spotCue.id, 'action', a.name);
     if (a.intensityDefault) onUpdate(spotCue.id, 'intensity', a.intensityDefault);
     if (a.timeDefault !== null) onUpdate(spotCue.id, 'fade_time', a.timeDefault);
+  };
+
+  // Finished typing a custom character name (Enter or clicking away). A name that is already a
+  // character just links to it; a new one asks whether to add it to the show's characters.
+  const commitCustomChar = (value) => {
+    if (customCharDone.current) return;
+    customCharDone.current = true;
+    setShowCustomChar(false);
+    const name = value.trim();
+    const existing = name && characters.find(c => (c.name || '').trim().toLowerCase() === name.toLowerCase());
+    if (existing) {
+      onUpdate(spotCue.id, 'character_id', existing.id);
+      onUpdate(spotCue.id, 'custom_character', null);
+      return;
+    }
+    onUpdate(spotCue.id, 'custom_character', value);
+    if (name && name !== (spotCue.custom_character || '').trim()) onNewCustomCharacter(spotCue.id, name);
   };
 
   const toggleFrame = (frame) => {
@@ -452,22 +470,15 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
                     <input
             autoFocus
             defaultValue={spotCue.custom_character || ''}
-            onBlur={e => {
-              onUpdate(spotCue.id, 'custom_character', e.target.value);
-              setShowCustomChar(false);
-            }}
-            onKeyDown={e => {
-              if (e.key === 'Enter') {
-                onUpdate(spotCue.id, 'custom_character', e.target.value);
-                setShowCustomChar(false);
-              }
-            }}
+            onBlur={e => commitCustomChar(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') commitCustomChar(e.target.value); }}
             placeholder="Type character name..."
             style={{ ...selectStyle, flex: '1 1 0', minWidth: 0, height: '32px', fontSize: '14px', fontWeight: '600', borderRadius: '6px', padding: '0 8px', color: '#f0f0f0' }}
           />
         ) : (
           <select value={spotCue.character_id || ''} onChange={e => {
             if (e.target.value === 'custom') {
+              customCharDone.current = false;
               onUpdate(spotCue.id, 'character_id', null);
               setShowCustomChar(true);
             } else {
@@ -617,7 +628,7 @@ function InsertButton({ onInsert }) {
   );
 }
 
-function CueRow({ cue, isLastCue, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal, onCueDoubleClick, customIrisSizes, customActions }) {
+function CueRow({ cue, isLastCue, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onNewCustomCharacter, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal, onCueDoubleClick, customIrisSizes, customActions }) {
   const [editingLQ, setEditingLQ] = useState(false);
   const [lqVal, setLqVal] = useState(cue.lq_number || '');
 
@@ -664,7 +675,7 @@ function CueRow({ cue, isLastCue, spots, spotCues, characters, colorSlotsBySpot,
           return (
             <SpotCueCell key={spot.id} spotCue={sc} spot={spot} cue={cue}
               characters={characters} colorSlots={slots}
-              onUpdate={onUpdateSpotCue} lqNumber={lqVal}
+              onUpdate={onUpdateSpotCue} onNewCustomCharacter={onNewCustomCharacter} lqNumber={lqVal}
               onDragStart={() => setDragSource({ spotCue: sc, spot, cue })}
               onDragOver={(e) => { 
                 e.preventDefault(); 
@@ -870,6 +881,18 @@ export default function CueListScreen({ show, navigate }) {
     if (result.success) { setSelectedSceneId(result.id); setNewSceneLabel(''); setNewSceneSong(''); setShowSceneModal(false); load(); }
   };
 
+  // A new custom name was typed in a cue: optionally add it to the show's characters
+  // (starts unticked for printing on the Characters sheet) and link the cue to it
+  const addCustomCharacterToShow = (spotCueId, name) => {
+    if (!ipcRenderer.sendSync('dialog-add-character', name)) return;
+    const result = ipcRenderer.sendSync('db-create-character', { showId: show.id, name, actorName: '', printOnSheet: 0 });
+    if (!result?.success) return;
+    const chars = ipcRenderer.sendSync('db-get-characters', show.id);
+    setCharacters(Array.isArray(chars) ? chars : []);
+    updateSpotCue(spotCueId, 'character_id', result.id);
+    updateSpotCue(spotCueId, 'custom_character', null);
+  };
+
   const addCharacter = () => {
     if (!newCharName.trim()) return;
     ipcRenderer.sendSync('db-create-character', { showId: show.id, name: newCharName, actorName: newCharActor });
@@ -978,7 +1001,7 @@ const groupedCues = () => {
                       spots={data?.spots || []}
                       spotCues={data?.spotCues || []} characters={characters}
                       colorSlotsBySpot={colorSlotsBySpot} scenes={data?.scenes || []}
-                      onUpdateCue={updateCue} onUpdateSpotCue={updateSpotCue}
+                      onUpdateCue={updateCue} onUpdateSpotCue={updateSpotCue} onNewCustomCharacter={addCustomCharacterToShow}
                       onDelete={deleteCue} onInsertAfter={insertCueAfter}
                       dragSource={dragSource} dragTarget={dragTarget}
                       setDragSource={setDragSource} setDragTarget={setDragTarget}

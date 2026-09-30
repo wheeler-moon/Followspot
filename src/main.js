@@ -138,6 +138,7 @@ function initSchema() {
   try { db.exec('ALTER TABLE spots ADD COLUMN display_order INTEGER DEFAULT NULL'); } catch(e) {}
   try { db.exec('ALTER TABLE shows ADD COLUMN custom_actions TEXT DEFAULT NULL'); } catch(e) {}
   try { db.exec('ALTER TABLE spot_cues ADD COLUMN when_highlight TEXT DEFAULT NULL'); } catch(e) {}
+  try { db.exec('ALTER TABLE characters ADD COLUMN print_on_sheet INTEGER DEFAULT 1'); } catch(e) {}
   try { db.exec('ALTER TABLE spot_cues ADD COLUMN notes_highlight TEXT DEFAULT NULL'); } catch(e) {}
   try {
     db.exec('ALTER TABLE spot_cues ADD COLUMN with_lq INTEGER DEFAULT 0');
@@ -620,7 +621,7 @@ function buildSheet(kind, opts) {
     };
   }
   if (kind === 'characters') {
-    const cast = database.prepare('SELECT * FROM characters WHERE show_id = ? ORDER BY sort_order, id').all(opts.showId);
+    const cast = database.prepare('SELECT * FROM characters WHERE show_id = ? AND COALESCE(print_on_sheet, 1) = 1 ORDER BY sort_order, id').all(opts.showId);
     return {
       html: buildCharactersHTML({ show, characters: cast, label, showCostumeNotes: opts.showCostumeNotes !== false }),
       landscape: false, margin: PAGE_MARGINS.characters,
@@ -1162,14 +1163,33 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
     } catch(e) { event.returnValue = []; }
   });
 
-  ipcMain.on('db-create-character', (event, { showId, name, actorName }) => {
+  ipcMain.on('db-create-character', (event, { showId, name, actorName, printOnSheet = 1 }) => {
     try {
       const database = getDb();
       const maxSort = database.prepare('SELECT MAX(sort_order) as m FROM characters WHERE show_id = ?').get(showId);
       const sort = (maxSort.m || 0) + 1;
-      const result = database.prepare('INSERT INTO characters (show_id, name, actor_name, sort_order) VALUES (?, ?, ?, ?)').run(showId, name, actorName || '', sort);
+      const result = database.prepare('INSERT INTO characters (show_id, name, actor_name, sort_order, print_on_sheet) VALUES (?, ?, ?, ?, ?)').run(showId, name, actorName || '', sort, printOnSheet ? 1 : 0);
       event.returnValue = { success: true, id: result.lastInsertRowid };
     } catch(e) { event.returnValue = { success: false }; }
+  });
+  // Characters screen "Print" checkbox: whether the character appears on the Characters print sheet
+  ipcMain.on('db-set-character-print', (event, { characterId, value }) => {
+    try {
+      getDb().prepare('UPDATE characters SET print_on_sheet = ? WHERE id = ?').run(value ? 1 : 0, characterId);
+      event.returnValue = { success: true };
+    } catch(e) { event.returnValue = { success: false }; }
+  });
+  // A new custom character name was typed in a cue: add it to the show's characters, or keep it custom?
+  ipcMain.on('dialog-add-character', (event, name) => {
+    const { dialog } = require('electron');
+    event.returnValue = dialog.showMessageBoxSync(mainWindow, {
+      type: 'question',
+      message: `Add "${name}" to this show's characters?`,
+      detail: 'It will show on the Characters screen and in every cue\'s character list. Or keep it as a custom name for just this cue.',
+      buttons: ['Add to Characters', 'Keep as Custom'],
+      defaultId: 0,
+      cancelId: 1,
+    }) === 0;
   });
 
   ipcMain.on('db-delete-cue', (event, cueId) => {

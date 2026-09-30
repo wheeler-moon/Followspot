@@ -33,6 +33,11 @@ export default function CharactersScreen({ show, navigate }) {
   const dragItem = useRef(null);
   const nameInputRef = useRef(null);
 
+  const togglePrint = (char, value) => {
+    ipcRenderer.sendSync('db-set-character-print', { characterId: char.id, value });
+    setCharacters(cs => cs.map(c => c.id === char.id ? { ...c, print_on_sheet: value ? 1 : 0 } : c));
+  };
+
   const load = () => {
     const result = ipcRenderer.sendSync('db-get-characters', show.id);
     setCharacters(Array.isArray(result) ? result : []);
@@ -272,6 +277,13 @@ export default function CharactersScreen({ show, navigate }) {
                         {char.costume_notes && <div style={{ fontSize: '11px', color: '#555', marginTop: '2px', fontStyle: 'italic' }}>{char.costume_notes}</div>}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                        <label title="Include this character on the Characters print sheet"
+                          style={{ display: 'flex', alignItems: 'center', gap: '5px', marginRight: '6px', cursor: 'pointer', fontSize: '12px', color: char.print_on_sheet === 0 ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.75)' }}>
+                          <input type="checkbox" checked={char.print_on_sheet !== 0}
+                            onChange={e => togglePrint(char, e.target.checked)}
+                            style={{ width: '15px', height: '15px', accentColor: '#534AB7', cursor: 'pointer', margin: 0 }} />
+                          Print
+                        </label>
                         <button onClick={() => moveCharacter(index, -1)} disabled={index === 0}
                           style={{ background: 'none', border: '1px solid #2a2a2a', borderRadius: '4px', color: index === 0 ? '#2a2a2a' : '#666', width: '26px', height: '26px', cursor: index === 0 ? 'default' : 'pointer', fontSize: '12px' }}>↑</button>
                         <button onClick={() => moveCharacter(index, 1)} disabled={index === characters.length - 1}
