@@ -8,8 +8,8 @@ Current version: Beta 0.2.1
 - [x] After installing the new build: `.spotplot` files show the SpotPlot icon in Finder. **To test (needs a log out):** rebuild with `npm run make` (the JSON→data file-type fix), install, run `lsregister -f /Applications/SpotPlot.app` and `qlmanage -r cache && killall Finder`, then log out and back in (Apple menu → Log Out) if a file still shows a text preview.
 - [x] After installing the new build: double-clicking a `.spotplot` file opens SpotPlot and imports the show
 - [x] After installing the new build: File → Import Show (Cmd+I) still works
-- [ ] After installing the new build: SpotPlot opens past the license screen, and the license admin page shows this Mac under Devices (1/2)
-- [ ] After installing the new build: Print page shows the real PDF preview with page breaks (not blank), options update it, and Export PDF… saves
+- [x] After installing the new build: SpotPlot opens past the license screen, and the license admin page shows this Mac under Devices (1/2)
+- [x] After installing the new build: Print page shows the real PDF preview with page breaks (not blank), options update it, and Export PDF… saves
 
 ## Bugs
 - [x] `.spotplot` file icon not showing the SpotPlot logo in Finder — *fix in forge.config.js (Info.plist document type); verify after the next build*
