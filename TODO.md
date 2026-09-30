@@ -17,6 +17,7 @@ Current version: Beta 0.2.1
 - [ ] Dev only: `npm start` downloads a fresh Chrome for Testing ("Downloading Chromium...") whenever Chrome updates, because `main.js` asks for the latest stable instead of the version Puppeteer expects. ~4 GB of duplicate copies have piled up in `~/.cache/puppeteer`. Pin dev to one version (the one `forge.config.js` bundles), then delete the extra copies. Doesn't affect installed builds.
 
 ## App features
+- [ ] Finder preview of `.spotplot` files shows that show's logo (the small file icon stays the SpotPlot logo). Needs a Quick Look **Preview** extension (not a Thumbnail extension, which would replace the icon): a small Swift `.appex` that reads the file's JSON, decodes the embedded logo from `images[show.logo_path]`, and shows it, falling back to the SpotPlot icon. Requires installing Xcode, building the appex as part of `npm run make`, and embedding it in `SpotPlot.app/Contents/PlugIns` before signing/notarizing (app extensions must be sandboxed). Test from a signed, installed build.
 - [x] Bold/italic/underline in when/notes fields (Cmd+B, Cmd+I, Cmd+U)
 - [ ] Onboarding walkthrough for new users (tooltip-style popups on first launch)
 - [ ] Update default fixture types list in Spot Settings
