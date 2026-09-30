@@ -6,8 +6,8 @@ Current version: Beta 0.2.1
 - [x] Before building: fix show import dropping per-cell data (see Bugs)
 - [x] Before building: include character photos in `.spotplot` exports and restore them on import (see Bugs)
 - [ ] After installing the new build: `.spotplot` files show the SpotPlot icon in Finder. **To test (needs a log out):** rebuild with `npm run make` (the JSON→data file-type fix), install, run `lsregister -f /Applications/SpotPlot.app` and `qlmanage -r cache && killall Finder`, then log out and back in (Apple menu → Log Out) if a file still shows a text preview.
-- [ ] After installing the new build: double-clicking a `.spotplot` file opens SpotPlot and imports the show
-- [ ] After installing the new build: File → Import Show (Cmd+I) still works
+- [x] After installing the new build: double-clicking a `.spotplot` file opens SpotPlot and imports the show
+- [x] After installing the new build: File → Import Show (Cmd+I) still works
 
 ## Bugs
 - [ ] `.spotplot` file icon not showing the SpotPlot logo in Finder — *fix in forge.config.js (Info.plist document type); verify after the next build*
