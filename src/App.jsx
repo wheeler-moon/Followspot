@@ -95,7 +95,7 @@ export default function App() {
   if (licenseStatus === 'device_limit') {
     return <ExpiredScreen
       title="License in use on 2 Macs"
-      message="This SpotPlot license is already active on 2 other Macs, which is the limit. To use it here, stop using it on one of them and contact support to free a slot, or use a different license."
+      message="This SpotPlot license is already active on 2 other Macs, which is the limit. A Mac that hasn't opened SpotPlot for 30 days frees its spot automatically. Otherwise, contact support to free a slot, or use a different license."
       onRetry={checkLicense}
       onNewLicense={() => {
         localStorage.removeItem('spotplot_license');
