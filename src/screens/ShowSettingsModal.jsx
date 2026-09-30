@@ -4,6 +4,7 @@ import SpotSettingsPanel from './settings/SpotSettingsPanel';
 import SpotOrderPanel from './settings/SpotOrderPanel';
 import IrisSizesPanel from './settings/IrisSizesPanel';
 import CustomActionsPanel from './settings/CustomActionsPanel';
+import EosControlPanel from './settings/EosControlPanel';
 const { ipcRenderer } = window.require('electron');
 
 const SECTIONS = [
@@ -12,6 +13,7 @@ const SECTIONS = [
   { id: 'spot-order', label: 'Spot Order' },
   { id: 'iris-sizes', label: 'Iris Sizes' },
   { id: 'custom-actions', label: 'Custom Actions' },
+  { id: 'eos-control', label: 'EOS Control' },
 ];
 
 export default function ShowSettingsModal({ show, onClose, onShowUpdate }) {
@@ -53,6 +55,7 @@ export default function ShowSettingsModal({ show, onClose, onShowUpdate }) {
             {activeSection === 'spot-order' && <SpotOrderPanel show={show} />}
             {activeSection === 'iris-sizes' && <IrisSizesPanel show={show} />}
             {activeSection === 'custom-actions' && <CustomActionsPanel show={show} />}
+            {activeSection === 'eos-control' && <EosControlPanel />}
           </div>
         </div>
       </div>
