@@ -35,7 +35,8 @@ license = {
             'disagree': 'Disagree',
             'print': 'Print',
             'save': 'Save',
-            'message': '',
+            # Apple's standard wording for disk image license windows
+            'message': 'If you agree with the terms of this license, press "Agree" to install the software. If you do not agree, press "Disagree".',
         },
     },
 }
