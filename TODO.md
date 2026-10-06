@@ -38,6 +38,7 @@ Current version: Beta 0.2.1
 - [ ] Action symbols cheat sheet PDF
 
 ## Structural
+- [ ] Shrink the app (~290 MB → ~100 MB) by rendering PDFs with Electron's built-in Chromium (`webContents.printToPDF` in a hidden window) instead of bundling Chrome for Testing. Smaller downloads/updates, ~3× faster notarization uploads, far fewer files to sign (fewer timestamp failures). **Caution:** an earlier attempt had PDF problems, which is why Chrome was bundled; compare every sheet type pixel-for-pixel against the current output before switching, and keep the bundled Chrome as a fallback until verified.
 - [ ] Settings popup: more robust system-wide toggles
 
 ## Business
