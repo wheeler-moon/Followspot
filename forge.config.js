@@ -20,10 +20,8 @@ module.exports = {
       // Stop the build on a signing error instead of carrying on unsigned and failing later at notarization
       continueOnError: false,
     },
-    osxNotarize: {
-      tool: 'notarytool',
-      keychainProfile: 'AC_PASSWORD',
-    },
+    // No osxNotarize here: the postPackage hook re-signs the app (which would void a notarization
+    // done at this stage) and then notarizes it once, with retries.
         protocols: [
       {
         name: 'SpotPlot Show File',
@@ -67,8 +65,18 @@ module.exports = {
       execSync(`codesign --deep --force --options runtime --entitlements entitlements.plist --sign "Developer ID Application: WHEELER DAVID MOON (299TQ9H5QB)" "${appPath}"`, { stdio: 'inherit' });
       console.log('Zipping for notarization...');
       execSync(`ditto -c -k --keepParent "${appPath}" "${zipPath}"`, { stdio: 'inherit' });
-      console.log('Notarizing...');
-      execSync(`xcrun notarytool submit "${zipPath}" --keychain-profile "AC_PASSWORD" --wait`, { stdio: 'inherit' });
+      // Uploading ~300 MB to Apple can hit a network blip; retry a few times before giving up
+      for (let attempt = 1; ; attempt++) {
+        try {
+          console.log(`Notarizing (attempt ${attempt} of 3)...`);
+          execSync(`xcrun notarytool submit "${zipPath}" --keychain-profile "AC_PASSWORD" --wait`, { stdio: 'inherit' });
+          break;
+        } catch (e) {
+          if (attempt >= 3) throw e;
+          console.log('Notarization upload failed; retrying in 30 seconds...');
+          execSync('sleep 30');
+        }
+      }
       console.log('Stapling...');
       execSync(`xcrun stapler staple "${appPath}"`, { stdio: 'inherit' });
       console.log('Creating release zip...');
