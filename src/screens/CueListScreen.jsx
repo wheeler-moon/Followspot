@@ -324,7 +324,7 @@ function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, onN
       onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) onDragLeave(e); }}
       onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop(e); }}
       onDoubleClick={onDoubleClick}
-      style={{ padding: '8px 10px', borderRight: '1px solid rgba(255,255,255,0.06)', verticalAlign: 'top', minWidth: '260px', minHeight: '80px', background: isDragTarget ? 'rgba(10,132,255,0.16)' : '#191919', outline: isDragTarget ? '2px solid #0A84FF' : 'none', cursor: 'grab' }}>
+      style={{ padding: '8px 18px', borderRight: '1px solid rgba(255,255,255,0.12)', verticalAlign: 'top', minWidth: '260px', minHeight: '80px', background: isDragTarget ? 'rgba(10,132,255,0.16)' : '#191919', outline: isDragTarget ? '2px solid #0A84FF' : 'none', cursor: 'grab' }}>
         <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.22)', minHeight: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>—</div>
     </td>
   );
@@ -384,7 +384,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
         onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); onDragOver(e); }}
         onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) onDragLeave(e); }}
         onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop(e); }}
-        style={{ padding: '8px 10px', borderRight: '1px solid rgba(255,255,255,0.06)', verticalAlign: 'top', minWidth: '260px', background: isDragTarget ? 'rgba(10,132,255,0.16)' : '#191919', outline: isDragTarget ? '2px solid #0A84FF' : 'none', position: 'relative' }}>
+        style={{ padding: '8px 18px', borderRight: '1px solid rgba(255,255,255,0.12)', verticalAlign: 'top', minWidth: '260px', background: isDragTarget ? 'rgba(10,132,255,0.16)' : '#191919', outline: isDragTarget ? '2px solid #0A84FF' : 'none', position: 'relative' }}>
         <div ref={ref} style={{ position: 'relative', zIndex: showActionPicker ? 99999 : 'auto' }}>
           <div ref={actionBtnRef} onClick={() => {
             if (actionBtnRef.current) {
@@ -416,8 +416,8 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
       onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop(e); }}
       onDoubleClick={onDoubleClick}
       style={{ 
-        padding: '8px 10px', 
-        borderRight: '1px solid rgba(255,255,255,0.06)', 
+        padding: '8px 18px', 
+        borderRight: '1px solid rgba(255,255,255,0.12)', 
         verticalAlign: 'top', 
         minWidth: '260px', 
         position: 'relative',
@@ -720,6 +720,32 @@ export default function CueListScreen({ show, navigate }) {
   const [newCharActor, setNewCharActor] = useState('');
   const [selectedSceneId, setSelectedSceneId] = useState(null);
   const scrollRef = useRef(null);
+  // Sticky scene headers sit just under the sticky spot header
+  const theadRef = useRef(null);
+  const [theadHeight, setTheadHeight] = useState(48);
+  // The pinned scene header whose first cue has scrolled past (shown in [brackets])
+  const [continuedScene, setContinuedScene] = useState(null);
+  useEffect(() => {
+    if (!theadRef.current) return;
+    const ro = new ResizeObserver(() => setTheadHeight(theadRef.current?.getBoundingClientRect().height || 48));
+    ro.observe(theadRef.current);
+    return () => ro.disconnect();
+  });
+  const updateContinuedScene = () => {
+    const container = scrollRef.current;
+    if (!container) return;
+    let current = null;
+    container.querySelectorAll('tr[data-scene-key]').forEach(row => {
+      // Measure the header cell: it's what sticks (the row itself keeps its original place)
+      const headerCell = row.firstElementChild;
+      const firstCue = row.nextElementSibling;
+      if (headerCell && firstCue && !firstCue.hasAttribute('data-scene-key') &&
+          firstCue.getBoundingClientRect().top < headerCell.getBoundingClientRect().bottom - 1) {
+        current = row.getAttribute('data-scene-key');
+      }
+    });
+    setContinuedScene(current);
+  };
   const [customIrisSizes, setCustomIrisSizes] = useState([]);
   const [customActions, setCustomActions] = useState([]);
   const [dragSource, setDragSource] = useState(null);
@@ -944,9 +970,10 @@ const groupedCues = () => {
             const sceneRow = document.querySelector(`[data-scene-id="${sceneId}"]`);
             if (sceneRow && scrollRef.current) {
               const containerTop = scrollRef.current.getBoundingClientRect().top;
-              const rowTop = sceneRow.getBoundingClientRect().top;
-              const offset = rowTop - containerTop;
-              scrollRef.current.scrollBy({ top: offset - 48, behavior: 'smooth' });
+              const target = sceneRow.nextElementSibling || sceneRow;
+              const headerHeight = sceneRow.getBoundingClientRect().height;
+              const offset = target.getBoundingClientRect().top - containerTop;
+              scrollRef.current.scrollBy({ top: offset - theadHeight - headerHeight, behavior: 'smooth' });
             }
           }
         }}
@@ -959,6 +986,7 @@ const groupedCues = () => {
       </AppHeader>
 
       <div ref={scrollRef} onScroll={() => {
+        updateContinuedScene();
         if (scrollRef.current) {
           sessionStorage.setItem(`cueScroll_${show.id}`, scrollRef.current.scrollTop);
           sessionStorage.setItem(`cueScene_${show.id}`, selectedSceneId);
@@ -973,11 +1001,11 @@ const groupedCues = () => {
           </div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', position: 'relative' }}>
-            <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
+            <thead ref={theadRef} style={{ position: 'sticky', top: 0, zIndex: 10 }}>
               <tr style={{ background: '#262626', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                 <th style={{ padding: '8px', textAlign: 'left', fontSize: '10px', color: 'rgba(255,255,255,0.28)', fontWeight: '600', width: '90px', borderRight: '1px solid rgba(255,255,255,0.06)' }}>CUE</th>
                 {(data?.spots || []).map(spot => (
-                  <th key={spot.id} style={{ padding: '8px 10px', textAlign: 'left', borderRight: '1px solid rgba(255,255,255,0.06)', minWidth: '260px', width: `${100 / (data?.spots || []).length}%` }}>
+                  <th key={spot.id} style={{ padding: '8px 18px', textAlign: 'left', borderRight: '1px solid rgba(255,255,255,0.12)', minWidth: '260px', width: `${100 / (data?.spots || []).length}%` }}>
                     <div style={{ fontSize: '13px', color: '#409CFF', fontWeight: '700' }}>SPOT {spot.spot_number}</div>
                     {spot.operator_name && <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.62)', fontWeight: '500', marginTop: '1px' }}>{spot.operator_name}</div>}
                   </th>
@@ -987,12 +1015,12 @@ const groupedCues = () => {
             <tbody>
               {groupedCues().map((group, groupIndex, groups) => (
                 <React.Fragment key={group.sceneId || 'unassigned'}>
-                  <tr data-scene-id={group.sceneId}>
-                    <td colSpan={(data?.spots || []).length + 1} style={{ padding: '7px 14px', background: group.actBreak ? 'rgba(255,159,10,0.10)' : '#262626', borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                      <span style={{ fontSize: '12px', fontWeight: '700', color: group.actBreak ? '#FF9F0A' : '#FFFFFF', letterSpacing: '0.01em' }}>
-                        {group.sceneLabel}
+                  <tr data-scene-id={group.sceneId} data-scene-key={group.sceneId || 'unassigned'}>
+                    <td colSpan={(data?.spots || []).length + 1} style={{ position: 'sticky', top: theadHeight, zIndex: 6, padding: '7px 14px', textAlign: 'center', background: group.actBreak ? '#3E301B' : '#203A2A', borderTop: `1px solid ${group.actBreak ? 'rgba(255,159,10,0.35)' : 'rgba(48,209,88,0.32)'}`, borderBottom: `1px solid ${group.actBreak ? 'rgba(255,159,10,0.35)' : 'rgba(48,209,88,0.32)'}` }}>
+                      <span style={{ fontSize: '12px', fontWeight: '700', color: group.actBreak ? '#FF9F0A' : '#30D158', letterSpacing: '0.01em' }}>
+                        {continuedScene === String(group.sceneId || 'unassigned') ? `[${group.sceneLabel}]` : group.sceneLabel}
                       </span>
-                      {group.sceneSong && <span style={{ fontSize: '12px', color: group.actBreak ? 'rgba(255,159,10,0.75)' : 'rgba(255,255,255,0.55)', marginLeft: '8px' }}>{group.sceneSong}</span>}
+                      {group.sceneSong && <span style={{ fontSize: '12px', color: group.actBreak ? 'rgba(255,159,10,0.75)' : 'rgba(48,209,88,0.72)', marginLeft: '8px' }}>{group.sceneSong}</span>}
                     </td>
                   </tr>
                   {group.cues.map((cue, cueIndex) => (
