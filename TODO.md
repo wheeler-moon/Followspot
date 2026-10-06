@@ -2,7 +2,28 @@
 
 Current version: Beta 0.2.1
 
-## Next release checklist
+## 0.3.0: release to the larger beta group
+
+**In so far (since 0.2.1):**
+- Design refresh: Apple dark palette, Apple Blue accent (no purple), filled buttons, macOS toolbar, grouped lists (Scenes, Characters, Show Settings sidebar, Spot Notes)
+- New show dashboard (System Settings-style lists instead of stat cards and tiles)
+- Cue list: pinned, centered scene headers (green; act breaks orange, [bracketed] while scrolling a scene), more space between spots
+- Scenes page handles 3+ act breaks
+- Installer: proper license window (formatted agreement, standard Agree/Disagree buttons and message)
+- Build: notarizes once with automatic retries
+
+**Still to decide:** anything else that should be in 0.3.0 before release.
+
+**Before release:**
+- [ ] Bump version to 0.3.0 in `package.json` and `src/screens/HomeScreen.jsx` ("Beta 0.3.0")
+- [ ] `npm run make` succeeds (signed + notarized)
+- [ ] Installer license window shows formatted text and Agree / Disagree / Print / Save with the standard message
+- [ ] Click through every screen in the installed app: home, dashboard, cue list (scroll scenes, pinned headers), scenes, characters, spot notes, print (preview + export), show settings
+- [ ] Existing 0.2.1 install auto-updates to 0.3.0 (Check for Updates)
+- [ ] Release notes written
+- [ ] GitHub release `v0.3.0` (not pre-release) with the DMG and `make/zip/darwin/arm64/SpotPlot-darwin.zip`
+
+## 0.2.1 release checklist (done)
 - [x] Before building: fix show import dropping per-cell data (see Bugs)
 - [x] Before building: include character photos in `.spotplot` exports and restore them on import (see Bugs)
 - [x] After installing the new build: `.spotplot` files show the SpotPlot icon in Finder. **To test (needs a log out):** rebuild with `npm run make` (the JSON→data file-type fix), install, run `lsregister -f /Applications/SpotPlot.app` and `qlmanage -r cache && killall Finder`, then log out and back in (Apple menu → Log Out) if a file still shows a text preview.
