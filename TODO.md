@@ -48,5 +48,8 @@ Current version: Beta 0.2.1
 ## Design
 - [x] Pre-launch design refresh: make it feel premium and original
 
+## Marketing
+- [ ] 30-second Apple-style promo video, "show from start to PDF finish": built in code with Remotion in a separate project folder next to followspot. Script the real app (remote-debugging port) to perform each step on an invented demo show (e.g. "The Lighthouse — A New Musical": cast with photos, 3 spots with gels, scenes, a full cue list), capture it in high resolution, then animate: desktop/Dock open → camera pushes into the window → build the show → zoom into a cue cell → character sheet → live print preview → PDF slides out → end card (logo, tagline, website). Short captions over scenes. Needs from Wheeler: tagline, website, royalty-free music track, format (16:9 and/or 9:16).
+
 ## Future / roadmap
 - [ ] SpotPlot Live Sync: cloud upload from desktop + iPad companion app for operators
