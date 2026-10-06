@@ -28,15 +28,7 @@ license = {
     'licenses': {
         'en_US': 'LICENSE.rtf',
     },
-    'buttons': {
-        'en_US': {
-            'language-name': 'English',
-            'agree': 'Agree',
-            'disagree': 'Disagree',
-            'print': 'Print',
-            'save': 'Save',
-            # Apple's standard wording for disk image license windows
-            'message': 'If you agree with the terms of this license, press "Agree" to install the software. If you do not agree, press "Disagree".',
-        },
-    },
+    # No 'buttons' entry: dmgbuild's built-in English set is Apple's standard wording
+    # (Agree / Disagree / Print / Save and the "press Agree to install" message).
+    # If you ever customize it, it must be a 6-item tuple, not a dict.
 }
