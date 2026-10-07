@@ -20,6 +20,9 @@ Current version: Beta 0.2.1
 - [x] New built-in action "Dump & Restore", listed right after "Up & Out"
 - [x] Show Settings: new "Cue Settings" tab listing every cue field (action, character, intensity, iris, frames, time, When, Notes…) with two checkboxes each, "Show on cue list" and "Show on print" (all checked by default). Unchecking hides the field; no data is deleted
 - [x] Show dashboard: "iPad Sync" button (will later change color when syncing) that opens Show Settings straight to a new "iPad Sync" tab; for now the tab says "iPad app coming soon"
+- [x] Caller sheet layout: plain iris/color/time in a labeled strip, When/Notes in a labeled box, tighter spacing
+- [x] Prints: "Page X of Y" at the bottom of every sheet; each spot's first color is highlighted like a color change; no purple left on Spot Notes
+- [x] First-run tips: the first time each screen shows a control, a popover points at it and explains it (Next / Skip tips). Text lives in `src/tips.js`; Help → Show Tips Again brings them back
 
 
 **Before release:**
@@ -27,6 +30,7 @@ Current version: Beta 0.2.1
 - [ ] `npm run make` succeeds (signed + notarized)
 - [ ] Installer license window shows formatted text and Agree / Disagree / Print / Save with the standard message
 - [ ] Click through every screen in the installed app: home, dashboard, cue list (scroll scenes, pinned headers), scenes, characters, spot notes, print (preview + export), show settings
+- [ ] First-run tips show on a fresh install, and existing 0.2.1 users see them once after updating
 - [ ] Existing 0.2.1 install auto-updates to 0.3.0 (Check for Updates)
 - [ ] Release notes written
 - [ ] GitHub release `v0.3.0` (not pre-release) with the DMG and `make/zip/darwin/arm64/SpotPlot-darwin.zip`
@@ -50,7 +54,7 @@ Current version: Beta 0.2.1
 ## App features
 - [ ] Finder preview of `.spotplot` files shows that show's logo (the small file icon stays the SpotPlot logo). Needs a Quick Look **Preview** extension (not a Thumbnail extension, which would replace the icon): a small Swift `.appex` that reads the file's JSON, decodes the embedded logo from `images[show.logo_path]`, and shows it, falling back to the SpotPlot icon. Requires installing Xcode, building the appex as part of `npm run make`, and embedding it in `SpotPlot.app/Contents/PlugIns` before signing/notarizing (app extensions must be sandboxed). Test from a signed, installed build.
 - [x] Bold/italic/underline in when/notes fields (Cmd+B, Cmd+I, Cmd+U)
-- [ ] Onboarding walkthrough for new users (tooltip-style popups on first launch)
+- [x] Onboarding walkthrough for new users (tooltip-style popups on first launch)
 - [x] Update default fixture types list in Spot Settings
 - [x] Cue list: make "w/ LQ" a toggle that stays linked to the cue's LQ number, so renumbering the cue updates it automatically (no re-pressing the button)
 - [x] Cue list: don't show the hover "insert cue" button on the last cue, since the permanent add button at the bottom covers it
@@ -62,8 +66,8 @@ Current version: Beta 0.2.1
 
 ## Print / paperwork
 - [x] Print page redesign with live preview (replaces "PDF preview before export"): instead of one long list of print options, start with "Select what you want to print" (e.g. Spot 1, Caller sheet, Color load, Spot notes). The selected sheet shows as a live preview of the actual PDF, with its options beside it (hide Off, hide Tracked, cue range, label…); changing an option re-renders the preview immediately. Export saves exactly what the preview shows.
-- [ ] Caller sheet design v2: easier to read, more compact
-- [ ] Spot sheet page breaks: cues shouldn't split across pages
+- [x] Caller sheet design v2: easier to read, more compact
+- [x] Spot sheet page breaks: cues shouldn't split across pages
 - [ ] Action symbols cheat sheet PDF
 
 ## Structural

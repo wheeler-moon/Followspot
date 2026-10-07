@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Tips from '../components/Tips';
+import { TIPS } from '../tips';
 import AppHeader from '../components/AppHeader';
 const { ipcRenderer, webUtils } = window.require('electron');
 const getDroppedImagePath = (e) => {
@@ -130,7 +132,7 @@ export default function CharactersScreen({ show, navigate }) {
       <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
         <div style={{ maxWidth: '700px', margin: '0 auto' }}>
 
-          <div style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
+          <div data-tour="add-character" style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
             <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Add character</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
               <div>
@@ -303,6 +305,7 @@ export default function CharactersScreen({ show, navigate }) {
           )}
         </div>
       </div>
+      <Tips steps={TIPS.characters} />
     </div>
   );
 }

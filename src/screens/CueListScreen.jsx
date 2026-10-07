@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Tips from '../components/Tips';
+import { TIPS } from '../tips';
 import AppHeader from '../components/AppHeader';
 import RichLine from '../components/RichLine';
 import { cueFieldSettings } from '../cueFields';
@@ -389,7 +391,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
         onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop(e); }}
         style={{ padding: '8px 18px', borderRight: '1px solid rgba(255,255,255,0.12)', verticalAlign: 'top', minWidth: '260px', background: isDragTarget ? 'rgba(10,132,255,0.16)' : '#191919', outline: isDragTarget ? '2px solid #0A84FF' : 'none', position: 'relative' }}>
         <div ref={ref} style={{ position: 'relative', zIndex: showActionPicker ? 99999 : 'auto' }}>
-          <div ref={actionBtnRef} onClick={() => {
+          <div ref={actionBtnRef} data-tour="cue-action" onClick={() => {
             if (actionBtnRef.current) {
               const rect = actionBtnRef.current.getBoundingClientRect();
               const pickerHeight = 380;
@@ -418,6 +420,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
       onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) onDragLeave(e); }}
       onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop(e); }}
       onDoubleClick={onDoubleClick}
+      data-tour="cue-cell"
       style={{ 
         padding: '8px 18px', 
         borderRight: '1px solid rgba(255,255,255,0.12)', 
@@ -436,7 +439,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
       {isDragTarget && <div style={{ position: 'absolute', inset: 0, background: 'rgba(10,132,255,0.3)', pointerEvents: 'none', zIndex: 5 }} />}
       <div ref={ref} style={{ position: 'relative', zIndex: showActionPicker ? 9999 : 'auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-          <div ref={actionBtnRef} onClick={() => {
+          <div ref={actionBtnRef} data-tour="cue-action" onClick={() => {
             if (actionBtnRef.current) {
               const rect = actionBtnRef.current.getBoundingClientRect();
               const pickerHeight = 380;
@@ -519,7 +522,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
           </div>
         </div>
 
-<div style={{ display: 'flex', alignItems: 'center', marginBottom: '3px', gap: '8px' }}>
+<div data-tour="cue-look" style={{ display: 'flex', alignItems: 'center', marginBottom: '3px', gap: '8px' }}>
           {fieldsShown.iris === false ? <div style={{ flex: 1 }} /> : <IrisStrip sizes={[{label:'FB',value:'Full Body'},{label:'3/4',value:'3/4 Body'},{label:'1/2',value:'1/2 Body'},{label:'H&S',value:'Head & Shoulders'},{label:'Hd',value:'Head'}, ...(customIrisSizes || [])]}
             selected={spotCue.frame_size}
             onPick={value => onUpdate(spotCue.id, 'frame_size', spotCue.frame_size === value ? '' : value)} />}
@@ -584,7 +587,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
             placeholder={withLQ ? '' : 'When...'}
             style={{ flex: 1, minWidth: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.62)', padding: '2px 0', fontSize: '12px' }} />
           </div>
-          <div onClick={toggleWLQ} role="switch" aria-checked={withLQ}
+          <div data-tour="cue-wlq" onClick={toggleWLQ} role="switch" aria-checked={withLQ}
             title={withLQ ? 'Linked to this cue\'s LQ number — click to unlink' : 'Link to this cue\'s LQ number'}
             style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', flexShrink: 0 }}>
             <div style={{ width: '44px', height: '20px', borderRadius: '10px', background: withLQ ? '#0A84FF' : 'rgba(255,255,255,0.10)', position: 'relative', transition: 'background 0.15s' }}>
@@ -648,7 +651,7 @@ function CueRow({ cue, isLastCue, fieldsShown, spots, spotCues, characters, colo
         onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.025)'}
         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
         <td style={{ padding: '8px 6px', borderRight: '1px solid rgba(255,255,255,0.06)', verticalAlign: 'top', width: '90px', minWidth: '90px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
+          <div data-tour="cue-lq" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
             {editingLQ ? (
               <input autoFocus value={lqVal} onChange={e => setLqVal(e.target.value)}
                 onBlur={saveLQ} onKeyDown={e => e.key === 'Enter' && saveLQ()}
@@ -987,8 +990,10 @@ const groupedCues = () => {
           <option value="">Jump to scene...</option>
           {(data?.scenes || []).map(s => <option key={s.id} value={s.id}>{s.label}{s.song ? ' · ' + s.song : ''}</option>)}
         </select>
+        <span data-tour="add-scene" style={{ display: 'inline-flex', gap: '12px' }}>
         <button onClick={() => setShowSceneModal(true)} style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>+ Scene</button>
         <button onClick={() => setShowCharModal(true)} style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>+ Character</button>
+        </span>
       </AppHeader>
 
       <div ref={scrollRef} onScroll={() => {
@@ -1003,7 +1008,7 @@ const groupedCues = () => {
             <div style={{ fontSize: '36px' }}>✦</div>
             <div style={{ fontSize: '15px' }}>No cues yet</div>
             <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.28)' }}>Add a scene first, then create your first cue</div>
-            <button onClick={addCue} style={{ marginTop: '8px', padding: '8px 20px', background: '#0A84FF', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer' }}>+ Add first cue</button>
+            <button data-tour="first-cue" onClick={addCue} style={{ marginTop: '8px', padding: '8px 20px', background: '#0A84FF', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer' }}>+ Add first cue</button>
           </div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', position: 'relative' }}>
@@ -1061,6 +1066,7 @@ const groupedCues = () => {
                         addCue();
                       }
                     }}
+                    data-tour="add-cue-end"
                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '6px', borderRadius: '6px', cursor: 'pointer', color: 'rgba(255,255,255,0.28)', fontSize: '11px', fontWeight: '600' }}
                     onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,132,255,0.16)'; e.currentTarget.style.color = '#409CFF'; }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.28)'; }}>
@@ -1320,6 +1326,7 @@ const groupedCues = () => {
           </div>
         </div>
       )}
+      <Tips steps={TIPS.cueList} watch={(data?.cues || []).length} />
     </div>
   );
 }

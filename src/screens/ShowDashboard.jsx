@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 const { ipcRenderer } = window.require('electron');
 import AppHeader from '../components/AppHeader';
 import ShowSettingsModal from './ShowSettingsModal';
+import Tips from '../components/Tips';
+import { TIPS } from '../tips';
 const getImageSrc = (path) => {
   if (!path) return null;
   try {
@@ -99,14 +101,14 @@ const startEdit = () => {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#1E1E1E' }}>
            <AppHeader title={show.title} onBack={() => navigate('home')} backLabel="All shows">
         <div style={{ flex: 1 }} />
-        <button onClick={() => {
+        <button data-tour="export-show" onClick={() => {
           const result = ipcRenderer.sendSync('db-export-show', show.id);
           if (result.success) alert(`Show exported successfully!`);
           else if (!result.cancelled) alert('Export failed: ' + result.error);
         }} style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
           ↑ Export
         </button>
-        <button onClick={() => navigate('cue-list', show)} style={{ height: '28px', padding: '0 14px', background: '#0A84FF', color: '#FFFFFF', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
+        <button data-tour="open-cues" onClick={() => navigate('cue-list', show)} style={{ height: '28px', padding: '0 14px', background: '#0A84FF', color: '#FFFFFF', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
           Open Cue List
         </button>
       </AppHeader>
@@ -210,7 +212,7 @@ const startEdit = () => {
                   <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'rgba(255,255,255,0.35)' }} />
                   iPad Sync
                 </button>
-                <button onClick={() => setShowSettings('show-info')}
+                <button data-tour="show-settings" onClick={() => setShowSettings('show-info')}
                   onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.14)'; }}
                   onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.10)'; }}
                   style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer', flexShrink: 0 }}>
@@ -220,7 +222,7 @@ const startEdit = () => {
             )}
           </div>
 
-          <div style={group}>
+          <div data-tour="show-nav" style={group}>
             {navRows.map((r, i) => (
               <div key={r.dest} onClick={() => navigate(r.dest, show)}
                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
@@ -270,6 +272,7 @@ const startEdit = () => {
           )}
         </div>
       </div>
+      {!showSettings && <Tips steps={TIPS.dashboard} watch={editing} />}
       {showSettings && (
         <ShowSettingsModal
           show={show}

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 const { ipcRenderer } = window.require('electron');
 import { getCachedLicense } from '../license';
 import AppHeader from '../components/AppHeader';
+import Tips from '../components/Tips';
+import { TIPS } from '../tips';
 
 const getImageSrc = (path) => {
   if (!path) return null;
@@ -58,7 +60,7 @@ export default function HomeScreen({ navigate }) {
           placeholder="Search shows..."
           style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: '#FFFFFF', padding: '6px 12px', fontSize: '13px', outline: 'none', width: '200px' }}
         />
-        <button onClick={() => {
+        <button data-tour="import-show" onClick={() => {
           const result = ipcRenderer.sendSync('db-import-show');
           if (result.success) {
             alert('Show imported successfully!');
@@ -68,7 +70,7 @@ export default function HomeScreen({ navigate }) {
         }} style={{ padding: '8px 14px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '8px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer' }}>
           ↓ Import
         </button>
-        <button onClick={() => navigate('new-show')} style={{ padding: '8px 18px', background: '#0A84FF', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>+ New Show</button>
+        <button data-tour="new-show" onClick={() => navigate('new-show')} style={{ padding: '8px 18px', background: '#0A84FF', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>+ New Show</button>
       </AppHeader>
       <div style={{ flex: 1, padding: '32px 24px', overflowY: 'auto' }}>
         {shows.length === 0 ? (
@@ -81,7 +83,7 @@ export default function HomeScreen({ navigate }) {
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
             {shows.filter(s => s.title.toLowerCase().includes(search.toLowerCase()) || (s.theatre || '').toLowerCase().includes(search.toLowerCase())).map(show => (
-              <div key={show.id} onClick={() => navigate('show', show)}
+              <div key={show.id} data-tour="show-card" onClick={() => navigate('show', show)}
                 style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px', cursor: 'pointer' }}
                 onMouseEnter={e => e.currentTarget.style.borderColor = '#0A84FF'}
                 onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}>
@@ -176,6 +178,7 @@ export default function HomeScreen({ navigate }) {
           </div>
         )}
       </div>
+      <Tips steps={TIPS.home} watch={shows.length} />
     </div>
   );
 }

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Tips from '../components/Tips';
+import { TIPS } from '../tips';
 import AppHeader from '../components/AppHeader';
 const { ipcRenderer } = window.require('electron');
 
@@ -30,7 +32,7 @@ function PdfPreview({ preview, updating }) {
   }, [preview]);
 
   return (
-    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: '#161616' }}>
+    <div data-tour="print-preview" style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: '#161616' }}>
       <div style={{ flexShrink: 0, height: '32px', display: 'flex', alignItems: 'center', gap: '10px', padding: '0 16px', borderBottom: '1px solid rgba(255,255,255,0.10)', fontSize: '12px', color: 'rgba(255,255,255,0.55)' }}>
         <span>{preview.pages} page{preview.pages === 1 ? '' : 's'}</span>
         {updating && <span style={{ color: '#409CFF' }}>Updating…</span>}
@@ -129,7 +131,7 @@ export default function PrintScreen({ show, navigate }) {
             )}
           </span>
         )}
-        <button onClick={exportPDF} disabled={!selected || exporting}
+        <button data-tour="print-export" onClick={exportPDF} disabled={!selected || exporting}
           style={{ height: '28px', padding: '0 16px', background: '#0A84FF', border: 'none', borderRadius: '14px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: selected && !exporting ? 'pointer' : 'default', opacity: selected && !exporting ? 1 : 0.5 }}>
           {exporting ? 'Saving…' : 'Export PDF…'}
         </button>
@@ -139,7 +141,7 @@ export default function PrintScreen({ show, navigate }) {
         {/* What to print + its options */}
         <div style={{ width: '260px', flexShrink: 0, borderRight: '1px solid rgba(255,255,255,0.10)', overflowY: 'auto', padding: '20px 16px' }}>
           <div style={sectionLabel}>What do you want to print?</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '24px' }}>
+          <div data-tour="print-items" style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '24px' }}>
             {items.map(item => {
               const isSel = selected?.key === item.key;
               return (
@@ -157,7 +159,7 @@ export default function PrintScreen({ show, navigate }) {
           {selected && (
             <>
               <div style={sectionLabel}>Label</div>
-              <input value={label} onChange={e => setLabel(e.target.value)} placeholder='e.g. "2-24 Dress Run"' style={fieldStyle} />
+              <input data-tour="print-label" value={label} onChange={e => setLabel(e.target.value)} placeholder='e.g. "2-24 Dress Run"' style={fieldStyle} />
               <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)', margin: '4px 0 20px' }}>Appears in the page header</div>
 
               {selected.kind === 'spot' && (
@@ -212,6 +214,7 @@ export default function PrintScreen({ show, navigate }) {
           </div>
         )}
       </div>
+      <Tips steps={TIPS.print} watch={selected ? (preview ? 2 : 1) : 0} />
     </div>
   );
 }

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import Tips from '../components/Tips';
+import { TIPS } from '../tips';
 import AppHeader from '../components/AppHeader';
 const { ipcRenderer } = window.require('electron');
 
@@ -71,7 +73,7 @@ export default function SpotNotesScreen({ show, navigate }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#1E1E1E' }}>
       <AppHeader title="Spot Notes" onBack={() => navigate('show', show)} backLabel={show.title}>
-        <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)' }}>{totalNotes} note{totalNotes !== 1 ? 's' : ''}</span>
+        <span data-tour="spot-notes" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)' }}>{totalNotes} note{totalNotes !== 1 ? 's' : ''}</span>
       </AppHeader>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
@@ -149,6 +151,7 @@ export default function SpotNotesScreen({ show, navigate }) {
           </div>
         )}
       </div>
+      <Tips steps={TIPS.spotNotes} />
     </div>
   );
 }

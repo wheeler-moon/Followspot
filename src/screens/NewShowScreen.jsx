@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AppHeader from '../components/AppHeader';
+import Tips from '../components/Tips';
+import { TIPS } from '../tips';
 import CopyColorsSelect from '../components/CopyColorsSelect';
 const { ipcRenderer } = window.require('electron');
 
@@ -96,7 +98,7 @@ function SpotSetup({ spot, spotNumber, onChange, onRemove, otherSpots, onCopyCol
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
         <span style={{ fontSize: '15px', fontWeight: '600', color: '#409CFF' }}>Spot {spotNumber}</span>
         <div style={{ flex: 1 }} />
-        <CopyColorsSelect otherSpots={otherSpots} onPick={key => { if (onCopyColorsFrom(parseInt(key))) setCopyCount(c => c + 1); }} />
+        <span data-tour="copy-colors"><CopyColorsSelect otherSpots={otherSpots} onPick={key => { if (onCopyColorsFrom(parseInt(key))) setCopyCount(c => c + 1); }} /></span>
         <button onClick={onRemove} style={{ background: 'rgba(255,69,58,0.14)', border: 'none', borderRadius: '6px', color: '#FF453A', padding: '4px 10px', fontSize: '12px', cursor: 'pointer', marginLeft: '8px' }}>Remove</button>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
@@ -136,7 +138,7 @@ function SpotSetup({ spot, spotNumber, onChange, onRemove, otherSpots, onCopyCol
         )}
       </div>
       <label style={{ ...labelStyle, marginBottom: '8px', display: 'block' }}>Color frames</label>
-      <div key={copyCount} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '8px' }}>
+      <div key={copyCount} data-tour="spot-setup" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '8px' }}>
         {spot.gels.map((gel, i) => (
           <div key={i} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '8px' }}>
             <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', marginBottom: '4px', fontWeight: '600' }}>Frame {gel.slot}</div>
@@ -202,7 +204,7 @@ export default function NewShowScreen({ navigate }) {
       <AppHeader title="New Show" onBack={() => navigate('home')} backLabel="Back">
         <div style={{ flex: 1 }} />
         {error && <span style={{ fontSize: '12px', color: '#FF453A' }}>{error}</span>}
-        <button onClick={handleSave} disabled={saving} style={{ padding: '8px 20px', background: '#0A84FF', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: 'pointer', opacity: saving ? 0.6 : 1 }}>
+        <button data-tour="save-show" onClick={handleSave} disabled={saving} style={{ padding: '8px 20px', background: '#0A84FF', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: 'pointer', opacity: saving ? 0.6 : 1 }}>
           {saving ? 'Saving...' : 'Save Show'}
         </button>
       </AppHeader>
@@ -291,6 +293,7 @@ export default function NewShowScreen({ navigate }) {
 
         </div>
       </div>
+      <Tips steps={TIPS.newShow} watch={spots.length} />
     </div>
   );
 }

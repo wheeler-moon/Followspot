@@ -11,6 +11,7 @@ import SpotNotesScreen from './screens/SpotNotesScreen';
 import LicenseScreen from './screens/LicenseScreen';
 import ExpiredScreen from './screens/ExpiredScreen';
 import { getCachedLicense, isCacheValid, validateLicense, setCachedLicense } from './license';
+import { resetTips } from './components/Tips';
 
 export default function App() {
   const [screen, setScreen] = useState('home');
@@ -75,6 +76,13 @@ export default function App() {
     }, 15 * 60 * 1000);
     return () => clearInterval(timer);
   }, [licenseStatus]);
+
+  // Help > Show Tips Again: forget which tips were seen so each screen shows its tips again
+  useEffect(() => {
+    const { ipcRenderer } = window.require('electron');
+    ipcRenderer.on('menu-show-tips', resetTips);
+    return () => ipcRenderer.removeListener('menu-show-tips', resetTips);
+  }, []);
 
   const navigate = (dest, data) => {
     setCurrentShow(data || null);
