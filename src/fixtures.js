@@ -3,13 +3,13 @@
 // longer listed keep it (it shows as a custom name).
 const FIXTURES = [
   'Super Trouper',
-  'Strong Gladiator',
   'Lycian 1290',
-  'Lycian Starklite',
+  'Lycian M2',
   'Robert Juliat',
   'Ground Control',
   'Robo Spot',
   'Source Four',
+  'ETC Lustr',
   'Moving Light',
   'Other',
 ];
