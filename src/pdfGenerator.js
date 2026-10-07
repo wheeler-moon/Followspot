@@ -610,6 +610,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
   });
   const colorChangedBySpot = {};
   for (const spot of spots) colorChangedBySpot[spot.id] = colorChangeCues(sortedCues, spotCuesBySpot[spot.id] || []);
+  const printFields = cueFieldSettings(cueFields);
 
   const spotsHeaderHTML = spots.map(spot => {
     const slots = (colorSlotsBySpot[spot.id] || []).filter(s => !s.is_permanent);
@@ -684,13 +685,25 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
                 <span class="char-name" style="margin-left:4px;">${char ? char.name : sc.custom_character ? sc.custom_character : '—'}</span>
                 <div class="intensity-badge" style="margin-left:auto;">${sc.intensity ? `<span style="font-size:11pt;font-weight:400;color:#666;">@</span>${sc.intensity}` : ''}</div>
               </div>
-              <div class="cue-details" style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:2px;">
-                ${sc.frame_size ? `<span class="detail-badge iris" style="padding:1px 5px;">${sc.frame_size}</span>` : ''}
-                ${(() => { const hl = colorChangedBySpot[spot.id].has(cue.id) ? `background:${COLOR_CHANGE_BG};` : ''; return sc.no_color ? `<span class="detail-badge color" style="padding:1px 5px;${hl}">NC</span>` : activeFrames ? `<span class="detail-badge color" style="padding:1px 5px;${hl}">${activeFrames}</span>` : ''; })()}
-                ${sc.fade_time ? `<span class="detail-badge time" style="padding:1px 5px;">${sc.fade_time}s</span>` : ''}
-              </div>
-              ${whenText(sc, cue) ? `<div class="when-text" style="${lineHighlightCSS(sc.when_highlight)}${sc.when_highlight ? 'padding:0 3px;' : ''}">${whenText(sc, cue)}</div>` : ''}
-              ${safeRich(sc.notes) ? `<div class="notes-text" style="${lineHighlightCSS(sc.notes_highlight)}${sc.notes_highlight ? 'padding:0 3px;' : ''}">${safeRich(sc.notes)}</div>` : ''}
+              ${(() => {
+                // Iris / color / time in one labeled strip; fields hidden on print are left out entirely
+                const colorText = sc.no_color ? 'NC' : activeFrames;
+                const colorHL = colorChangedBySpot[spot.id].has(cue.id) ? `background:${COLOR_CHANGE_BG};` : '';
+                const items = [
+                  printFields.iris.print && sc.frame_size ? `<span class="detail-badge iris"><span class="lbl">Iris</span>${sc.frame_size}</span>` : '',
+                  printFields.color.print && colorText ? `<span class="detail-badge color" style="${colorHL}"><span class="lbl">Color</span>${colorText}</span>` : '',
+                  printFields.time.print && sc.fade_time ? `<span class="detail-badge time"><span class="lbl">Time</span>${sc.fade_time}s</span>` : '',
+                ].filter(Boolean);
+                return items.length ? `<div class="cue-details">${items.join('')}</div>` : '';
+              })()}
+              ${(() => {
+                // When and Notes share one box, one labeled row each
+                const rows = [
+                  printFields.when.print && whenText(sc, cue) ? `<div class="say-row when-text" style="${lineHighlightCSS(sc.when_highlight)}"><span class="lbl">When</span><span>${whenText(sc, cue)}</span></div>` : '',
+                  printFields.notes.print && safeRich(sc.notes) ? `<div class="say-row notes-text" style="${lineHighlightCSS(sc.notes_highlight)}"><span class="lbl">Note</span><span>${safeRich(sc.notes)}</span></div>` : '',
+                ].filter(Boolean);
+                return rows.length ? `<div class="say-box">${rows.join('')}</div>` : '';
+              })()}
             </div>
           </td>
         `;
@@ -913,40 +926,61 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
     gap: 2px;
   }
 
+  /* Small gray caps label in front of a value */
+  .spot-cell .lbl {
+    font-size: 6.5pt;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8a8a8a;
+    font-style: normal;
+  }
+
+  /* Iris / color / time: one white strip, items split by hairlines.
+     Only a color change gets a fill, so it pops. */
   .cue-details {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    margin-top: 4px;
+    display: inline-flex;
+    margin-top: 6px;
+    background: #fff;
+    border: 1px solid #bdbdbd;
+    border-radius: 6px;
+    overflow: hidden;
   }
 
   .detail-badge {
-    font-size: 10pt;
-    font-weight: 700;
-    padding: 2px 7px;
-    border-radius: 4px;
-    background: #e8e8e8;
-    color: #333;
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    padding: 2px 9px;
+    font-size: 10.5pt;
+    font-weight: 800;
+    color: #1a1a1a;
   }
 
-  .detail-badge.iris { background: #ddeeff; color: #1a3a7a; }
-  .detail-badge.color { background: #eeddff; color: #3a1a7a; }
-  .detail-badge.time { background: #ddffd8; color: #1a4a1a; }
+  .detail-badge + .detail-badge { border-left: 1px solid #dcdcdc; }
 
-  .when-text {
-    font-size: 10pt;
-    font-weight: 600;
-    color: #222;
-    font-style: italic;
-    margin-top: 4px;
+  /* When / Notes: one white box, a labeled row each */
+  .say-box {
+    margin-top: 6px;
+    background: #fff;
+    border: 1px solid #bdbdbd;
+    border-radius: 6px;
+    overflow: hidden;
   }
 
-  .notes-text {
+  .say-row {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    align-items: baseline;
+    padding: 3px 9px;
     font-size: 10pt;
-    color: #444;
-    font-style: italic;
-    margin-top: 3px;
+    border-radius: 0 !important;
   }
+
+  .say-row + .say-row { border-top: 1px solid #e3e3e3; }
+
+  .when-text { font-weight: 700; color: #1a1a1a; }
+  .notes-text { font-weight: 400; color: #333; }
 
   .scene-row td {
     background: #1a1a1a;
