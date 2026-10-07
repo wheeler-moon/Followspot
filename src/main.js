@@ -585,7 +585,7 @@ function buildSheet(kind, opts) {
         cueFields: show.cue_fields, show, spot, colorSlots: slotsFor(spot.id), cues, characters, scenes, label, customActions,
         spotCues: database.prepare('SELECT * FROM spot_cues WHERE spot_id = ?').all(spot.id),
         numSpots: spots.length, hideOff: !!opts.hideOff, hideTracked: !!opts.hideTracked,
-        rangeStart: opts.rangeStart ?? null, rangeEnd: opts.rangeEnd ?? null,
+        rangeStart: opts.rangeStart ?? null, rangeEnd: opts.rangeEnd ?? null, showTracks: opts.showTracks !== false,
       }),
       landscape, margin: PAGE_MARGINS.spot,
       fileName: `${show.title} - Spot ${spot.spot_number} - ${labelPart}.pdf`,
@@ -598,7 +598,7 @@ function buildSheet(kind, opts) {
       spotCuesBySpot[spot.id] = database.prepare('SELECT * FROM spot_cues WHERE spot_id = ?').all(spot.id);
     }
     return {
-      html: buildCallerSheetHTML({ cueFields: show.cue_fields, show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions }),
+      html: buildCallerSheetHTML({ cueFields: show.cue_fields, show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions, showTracks: opts.showTracks !== false }),
       landscape, margin: PAGE_MARGINS.caller,
       fileName: `${show.title} - Caller Sheet - ${labelPart}.pdf`,
     };
@@ -1077,6 +1077,25 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
       const result = database.prepare('INSERT INTO scenes (show_id, label, song, act_break, sort_order) VALUES (?, ?, ?, ?, ?)').run(showId, label, song || '', actBreak ? 1 : 0, sort);
       event.returnValue = { success: true, id: result.lastInsertRowid };
     } catch(e) { event.returnValue = { success: false }; }
+  });
+
+  // Renumber T· (track numbers) 1, 2, 3… in the order the cue list shows. cueIds is that order.
+  // Only track_number changes: cue order (sort_order), scenes and LQ numbers are never touched.
+  ipcMain.on('db-renumber-tracks', (event, { showId, cueIds }) => {
+    try {
+      const database = getDb();
+      const showCueIds = database.prepare('SELECT id FROM cues WHERE show_id = ?').all(showId).map(c => c.id);
+      // Refuse unless the list is exactly this show's cues, each once
+      if (cueIds.length !== showCueIds.length || new Set(cueIds).size !== cueIds.length || !cueIds.every(id => showCueIds.includes(id))) {
+        event.returnValue = { success: false, error: 'The cue list changed. Reopen it and try again.' };
+        return;
+      }
+      const setTrack = database.prepare('UPDATE cues SET track_number = ? WHERE id = ? AND show_id = ?');
+      database.transaction(() => { cueIds.forEach((id, i) => setTrack.run(i + 1, id, showId)); })();
+      event.returnValue = { success: true, count: cueIds.length };
+    } catch(e) {
+      event.returnValue = { success: false, error: e.message };
+    }
   });
 
   ipcMain.on('db-create-cue', (event, { showId, sceneId, afterCueId }) => {

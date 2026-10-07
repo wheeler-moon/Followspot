@@ -52,6 +52,7 @@ export default function PrintScreen({ show, navigate }) {
   const [rangeEnd, setRangeEnd] = useState('');
   const [notesSpotId, setNotesSpotId] = useState(null); // null = all spots
   const [showCostumeNotes, setShowCostumeNotes] = useState(true);
+  const [showTracks, setShowTracks] = useState(true); // T· numbers under each LQ (spot and caller sheets)
   const [preview, setPreview] = useState(null); // { pdf, pages }
   const [updating, setUpdating] = useState(false);
   const latestRequest = useRef(0);
@@ -79,6 +80,7 @@ export default function PrintScreen({ show, navigate }) {
       Object.assign(req, { spotId: selected.spotId, hideOff, hideTracked,
         rangeStart: rangeStart ? parseInt(rangeStart) : null, rangeEnd: rangeEnd ? parseInt(rangeEnd) : null });
     }
+    if (selected.kind === 'spot' || selected.kind === 'caller') req.showTracks = showTracks;
     if (selected.kind === 'notes') req.spotId = notesSpotId;
     if (selected.kind === 'characters') req.showCostumeNotes = showCostumeNotes;
     return req;
@@ -99,7 +101,7 @@ export default function PrintScreen({ show, navigate }) {
       else setPreviewError(result?.error || 'Could not build the preview.');
     }, 250);
     return () => clearTimeout(t);
-  }, [selected?.key, label, hideOff, hideTracked, rangeStart, rangeEnd, notesSpotId, showCostumeNotes]);
+  }, [selected?.key, label, hideOff, hideTracked, rangeStart, rangeEnd, notesSpotId, showCostumeNotes, showTracks]);
 
   // Leaving the print screen: let the app shut down the preview's background Chrome
   useEffect(() => () => ipcRenderer.send('print-closed'), []);
@@ -167,6 +169,7 @@ export default function PrintScreen({ show, navigate }) {
                   <div style={sectionLabel}>Options</div>
                   <Switch on={hideOff} onChange={setHideOff} label="Hide Off cues" hint="Skip cues where this spot is off" />
                   <Switch on={hideTracked} onChange={setHideTracked} label="Hide Tracked cues" hint="Only cues where something changes" />
+                  <Switch on={showTracks} onChange={setShowTracks} label="T· numbers" hint="Small spot cue numbers under each LQ" />
                   <div style={{ ...sectionLabel, marginTop: '8px' }}>Cue range</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <input value={rangeStart} onChange={e => setRangeStart(e.target.value.replace(/\D/g, ''))} placeholder="From T·" style={fieldStyle} />
@@ -174,6 +177,13 @@ export default function PrintScreen({ show, navigate }) {
                     <input value={rangeEnd} onChange={e => setRangeEnd(e.target.value.replace(/\D/g, ''))} placeholder="To T·" style={fieldStyle} />
                   </div>
                   <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)', marginTop: '4px' }}>Tracking numbers (T·1, T·2…). Leave blank for all.</div>
+                </>
+              )}
+
+              {selected.kind === 'caller' && (
+                <>
+                  <div style={sectionLabel}>Options</div>
+                  <Switch on={showTracks} onChange={setShowTracks} label="T· numbers" hint="Small spot cue numbers under each LQ" />
                 </>
               )}
 

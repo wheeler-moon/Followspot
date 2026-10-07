@@ -86,7 +86,10 @@ function colorChangeCues(orderedCues, spotCuesForSpot) {
 }
 const COLOR_CHANGE_BG = '#FFE45C'; // yellow highlighter
 
-function buildSpotSheetHTML({ cueFields, show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, hideOff, hideTracked, rangeStart, rangeEnd, customActions }) {
+// Small gray T· (spot cue / tracking number) under the LQ, for operators to reference
+const trackHTML = (cue, show) => show && cue.track_number != null ? `<div class="track-num">T·${cue.track_number}</div>` : '';
+
+function buildSpotSheetHTML({ cueFields, show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, hideOff, hideTracked, rangeStart, rangeEnd, customActions, showTracks = true }) {
   const isLandscape = false;
   let logoHTML = '<div class="header-logo-placeholder">LOGO</div>';
   if (show.logo_path) {
@@ -185,7 +188,7 @@ const sceneOrderMap = {};
 
         rowsHTML += `
       <tr class="${isOff ? 'off-row' : ''}" style="${rowStyle}">
-        <td class="lq-cell">${cue.lq_number || '—'}</td>
+        <td class="lq-cell">${cue.lq_number || '—'}${trackHTML(cue, showTracks)}</td>
         ${isIgnored ? `
           <td colspan="7" style="position:relative;padding:0;">
             <table style="width:100%;opacity:0.2;">
@@ -464,6 +467,8 @@ const sceneOrderMap = {};
     white-space: nowrap;
   }
 
+  .track-num { font-size: 7pt; font-weight: 600; color: #9a9a9a; line-height: 1.2; margin-top: 1px; }
+
   .action-cell {
     width: 130px;
   }
@@ -582,7 +587,7 @@ const sceneOrderMap = {};
 </html>`;
 }
 
-function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions }) {
+function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions, showTracks = true }) {
   let logoBase64 = '';
   if (show.logo_path) {
     try {
@@ -712,7 +717,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
 
     rowsHTML += `
       <tr class="cue-row">
-        <td class="lq-cell">${cue.lq_number || '—'}</td>
+        <td class="lq-cell">${cue.lq_number || '—'}${trackHTML(cue, showTracks)}</td>
         ${spotCellsHTML}
       </tr>
     `;
@@ -850,6 +855,8 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
     white-space: nowrap;
     overflow: hidden;
   }
+
+  .track-num { font-size: 7pt; font-weight: 600; color: #9a9a9a; line-height: 1.2; margin-top: 1px; }
 
   .spot-cell {
     padding: 5px 8px;

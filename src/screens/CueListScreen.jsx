@@ -936,6 +936,21 @@ export default function CueListScreen({ show, navigate }) {
     setCharacters(Array.isArray(chars) ? chars : []);
   };
 
+// Renumber T· 1, 2, 3… top to bottom, exactly as the list shows (cues in a deleted scene, which the
+  // list can't show, go last). Only the T· numbers change; cue order, scenes and LQs stay as they are.
+  const renumberTracks = () => {
+    const shown = groupedCues().flatMap(g => g.cues);
+    const shownIds = new Set(shown.map(c => c.id));
+    const rest = [...(data?.cues || [])].filter(c => !shownIds.has(c.id)).sort((a, b) => a.sort_order - b.sort_order);
+    const ordered = [...shown, ...rest];
+    if (!ordered.length) return;
+    if (ordered.every((c, i) => c.track_number === i + 1)) { alert('T· numbers are already in order (1 to ' + ordered.length + ').'); return; }
+    if (!window.confirm(`Renumber spot cues T·1 to T·${ordered.length}, top to bottom?\n\nT· numbers are the spot cue numbers operators use to keep their place, printed beside each LQ. Renumbering cleans them up after cues were inserted.\n\nThe order of your cues, their scenes and LQ numbers won't change. If you've already handed out sheets, reprint them so everyone's T· numbers match.`)) return;
+    const result = ipcRenderer.sendSync('db-renumber-tracks', { showId: show.id, cueIds: ordered.map(c => c.id) });
+    if (!result?.success) { alert('Could not renumber: ' + (result?.error || 'unknown error')); return; }
+    load();
+  };
+
 const groupedCues = () => {
     const cues = data?.cues || [];
     const scenes = data?.scenes || [];
@@ -990,6 +1005,8 @@ const groupedCues = () => {
           <option value="">Jump to scene...</option>
           {(data?.scenes || []).map(s => <option key={s.id} value={s.id}>{s.label}{s.song ? ' · ' + s.song : ''}</option>)}
         </select>
+        <button onClick={renumberTracks} title="Renumber T· 1, 2, 3… top to bottom. Cue order doesn't change."
+          style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>Renumber T·</button>
         <span data-tour="add-scene" style={{ display: 'inline-flex', gap: '12px' }}>
         <button onClick={() => setShowSceneModal(true)} style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>+ Scene</button>
         <button onClick={() => setShowCharModal(true)} style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>+ Character</button>

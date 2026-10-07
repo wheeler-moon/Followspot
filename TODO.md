@@ -23,6 +23,8 @@ Current version: Beta 0.2.1
 - [x] Caller sheet layout: plain iris/color/time in a labeled strip, When/Notes in a labeled box, tighter spacing
 - [x] Prints: "Page X of Y" at the bottom of every sheet; each spot's first color is highlighted like a color change; no purple left on Spot Notes
 - [x] First-run tips: the first time each screen shows a control, a popover points at it and explains it (Next / Skip tips). Text lives in `src/tips.js`; Help → Show Tips Again brings them back
+- [x] Cue list: "Renumber T·" button renumbers spot cue (T·) numbers 1, 2, 3… top to bottom without changing cue order, scenes or LQs
+- [x] Prints: T· numbers in small gray under each LQ on spot and caller sheets, with a "T· numbers" switch on the Print page (on by default)
 
 
 **Before release:**
