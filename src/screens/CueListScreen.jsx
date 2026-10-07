@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AppHeader from '../components/AppHeader';
 import RichLine from '../components/RichLine';
+import { cueFieldSettings } from '../cueFields';
 const { ipcRenderer } = window.require('electron');
 const GEL_COLORS = {
   // ROSCO ROSCOLUX
@@ -294,7 +295,7 @@ function IrisStrip({ sizes, selected, onPick }) {
   );
 }
 
-function SpotCueCell({ spotCue, spot, cue, characters, colorSlots, onUpdate, onNewCustomCharacter, lqNumber, onDragStart, onDragOver, onDragLeave, onDrop, isDragTarget, onDoubleClick, customIrisSizes, customActions }) {
+function SpotCueCell({ spotCue, spot, cue, fieldsShown = {}, characters, colorSlots, onUpdate, onNewCustomCharacter, lqNumber, onDragStart, onDragOver, onDragLeave, onDrop, isDragTarget, onDoubleClick, customIrisSizes, customActions }) {
   const [showActionPicker, setShowActionPicker] = useState(false);
   const [hoveredFrame, setHoveredFrame] = useState(null);
   const [showCustomTime, setShowCustomTime] = useState(false);
@@ -445,7 +446,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
             }
             setShowActionPicker(v => !v);
           }}
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '32px', boxSizing: 'border-box', padding: '0 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer', flex: '1 1 0', minWidth: 0 }}>
+            style={{ display: fieldsShown.action === false ? 'none' : 'flex', alignItems: 'center', gap: '6px', height: '32px', boxSizing: 'border-box', padding: '0 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer', flex: '1 1 0', minWidth: 0 }}>
             {spotCue.action ? (
               <>
                 {(() => {
@@ -475,7 +476,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
             onBlur={e => commitCustomChar(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') commitCustomChar(e.target.value); }}
             placeholder="Type character name..."
-            style={{ ...selectStyle, flex: '1 1 0', minWidth: 0, height: '32px', fontSize: '14px', fontWeight: '600', borderRadius: '6px', padding: '0 8px', color: '#FFFFFF' }}
+            style={{ ...selectStyle, display: fieldsShown.character === false ? 'none' : undefined, flex: '1 1 0', minWidth: 0, height: '32px', fontSize: '14px', fontWeight: '600', borderRadius: '6px', padding: '0 8px', color: '#FFFFFF' }}
           />
         ) : (
           <select value={spotCue.character_id || ''} onChange={e => {
@@ -487,7 +488,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
               onUpdate(spotCue.id, 'character_id', e.target.value ? parseInt(e.target.value) : null);
               onUpdate(spotCue.id, 'custom_character', null);
             }
-          }} style={{ ...selectStyle, flex: '1 1 0', minWidth: 0, height: '32px', fontSize: '14px', fontWeight: '600', borderRadius: '6px', padding: '0 8px', color: (spotCue.character_id || spotCue.custom_character) ? '#FFFFFF' : 'rgba(255,255,255,0.28)' }}>
+          }} style={{ ...selectStyle, display: fieldsShown.character === false ? 'none' : undefined, flex: '1 1 0', minWidth: 0, height: '32px', fontSize: '14px', fontWeight: '600', borderRadius: '6px', padding: '0 8px', color: (spotCue.character_id || spotCue.custom_character) ? '#FFFFFF' : 'rgba(255,255,255,0.28)' }}>
             <option value="">{spotCue.custom_character || 'Character...'}</option>
             {characters.map(c => <option key={c.id} value={c.id}>{c.name}{c.actor_name ? ' (' + c.actor_name + ')' : ''}</option>)}
             <option value="custom">+ Type custom name...</option>
@@ -497,11 +498,11 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
 
         <div style={{ display: 'flex', gap: '4px', marginBottom: '5px' }}>
           <select value={spotCue.intensity || ''} onChange={e => onUpdate(spotCue.id, 'intensity', e.target.value)}
-            style={{ ...selectStyle, flex: 1, color: spotCue.intensity ? '#FFFFFF' : 'rgba(255,255,255,0.28)' }}>
+            style={{ ...selectStyle, display: fieldsShown.intensity === false ? 'none' : undefined, flex: 1, color: spotCue.intensity ? '#FFFFFF' : 'rgba(255,255,255,0.28)' }}>
             <option value="">Int...</option>
             {INTENSITIES.map(i => <option key={i} value={i}>{i}</option>)}
           </select>
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, display: fieldsShown.time === false ? 'none' : undefined }}>
             {showCustomTime ? (
               <input autoFocus value={customTimeVal} onChange={e => setCustomTimeVal(e.target.value)}
                 onBlur={() => { onUpdate(spotCue.id, 'fade_time', customTimeVal); setShowCustomTime(false); }}
@@ -519,10 +520,10 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
         </div>
 
 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '3px', gap: '8px' }}>
-          <IrisStrip sizes={[{label:'FB',value:'Full Body'},{label:'3/4',value:'3/4 Body'},{label:'1/2',value:'1/2 Body'},{label:'H&S',value:'Head & Shoulders'},{label:'Hd',value:'Head'}, ...(customIrisSizes || [])]}
+          {fieldsShown.iris === false ? <div style={{ flex: 1 }} /> : <IrisStrip sizes={[{label:'FB',value:'Full Body'},{label:'3/4',value:'3/4 Body'},{label:'1/2',value:'1/2 Body'},{label:'H&S',value:'Head & Shoulders'},{label:'Hd',value:'Head'}, ...(customIrisSizes || [])]}
             selected={spotCue.frame_size}
-            onPick={value => onUpdate(spotCue.id, 'frame_size', spotCue.frame_size === value ? '' : value)} />
-          <div style={{ display: 'flex', gap: '3px', alignItems: 'center', flexShrink: 0 }}>
+            onPick={value => onUpdate(spotCue.id, 'frame_size', spotCue.frame_size === value ? '' : value)} />}
+          <div style={{ display: fieldsShown.color === false ? 'none' : 'flex', gap: '3px', alignItems: 'center', flexShrink: 0 }}>
             <div
               onClick={() => {
                 const isNC = spotCue.no_color === 1;
@@ -571,7 +572,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '4px', alignItems: 'center', marginBottom: '3px' }}>
+        <div style={{ display: fieldsShown.when === false ? 'none' : 'flex', gap: '4px', alignItems: 'center', marginBottom: '3px' }}>
           <div style={{ flex: 1, minWidth: 0, display: 'flex', gap: '4px', alignItems: 'center', borderRadius: '6px', ...lineHighlightStyle(spotCue.when_highlight) }}>
           {withLQ && (
             <span style={{ fontSize: '12px', color: '#FFFFFF', whiteSpace: 'nowrap', padding: '2px 0' }}>
@@ -596,7 +597,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
         <RichLine value={spotCue.notes}
           onSave={html => onUpdate(spotCue.id, 'notes', html)}
           placeholder="Notes..."
-          style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', borderRadius: '6px', color: 'rgba(255,255,255,0.62)', padding: '2px 0', fontSize: '12px', ...lineHighlightStyle(spotCue.notes_highlight) }} />
+          style={{ display: fieldsShown.notes === false ? 'none' : undefined, borderBottom: '1px solid rgba(255,255,255,0.06)', borderRadius: '6px', color: 'rgba(255,255,255,0.62)', padding: '2px 0', fontSize: '12px', ...lineHighlightStyle(spotCue.notes_highlight) }} />
       </div>
     </td>
   );
@@ -630,7 +631,7 @@ function InsertButton({ onInsert }) {
   );
 }
 
-function CueRow({ cue, isLastCue, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onNewCustomCharacter, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal, onCueDoubleClick, customIrisSizes, customActions }) {
+function CueRow({ cue, isLastCue, fieldsShown, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onNewCustomCharacter, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal, onCueDoubleClick, customIrisSizes, customActions }) {
   const [editingLQ, setEditingLQ] = useState(false);
   const [lqVal, setLqVal] = useState(cue.lq_number || '');
 
@@ -675,7 +676,7 @@ function CueRow({ cue, isLastCue, spots, spotCues, characters, colorSlotsBySpot,
           const sc = spotCues.find(sc => sc.spot_id === spot.id && sc.cue_id === cue.id);
           const slots = colorSlotsBySpot[spot.id] || [];
           return (
-            <SpotCueCell key={spot.id} spotCue={sc} spot={spot} cue={cue}
+            <SpotCueCell key={spot.id} spotCue={sc} spot={spot} cue={cue} fieldsShown={fieldsShown}
               characters={characters} colorSlots={slots}
               onUpdate={onUpdateSpotCue} onNewCustomCharacter={onNewCustomCharacter} lqNumber={lqVal}
               onDragStart={() => setDragSource({ spotCue: sc, spot, cue })}
@@ -749,6 +750,8 @@ export default function CueListScreen({ show, navigate }) {
     setContinuedScene(current);
   };
   const [customIrisSizes, setCustomIrisSizes] = useState([]);
+  // Which cue fields this show shows on the cue list (Show Settings > Cue Settings)
+  const [listFields, setListFields] = useState({});
   const [customActions, setCustomActions] = useState([]);
   const [dragSource, setDragSource] = useState(null);
   const [dragTarget, setDragTarget] = useState(null);
@@ -775,6 +778,7 @@ export default function CueListScreen({ show, navigate }) {
     setCustomIrisSizes(customSizes);
     const customActionData = updatedShow?.custom_actions ? JSON.parse(updatedShow.custom_actions) : [];
     setCustomActions(customActionData);
+    setListFields(Object.fromEntries(Object.entries(cueFieldSettings(updatedShow?.cue_fields)).map(([k, v]) => [k, v.list])));
     if (safe.scenes && safe.scenes.length > 0) {
       const savedScene = sessionStorage.getItem(`cueScene_${show.id}`);
       if (savedScene) {
@@ -1026,7 +1030,7 @@ const groupedCues = () => {
                     </td>
                   </tr>
                   {group.cues.map((cue, cueIndex) => (
-                    <CueRow key={cue.id} cue={cue}
+                    <CueRow key={cue.id} cue={cue} fieldsShown={listFields}
                       isLastCue={groupIndex === groups.length - 1 && cueIndex === group.cues.length - 1}
                       spots={data?.spots || []}
                       spotCues={data?.spotCues || []} characters={characters}

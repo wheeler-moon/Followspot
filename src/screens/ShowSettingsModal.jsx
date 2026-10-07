@@ -6,12 +6,14 @@ import IrisSizesPanel from './settings/IrisSizesPanel';
 import CustomActionsPanel from './settings/CustomActionsPanel';
 import EosControlPanel from './settings/EosControlPanel';
 import IpadSyncPanel from './settings/IpadSyncPanel';
+import CueSettingsPanel from './settings/CueSettingsPanel';
 const { ipcRenderer } = window.require('electron');
 
 const SECTIONS = [
   { id: 'show-info', label: 'Show Info' },
   { id: 'spot-settings', label: 'Spot Settings' },
   { id: 'spot-order', label: 'Spot Order' },
+  { id: 'cue-settings', label: 'Cue Settings' },
   { id: 'iris-sizes', label: 'Iris Sizes' },
   { id: 'custom-actions', label: 'Custom Actions' },
   { id: 'eos-control', label: 'EOS Control' },
@@ -55,6 +57,7 @@ export default function ShowSettingsModal({ show, onClose, onShowUpdate, initial
             {activeSection === 'show-info' && <ShowInfoPanel show={show} onShowUpdate={onShowUpdate} onClose={onClose} />}
             {activeSection === 'spot-settings' && <SpotSettingsPanel show={show} />}
             {activeSection === 'spot-order' && <SpotOrderPanel show={show} />}
+            {activeSection === 'cue-settings' && <CueSettingsPanel show={show} />}
             {activeSection === 'iris-sizes' && <IrisSizesPanel show={show} />}
             {activeSection === 'custom-actions' && <CustomActionsPanel show={show} />}
             {activeSection === 'eos-control' && <EosControlPanel />}

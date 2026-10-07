@@ -18,7 +18,7 @@ Current version: Beta 0.2.1
 - [x] Printing: when a spot's color frames change from its previous cue, the color frame box is highlighted yellow on the printed sheets
 - [ ] Update the spot fixture options list
 - [x] New built-in action "Dump & Restore", listed right after "Up & Out"
-- [ ] Show Settings: new "Cue Settings" tab listing every cue field (action, character, intensity, iris, frames, time, When, Notes…) with two checkboxes each, "Show on cue list" and "Show on print" (all checked by default). Unchecking hides the field; no data is deleted
+- [x] Show Settings: new "Cue Settings" tab listing every cue field (action, character, intensity, iris, frames, time, When, Notes…) with two checkboxes each, "Show on cue list" and "Show on print" (all checked by default). Unchecking hides the field; no data is deleted
 - [x] Show dashboard: "iPad Sync" button (will later change color when syncing) that opens Show Settings straight to a new "iPad Sync" tab; for now the tab says "iPad app coming soon"
 
 

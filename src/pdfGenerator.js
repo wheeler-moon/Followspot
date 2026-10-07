@@ -3,6 +3,15 @@ const fs = require('fs');
 const path = require('path');
 const { app } = require('electron');
 const { safeRich, escapeText } = require('./richText');
+const { cueFieldSettings } = require('./cueFields');
+
+// Style rules that hide the cue fields a show has unticked under "Show on print"
+function hiddenFieldCSS(cueFields, selectors) {
+  const f = cueFieldSettings(cueFields);
+  return Object.entries(selectors)
+    .filter(([key]) => key === 'intIris' ? (!f.intensity.print && !f.iris.print) : f[key] && !f[key].print)
+    .map(([, sel]) => `${sel} { display: none !important; }`).join('\n');
+}
 
 // Background for a highlighted When or Notes line
 function lineHighlightCSS(color) {
@@ -77,7 +86,7 @@ function colorChangeCues(orderedCues, spotCuesForSpot) {
 }
 const COLOR_CHANGE_BG = '#FFE45C'; // yellow highlighter
 
-function buildSpotSheetHTML({ show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, hideOff, hideTracked, rangeStart, rangeEnd, customActions }) {
+function buildSpotSheetHTML({ cueFields, show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, hideOff, hideTracked, rangeStart, rangeEnd, customActions }) {
   const isLandscape = false;
   let logoHTML = '<div class="header-logo-placeholder">LOGO</div>';
   if (show.logo_path) {
@@ -186,8 +195,8 @@ const sceneOrderMap = {};
                 </td>
                 <td class="char-cell">${char ? char.name : sc.custom_character ? sc.custom_character : ''}</td>
                 <td class="int-iris-cell">
-                  <div style="font-size:11pt;font-weight:700;">${sc.intensity || ''}</div>
-                  <div style="font-size:10pt;">${sc.frame_size || ''}</div>
+                  <div class="int-val" style="font-size:11pt;font-weight:700;">${sc.intensity || ''}</div>
+                  <div class="iris-val" style="font-size:10pt;">${sc.frame_size || ''}</div>
                 </td>
                 <td class="frames-cell"${colorChanged.has(cue.id) ? ` style="background:${COLOR_CHANGE_BG}"` : ''}>${sc.no_color ? 'NC' : (activeFrames || '')}</td>
                 <td class="time-cell">${sc.fade_time ? sc.fade_time + 's' : ''}</td>
@@ -210,8 +219,8 @@ const sceneOrderMap = {};
         </td>
         <td class="char-cell">${char ? char.name : sc.custom_character ? sc.custom_character : '—'}</td>
         <td class="int-iris-cell">
-          <div style="font-size:11pt;font-weight:700;color:#1a1a1a;">${sc.intensity || '—'}</div>
-          <div style="font-size:10pt;color:#333;">${sc.frame_size || '—'}</div>
+          <div class="int-val" style="font-size:11pt;font-weight:700;color:#1a1a1a;">${sc.intensity || '—'}</div>
+          <div class="iris-val" style="font-size:10pt;color:#333;">${sc.frame_size || '—'}</div>
         </td>
         <td class="frames-cell"${colorChanged.has(cue.id) ? ` style="background:${COLOR_CHANGE_BG}"` : ''}>${sc.no_color ? 'NC' : (activeFrames || '—')}</td>
         <td class="time-cell">${sc.fade_time ? sc.fade_time + 's' : '—'}</td>
@@ -510,6 +519,12 @@ const sceneOrderMap = {};
   }
 
   .empty { color: #ccc; }
+  ${hiddenFieldCSS(cueFields, {
+    action: '.action-cell, th.col-action', character: '.char-cell, th.col-char',
+    intensity: '.int-val', iris: '.iris-val', intIris: '.int-iris-cell, th.col-intiris',
+    color: '.frames-cell, th.col-color', time: '.time-cell, th.col-time',
+    when: '.when-cell, th.col-when', notes: '.notes-cell, th.col-notes',
+  })}
 </style>
 </head>
 <body>
@@ -550,13 +565,13 @@ const sceneOrderMap = {};
     <thead>
 <tr>
         <th>LQ</th>
-        <th>Action</th>
-        <th>Character</th>
-        <th>Int / Iris</th>
-        <th>Color</th>
-        <th>Time</th>
-        <th>When</th>
-        <th>Notes</th>
+        <th class="col-action">Action</th>
+        <th class="col-char">Character</th>
+        <th class="col-intiris">${(() => { const f = cueFieldSettings(cueFields); return f.intensity.print && f.iris.print ? 'Int / Iris' : f.intensity.print ? 'Int' : 'Iris'; })()}</th>
+        <th class="col-color">Color</th>
+        <th class="col-time">Time</th>
+        <th class="col-when">When</th>
+        <th class="col-notes">Notes</th>
       </tr>
     </thead>
     <tbody>
@@ -567,7 +582,7 @@ const sceneOrderMap = {};
 </html>`;
 }
 
-function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions }) {
+function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions }) {
   let logoBase64 = '';
   if (show.logo_path) {
     try {
@@ -984,6 +999,12 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
   .gel-label { font-size: 6pt; color: #aaa; font-weight: 700; }
   .gel-num { font-size: 8pt; font-weight: 800; color: #1a1a1a; }
   .gel-name { font-size: 6pt; color: #777; text-align: center; white-space: nowrap; overflow: hidden; max-width: 44px; text-overflow: ellipsis; }
+  ${hiddenFieldCSS(cueFields, {
+    action: '.spot-cell .action-inner > svg, .spot-cell .action-inner > img, .spot-cell .action-name',
+    character: '.spot-cell .char-name', intensity: '.spot-cell .intensity-badge',
+    iris: '.spot-cell .detail-badge.iris', color: '.spot-cell .detail-badge.color', time: '.spot-cell .detail-badge.time',
+    when: '.spot-cell .when-text', notes: '.spot-cell .notes-text',
+  })}
 </style>
 </head>
 <body>

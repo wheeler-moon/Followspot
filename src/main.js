@@ -137,6 +137,7 @@ function initSchema() {
   try { db.exec("ALTER TABLE shows ADD COLUMN iris_sizes TEXT DEFAULT NULL"); } catch(e) {}
   try { db.exec('ALTER TABLE spots ADD COLUMN display_order INTEGER DEFAULT NULL'); } catch(e) {}
   try { db.exec('ALTER TABLE shows ADD COLUMN custom_actions TEXT DEFAULT NULL'); } catch(e) {}
+  try { db.exec('ALTER TABLE shows ADD COLUMN cue_fields TEXT DEFAULT NULL'); } catch(e) {} // hidden cue fields, see src/cueFields.js
   try { db.exec('ALTER TABLE spot_cues ADD COLUMN when_highlight TEXT DEFAULT NULL'); } catch(e) {}
   try { db.exec('ALTER TABLE characters ADD COLUMN print_on_sheet INTEGER DEFAULT 1'); } catch(e) {}
   try { db.exec('ALTER TABLE spot_cues ADD COLUMN notes_highlight TEXT DEFAULT NULL'); } catch(e) {}
@@ -581,7 +582,7 @@ function buildSheet(kind, opts) {
     const spot = spots.find(s => s.id === opts.spotId);
     return {
       html: buildSpotSheetHTML({
-        show, spot, colorSlots: slotsFor(spot.id), cues, characters, scenes, label, customActions,
+        cueFields: show.cue_fields, show, spot, colorSlots: slotsFor(spot.id), cues, characters, scenes, label, customActions,
         spotCues: database.prepare('SELECT * FROM spot_cues WHERE spot_id = ?').all(spot.id),
         numSpots: spots.length, hideOff: !!opts.hideOff, hideTracked: !!opts.hideTracked,
         rangeStart: opts.rangeStart ?? null, rangeEnd: opts.rangeEnd ?? null,
@@ -597,7 +598,7 @@ function buildSheet(kind, opts) {
       spotCuesBySpot[spot.id] = database.prepare('SELECT * FROM spot_cues WHERE spot_id = ?').all(spot.id);
     }
     return {
-      html: buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions }),
+      html: buildCallerSheetHTML({ cueFields: show.cue_fields, show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions }),
       landscape, margin: PAGE_MARGINS.caller,
       fileName: `${show.title} - Caller Sheet - ${labelPart}.pdf`,
     };
@@ -853,7 +854,7 @@ ipcMain.on('get-app-icon', (event) => {
           form.programmer || '', form.logo_path || '', showId);
       } else {
         // Field-by-field update
-        const allowed = ['title','theatre','producer','designer','associate_ld','assistant_ld','production_electrician','programmer','logo_path','iris_sizes','custom_actions'];
+        const allowed = ['title','theatre','producer','designer','associate_ld','assistant_ld','production_electrician','programmer','logo_path','iris_sizes','custom_actions','cue_fields'];
         for (const [key, value] of Object.entries(fields)) {
           if (allowed.includes(key)) {
             database.prepare(`UPDATE shows SET ${key} = ? WHERE id = ?`).run(value, showId);
