@@ -5,7 +5,6 @@ const FIXTURES = [
   'Strong Super Trouper',
   'Strong Gladiator',
   'Lycian 1290',
-  'Lycian Starklite',
   'Robert Juliat Lancelot',
   'Robert Juliat Merlin',
   'Moving Light',
