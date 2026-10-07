@@ -3,7 +3,7 @@ import AppHeader from '../components/AppHeader';
 import CopyColorsSelect from '../components/CopyColorsSelect';
 const { ipcRenderer } = window.require('electron');
 
-const FIXTURES = ['Strong Super Trouper','Strong Gladiator','Lycian 1290','Lycian Starklite','Robert Juliat Lancelot','Robert Juliat Merlin','Altman Comet','Robe BMFL','Robe Esprite','High End SolaSpot','Moving Light - Other','Other'];
+import { FIXTURES } from '../fixtures';
 // Picked images are shown from their file data (a plain file path doesn't load in the dev window)
 const imageSrc = (filePath) => {
   try {

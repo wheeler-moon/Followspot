@@ -3,7 +3,7 @@ import AppHeader from '../components/AppHeader';
 import SwapSpotsDialog from '../components/SwapSpotsDialog';
 const { ipcRenderer } = window.require('electron');
 
-const FIXTURES = ['Strong Super Trouper','Strong Gladiator','Lycian 1290','Lycian Starklite','Robert Juliat Lancelot','Robert Juliat Merlin','Altman Comet','Robe BMFL','Robe Esprite','High End SolaSpot','Moving Light','Other'];
+import { FIXTURES } from '../fixtures';
 
 const inputStyle = {
   width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',

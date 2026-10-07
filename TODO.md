@@ -16,7 +16,7 @@ Current version: Beta 0.2.1
 - [x] Permanent color: in Spot Settings and New Show, a "Permanent" checkbox per spot; when checked, a gel picker (from the gel list) appears for the gel that always stays in the fixture. Copyable between spots (Copy colors from…) and shown on the printed Color Load sheet
 - [x] Printing: a cue never splits across pages; if it doesn't fit, the whole cue moves to the next page
 - [x] Printing: when a spot's color frames change from its previous cue, the color frame box is highlighted yellow on the printed sheets
-- [ ] Update the spot fixture options list
+- [x] Update the spot fixture options list
 - [x] New built-in action "Dump & Restore", listed right after "Up & Out"
 - [x] Show Settings: new "Cue Settings" tab listing every cue field (action, character, intensity, iris, frames, time, When, Notes…) with two checkboxes each, "Show on cue list" and "Show on print" (all checked by default). Unchecking hides the field; no data is deleted
 - [x] Show dashboard: "iPad Sync" button (will later change color when syncing) that opens Show Settings straight to a new "iPad Sync" tab; for now the tab says "iPad app coming soon"
@@ -51,7 +51,7 @@ Current version: Beta 0.2.1
 - [ ] Finder preview of `.spotplot` files shows that show's logo (the small file icon stays the SpotPlot logo). Needs a Quick Look **Preview** extension (not a Thumbnail extension, which would replace the icon): a small Swift `.appex` that reads the file's JSON, decodes the embedded logo from `images[show.logo_path]`, and shows it, falling back to the SpotPlot icon. Requires installing Xcode, building the appex as part of `npm run make`, and embedding it in `SpotPlot.app/Contents/PlugIns` before signing/notarizing (app extensions must be sandboxed). Test from a signed, installed build.
 - [x] Bold/italic/underline in when/notes fields (Cmd+B, Cmd+I, Cmd+U)
 - [ ] Onboarding walkthrough for new users (tooltip-style popups on first launch)
-- [ ] Update default fixture types list in Spot Settings
+- [x] Update default fixture types list in Spot Settings
 - [x] Cue list: make "w/ LQ" a toggle that stays linked to the cue's LQ number, so renumbering the cue updates it automatically (no re-pressing the button)
 - [x] Cue list: don't show the hover "insert cue" button on the last cue, since the permanent add button at the bottom covers it
 - [x] Cue list: iris sizes and gel frames get crowded with custom iris sizes and as spots are added; make that area less cramped
