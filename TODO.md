@@ -12,7 +12,15 @@ Current version: Beta 0.2.1
 - Installer: proper license window (formatted agreement, standard Agree/Disagree buttons and message)
 - Build: notarizes once with automatic retries
 
-**Still to decide:** anything else that should be in 0.3.0 before release.
+**Also in 0.3.0 (to build):**
+- [ ] Permanent color: in Spot Settings and New Show, a "Permanent" checkbox per spot; when checked, a gel picker (from the gel list) appears for the gel that always stays in the fixture. Copyable between spots (Copy colors from…) and shown on the printed Color Load sheet
+- [ ] Printing: a cue never splits across pages; if it doesn't fit, the whole cue moves to the next page
+- [ ] Printing: when a spot's color frames change from its previous cue, the color frame box is highlighted yellow on the printed sheets
+- [ ] Update the spot fixture options list
+- [ ] New built-in action "Dump & Restore", listed right after "Up & Out"
+- [ ] Show Settings: new "Cue Settings" tab listing every cue field (action, character, intensity, iris, frames, time, When, Notes…) with two checkboxes each, "Show on cue list" and "Show on print" (all checked by default). Unchecking hides the field; no data is deleted
+- [ ] Show dashboard: "iPad Sync" button (will later change color when syncing) that opens Show Settings straight to a new "iPad Sync" tab; for now the tab says "iPad app coming soon"
+
 
 **Before release:**
 - [ ] Bump version to 0.3.0 in `package.json` and `src/screens/HomeScreen.jsx` ("Beta 0.3.0")
