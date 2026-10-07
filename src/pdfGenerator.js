@@ -679,7 +679,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
           <td class="spot-cell" style="${cellStyle}position:relative;">
             ${isIgnored ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14pt;font-weight:900;color:#1a1a1a;letter-spacing:0.2em;z-index:2;">— IGNORE —</div>` : ''}
             <div style="${isIgnored ? 'opacity:0.2;' : ''}">
-              <div class="action-inner" style="margin-bottom:3px;align-items:center;">
+              <div class="action-inner" style="margin-bottom:0;align-items:center;">
                 ${getActionIconHTML(sc.action, 30, customActions)}
                 <span class="action-name">${sc.action || '—'}</span>
                 <span class="char-name" style="margin-left:4px;">${char ? char.name : sc.custom_character ? sc.custom_character : '—'}</span>
@@ -843,7 +843,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
     width: 56px;
     min-width: 56px;
     max-width: 56px;
-    padding: 8px 4px;
+    padding: 5px 4px;
     vertical-align: middle;
     text-align: center;
     border-right: 2px solid #1a1a1a;
@@ -852,7 +852,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
   }
 
   .spot-cell {
-    padding: 8px 10px;
+    padding: 5px 8px;
     vertical-align: top;
     border-left: 2px solid #ddd;
   }
@@ -940,7 +940,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
      Only a color change gets a fill, so it pops. */
   .cue-details {
     display: inline-flex;
-    margin-top: 6px;
+    margin-top: 4px;
     background: #fff;
     border: 1px solid #bdbdbd;
     border-radius: 6px;
@@ -951,7 +951,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
     display: flex;
     align-items: baseline;
     gap: 5px;
-    padding: 2px 9px;
+    padding: 1px 8px;
     font-size: 10.5pt;
     font-weight: 800;
     color: #1a1a1a;
@@ -961,7 +961,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
 
   /* When / Notes: one white box, a labeled row each */
   .say-box {
-    margin-top: 6px;
+    margin-top: 4px;
     background: #fff;
     border: 1px solid #bdbdbd;
     border-radius: 6px;
@@ -972,7 +972,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
     display: grid;
     grid-template-columns: 36px 1fr;
     align-items: baseline;
-    padding: 3px 9px;
+    padding: 1px 8px;
     font-size: 10pt;
     border-radius: 0 !important;
   }
@@ -1637,6 +1637,11 @@ async function closeBrowser() {
   if (running) await running.close().catch(() => {});
 }
 
+// "Page 1 of 31" at the bottom of every printed page (Chrome fills in the numbers)
+const PAGE_FOOTER = `<div style="width:100%;text-align:center;font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;font-size:7.5pt;color:#888;">
+  Page <span class="pageNumber"></span> of <span class="totalPages"></span>
+</div>`;
+
 // Renders a sheet's HTML as a Letter-size PDF and returns the bytes
 async function renderPDFBuffer(html, { landscape, margin }) {
   const browser = await getBrowser();
@@ -1648,6 +1653,9 @@ async function renderPDFBuffer(html, { landscape, margin }) {
       height: landscape ? '8.5in' : '11in',
       printBackground: true,
       margin,
+      displayHeaderFooter: true,
+      headerTemplate: '<span></span>',
+      footerTemplate: PAGE_FOOTER,
     }));
   } finally {
     await page.close().catch(() => {});
