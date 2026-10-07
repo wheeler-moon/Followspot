@@ -1486,13 +1486,13 @@ function buildSpotNotesHTML({ show, spots, cues, scenes, spotCues, characters, l
   .print-label { font-size: 13pt; font-weight: 800; }
   .print-date { font-size: 8pt; color: #888; margin-top: 2px; }
   .spot-section { margin-bottom: 24px; }
-  .spot-header { font-size: 13pt; font-weight: 800; color: #534AB7; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 0; border-bottom: 2px solid #534AB7; margin-bottom: 10px; }
+  .spot-header { font-size: 11pt; font-weight: 800; color: #fff; background: #1a1a1a; text-transform: uppercase; letter-spacing: 0.06em; padding: 6px 10px; margin-bottom: 10px; }
   .note-card { padding: 12px 14px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 8px; }
   .note-card.checked { background: #f9f9f9; opacity: 0.7; }
   .note-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
   .lq { font-size: 14pt; font-weight: 800; }
   .track { font-size: 9pt; color: #888; }
-  .scene { font-size: 9pt; font-weight: 700; color: #534AB7; }
+  .scene { font-size: 9pt; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.04em; }
   .action { font-size: 9pt; color: #555; background: #f0f0f0; padding: 1px 6px; border-radius: 4px; }
   .char { font-size: 10pt; font-weight: 700; }
   .done-badge { font-size: 8pt; font-weight: 800; color: #1D9E75; background: #e8f8f0; padding: 1px 6px; border-radius: 4px; margin-left: auto; }
