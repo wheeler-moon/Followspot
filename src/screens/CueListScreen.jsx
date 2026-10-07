@@ -764,10 +764,14 @@ export default function CueListScreen({ show, navigate }) {
   const undoStackRef = useRef([]);
   const [popupNote, setPopupNote] = useState('');
 
+  // False until the cues have been read once, so the "No cues yet" screen never flashes while loading
+  const [loaded, setLoaded] = useState(false);
+
   const load = () => {
     const result = ipcRenderer.sendSync('db-get-cue-list', show.id);
     const safe = result && typeof result === 'object' ? result : { spots: [], scenes: [], cues: [], spotCues: [] };
     setData(safe);
+    setLoaded(true);
     const chars = ipcRenderer.sendSync('db-get-characters', show.id);
     setCharacters(Array.isArray(chars) ? chars : []);
     const slotsBySpot = {};
@@ -1020,7 +1024,11 @@ const groupedCues = () => {
           sessionStorage.setItem(`cueScene_${show.id}`, selectedSceneId);
         }
       }} style={{ flex: 1, overflowY: 'auto', overflowX: 'auto' }}>
-        {(data?.cues || []).length === 0 ? (
+        {!loaded ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60%', color: 'rgba(255,255,255,0.45)', fontSize: '14px' }}>
+            Loading cues…
+          </div>
+        ) : (data?.cues || []).length === 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60%', gap: '12px', color: 'rgba(255,255,255,0.28)' }}>
             <div style={{ fontSize: '36px' }}>✦</div>
             <div style={{ fontSize: '15px' }}>No cues yet</div>
