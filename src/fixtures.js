@@ -7,6 +7,9 @@ const FIXTURES = [
   'Lycian 1290',
   'Lycian Starklite',
   'Robert Juliat',
+  'Ground Control',
+  'Robo Spot',
+  'Source Four',
   'Moving Light',
   'Other',
 ];
