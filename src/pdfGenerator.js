@@ -69,7 +69,7 @@ function getActionIconHTML(action, size, customActions) {
 }
 
 // Cue ids where a spot's color (frames or NC) differs from the last color it had.
-// Off cues and cues with no color set are skipped; the spot's first color isn't a change.
+// Off cues and cues with no color set are skipped; the spot's first color is highlighted too.
 function colorChangeCues(orderedCues, spotCuesForSpot) {
   const changed = new Set();
   let last = null;
@@ -79,7 +79,7 @@ function colorChangeCues(orderedCues, spotCuesForSpot) {
     const frames = (sc.active_frames || '').split(',').filter(Boolean).sort().join(',');
     const color = sc.no_color ? 'NC' : frames;
     if (!color) continue;
-    if (last !== null && color !== last) changed.add(cue.id);
+    if (color !== last) changed.add(cue.id); // the spot's first color counts as a change too
     last = color;
   }
   return changed;
