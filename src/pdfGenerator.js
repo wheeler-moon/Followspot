@@ -37,6 +37,7 @@ function actionIconSVG(action, size = 28) {
     'Iris/Fade Down': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><circle cx="16" cy="14" r="9" fill="none" stroke="#534AB7" stroke-width="2"/><polygon points="16,28 22,18 10,18" fill="#A32D2D"/></svg>`,
     'Iris/Fade Out': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><circle cx="16" cy="16" r="9" fill="none" stroke="#534AB7" stroke-width="2"/><line x1="9" y1="16" x2="23" y2="16" stroke="#A32D2D" stroke-width="2"/><polygon points="11,12 7,16 11,20" fill="#A32D2D"/><polygon points="21,12 25,16 21,20" fill="#A32D2D"/></svg>`,
     'Up & Out': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><polygon points="16,4 22,14 10,14" fill="#3B6D11"/><polygon points="16,28 22,18 10,18" fill="#A32D2D"/></svg>`,
+    'Dump & Restore': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><polygon points="10,4 22,4 16,14" fill="#A32D2D"/><polygon points="16,18 22,28 10,28" fill="#3B6D11"/></svg>`,
     'Bump Color': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><rect x="9" y="8" width="14" height="16" rx="2" fill="none" stroke="#BA7517" stroke-width="1.5"/><rect x="12" y="11" width="3" height="10" fill="#639922"/><rect x="16" y="11" width="3" height="10" fill="#E24B4A"/></svg>`,
     'Roll Color': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><rect x="9" y="8" width="14" height="16" rx="2" fill="none" stroke="#BA7517" stroke-width="1.5"/><rect x="9" y="8" width="3.5" height="16" rx="1" fill="#E24B4A"/><rect x="12.5" y="8" width="3.5" height="16" fill="#EF9F27"/><rect x="16" y="8" width="3.5" height="16" fill="#639922"/><rect x="19.5" y="8" width="3.5" height="16" rx="1" fill="#185FA5"/></svg>`,
     'Ballyhoo': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><path d="M8 16 C8 10 12 6 16 6 C20 6 24 10 24 16 C24 22 20 26 16 26 C12 26 8 22 8 16 Z" fill="none" stroke="#D85A30" stroke-width="2.5"/><path d="M16 6 C16 6 20 16 16 26" fill="none" stroke="#D85A30" stroke-width="2"/><path d="M16 6 C16 6 12 16 16 26" fill="none" stroke="#D85A30" stroke-width="2"/></svg>`,
@@ -57,6 +58,24 @@ function getActionIconHTML(action, size, customActions) {
   }
   return actionIconSVG(action, size);
 }
+
+// Cue ids where a spot's color (frames or NC) differs from the last color it had.
+// Off cues and cues with no color set are skipped; the spot's first color isn't a change.
+function colorChangeCues(orderedCues, spotCuesForSpot) {
+  const changed = new Set();
+  let last = null;
+  for (const cue of orderedCues) {
+    const sc = spotCuesForSpot.find(x => x.cue_id === cue.id);
+    if (!sc || sc.action === 'Off') continue;
+    const frames = (sc.active_frames || '').split(',').filter(Boolean).sort().join(',');
+    const color = sc.no_color ? 'NC' : frames;
+    if (!color) continue;
+    if (last !== null && color !== last) changed.add(cue.id);
+    last = color;
+  }
+  return changed;
+}
+const COLOR_CHANGE_BG = '#FFE45C'; // yellow highlighter
 
 function buildSpotSheetHTML({ show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, hideOff, hideTracked, rangeStart, rangeEnd, customActions }) {
   const isLandscape = false;
@@ -86,6 +105,7 @@ const sceneOrderMap = {};
     if (sceneA !== sceneB) return sceneA - sceneB;
     return a.sort_order - b.sort_order;
   });
+  const colorChanged = colorChangeCues(sortedCues, spotCues.filter(x => x.spot_id === spot.id));
 
   if (rangeStart !== null && rangeStart !== undefined) {
     sortedCues = sortedCues.filter(c => c.track_number >= rangeStart);
@@ -169,7 +189,7 @@ const sceneOrderMap = {};
                   <div style="font-size:11pt;font-weight:700;">${sc.intensity || ''}</div>
                   <div style="font-size:10pt;">${sc.frame_size || ''}</div>
                 </td>
-                <td class="frames-cell">${sc.no_color ? 'NC' : (activeFrames || '')}</td>
+                <td class="frames-cell"${colorChanged.has(cue.id) ? ` style="background:${COLOR_CHANGE_BG}"` : ''}>${sc.no_color ? 'NC' : (activeFrames || '')}</td>
                 <td class="time-cell">${sc.fade_time ? sc.fade_time + 's' : ''}</td>
                 <td class="when-cell" style="${lineHighlightCSS(sc.when_highlight)}">${whenText(sc, cue)}</td>
                 <td class="notes-cell" style="${lineHighlightCSS(sc.notes_highlight)}">${safeRich(sc.notes)}</td>
@@ -193,7 +213,7 @@ const sceneOrderMap = {};
           <div style="font-size:11pt;font-weight:700;color:#1a1a1a;">${sc.intensity || '—'}</div>
           <div style="font-size:10pt;color:#333;">${sc.frame_size || '—'}</div>
         </td>
-        <td class="frames-cell">${sc.no_color ? 'NC' : (activeFrames || '—')}</td>
+        <td class="frames-cell"${colorChanged.has(cue.id) ? ` style="background:${COLOR_CHANGE_BG}"` : ''}>${sc.no_color ? 'NC' : (activeFrames || '—')}</td>
         <td class="time-cell">${sc.fade_time ? sc.fade_time + 's' : '—'}</td>
         <td class="when-cell" style="${lineHighlightCSS(sc.when_highlight)}">${whenText(sc, cue)}</td>
         <td class="notes-cell" style="${lineHighlightCSS(sc.notes_highlight)}">${safeRich(sc.notes)}</td>
@@ -387,6 +407,15 @@ const sceneOrderMap = {};
 
   tbody tr {
     border-bottom: 0.75px solid #e0e0e0;
+    /* A cue never splits across pages: if it doesn't fit, the whole cue moves to the next page */
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Keep a scene title with its first cue */
+  tr.scene-row {
+    break-after: avoid;
+    page-break-after: avoid;
   }
 
   tbody tr:nth-child(even) {
@@ -564,6 +593,8 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
     if (sceneA !== sceneB) return sceneA - sceneB;
     return a.sort_order - b.sort_order;
   });
+  const colorChangedBySpot = {};
+  for (const spot of spots) colorChangedBySpot[spot.id] = colorChangeCues(sortedCues, spotCuesBySpot[spot.id] || []);
 
   const spotsHeaderHTML = spots.map(spot => {
     const slots = (colorSlotsBySpot[spot.id] || []).filter(s => !s.is_permanent);
@@ -640,7 +671,7 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
               </div>
               <div class="cue-details" style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:2px;">
                 ${sc.frame_size ? `<span class="detail-badge iris" style="padding:1px 5px;">${sc.frame_size}</span>` : ''}
-                ${sc.no_color ? `<span class="detail-badge color" style="padding:1px 5px;">NC</span>` : activeFrames ? `<span class="detail-badge color" style="padding:1px 5px;">${activeFrames}</span>` : ''}
+                ${(() => { const hl = colorChangedBySpot[spot.id].has(cue.id) ? `background:${COLOR_CHANGE_BG};` : ''; return sc.no_color ? `<span class="detail-badge color" style="padding:1px 5px;${hl}">NC</span>` : activeFrames ? `<span class="detail-badge color" style="padding:1px 5px;${hl}">${activeFrames}</span>` : ''; })()}
                 ${sc.fade_time ? `<span class="detail-badge time" style="padding:1px 5px;">${sc.fade_time}s</span>` : ''}
               </div>
               ${whenText(sc, cue) ? `<div class="when-text" style="${lineHighlightCSS(sc.when_highlight)}${sc.when_highlight ? 'padding:0 3px;' : ''}">${whenText(sc, cue)}</div>` : ''}
@@ -767,6 +798,12 @@ function buildCallerSheetHTML({ show, spots, colorSlotsBySpot, cues, spotCuesByS
 
   tbody tr {
     border-bottom: 1.5px solid #d0d0d0;
+  }
+
+  /* Keep a scene title with its first cue */
+  tr.scene-row {
+    break-after: avoid;
+    page-break-after: avoid;
   }
 
   tbody tr:nth-child(even) { background: #f8f8f8; }

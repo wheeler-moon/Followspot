@@ -23,7 +23,7 @@ export default function ShowDashboard({ show: initialShow, navigate }) {
   };
   const [stats, setStats] = useState({ cues: 0, scenes: 0, characters: 0, spots: [] });
   const [editing, setEditing] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
+  const [showSettings, setShowSettings] = useState(false); // false, or the settings tab to open
   const [editForm, setEditForm] = useState({});
   const [saving, setSaving] = useState(false);
 
@@ -202,7 +202,15 @@ const startEdit = () => {
                   <div style={{ fontSize: '26px', fontWeight: '700', color: '#FFFFFF', lineHeight: 1.15 }}>{show.title}</div>
                   <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.55)', marginTop: '3px' }}>{show.theatre}{show.producer ? ` · ${show.producer}` : ''}</div>
                 </div>
-                <button onClick={() => setShowSettings(true)}
+                {/* iPad Sync: the dot will turn green while operators' iPads are syncing */}
+                <button onClick={() => setShowSettings('ipad-sync')} title="iPad sync (coming soon)"
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.14)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.10)'; }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer', flexShrink: 0 }}>
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'rgba(255,255,255,0.35)' }} />
+                  iPad Sync
+                </button>
+                <button onClick={() => setShowSettings('show-info')}
                   onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.14)'; }}
                   onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.10)'; }}
                   style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer', flexShrink: 0 }}>
@@ -265,6 +273,7 @@ const startEdit = () => {
       {showSettings && (
         <ShowSettingsModal
           show={show}
+          initialSection={showSettings}
           onClose={() => { setShowSettings(false); reloadStats(); }}
           onShowUpdate={(updated) => { setCurrentShow(updated); }}
         />

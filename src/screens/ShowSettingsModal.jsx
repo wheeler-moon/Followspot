@@ -5,6 +5,7 @@ import SpotOrderPanel from './settings/SpotOrderPanel';
 import IrisSizesPanel from './settings/IrisSizesPanel';
 import CustomActionsPanel from './settings/CustomActionsPanel';
 import EosControlPanel from './settings/EosControlPanel';
+import IpadSyncPanel from './settings/IpadSyncPanel';
 const { ipcRenderer } = window.require('electron');
 
 const SECTIONS = [
@@ -14,10 +15,11 @@ const SECTIONS = [
   { id: 'iris-sizes', label: 'Iris Sizes' },
   { id: 'custom-actions', label: 'Custom Actions' },
   { id: 'eos-control', label: 'EOS Control' },
+  { id: 'ipad-sync', label: 'iPad Sync' },
 ];
 
-export default function ShowSettingsModal({ show, onClose, onShowUpdate }) {
-  const [activeSection, setActiveSection] = useState('show-info');
+export default function ShowSettingsModal({ show, onClose, onShowUpdate, initialSection = 'show-info' }) {
+  const [activeSection, setActiveSection] = useState(initialSection);
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -56,6 +58,7 @@ export default function ShowSettingsModal({ show, onClose, onShowUpdate }) {
             {activeSection === 'iris-sizes' && <IrisSizesPanel show={show} />}
             {activeSection === 'custom-actions' && <CustomActionsPanel show={show} />}
             {activeSection === 'eos-control' && <EosControlPanel />}
+            {activeSection === 'ipad-sync' && <IpadSyncPanel />}
           </div>
         </div>
       </div>
