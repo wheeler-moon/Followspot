@@ -147,15 +147,21 @@ function SpotSetup({ spot, spotNumber, onChange, onRemove, otherSpots, onCopyCol
           </div>
         ))}
       </div>
+      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: '#FFFFFF', margin: '4px 0 8px' }}>
+        <input type="checkbox" checked={!!(spot.perm_on || spot.perm_gel_number || spot.perm_gel_name)} onChange={e => onChange(e.target.checked ? { ...spot, perm_on: true } : { ...spot, perm_on: false, perm_gel_number: '', perm_gel_name: '' })}
+          style={{ width: '15px', height: '15px', accentColor: '#0A84FF', cursor: 'pointer', margin: 0 }} />
+        Permanent color
+        <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)' }}>a gel that always stays in the fixture</span>
+      </label>
+      {(spot.perm_on || spot.perm_gel_number || spot.perm_gel_name) && (
       <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '8px', border: '1px solid rgba(255,214,10,0.25)' }}>
-        <div style={{ fontSize: '10px', color: '#C8A26B', marginBottom: '6px', fontWeight: '600' }}>
-          Permanent frame <span style={{ color: 'rgba(255,255,255,0.45)', fontWeight: '400' }}>(optional)</span>
-        </div>
+        <div style={{ fontSize: '10px', color: '#C8A26B', marginBottom: '6px', fontWeight: '600' }}>Permanent frame</div>
         <GelPicker key={copyCount}
           value={spot.perm_gel_number ? spot.perm_gel_number + ' ' + spot.perm_gel_name : ''}
           onChange={gelData => onChange({ ...spot, perm_gel_number: gelData.gel_number, perm_gel_name: gelData.gel_name })}
           placeholder="Search gel..." />
       </div>
+      )}
     </div>
   );
 }
@@ -177,7 +183,7 @@ export default function NewShowScreen({ navigate }) {
   const copyColors = (targetIdx, sourceIdx) => {
     const source = spots[sourceIdx];
     if (hasGels(spots[targetIdx]) && !window.confirm(`Replace Spot ${targetIdx + 1}'s colors with Spot ${sourceIdx + 1}'s?`)) return false;
-    updateSpot(targetIdx, { ...spots[targetIdx], gels: source.gels.map(g => ({ ...g })), perm_gel_number: source.perm_gel_number, perm_gel_name: source.perm_gel_name });
+    updateSpot(targetIdx, { ...spots[targetIdx], gels: source.gels.map(g => ({ ...g })), perm_on: source.perm_on, perm_gel_number: source.perm_gel_number, perm_gel_name: source.perm_gel_name });
     return true;
   };
 

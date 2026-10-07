@@ -770,6 +770,19 @@ ipcMain.on('get-app-icon', (event) => {
     } catch(e) { event.returnValue = { success: false }; }
   });
 
+  // "Permanent color" checkbox: give a spot a permanent gel slot, or remove it. Returns the spot's slots.
+  ipcMain.on('db-set-perm-slot', (event, { spotId, enabled }) => {
+    try {
+      const database = getDb();
+      const existing = database.prepare('SELECT id FROM color_slots WHERE spot_id = ? AND is_permanent = 1').get(spotId);
+      if (enabled && !existing) {
+        database.prepare("INSERT INTO color_slots (spot_id, slot_number, is_permanent, gel_number, gel_name) VALUES (?, NULL, 1, '', '')").run(spotId);
+      } else if (!enabled && existing) {
+        database.prepare('DELETE FROM color_slots WHERE spot_id = ? AND is_permanent = 1').run(spotId);
+      }
+      event.returnValue = database.prepare('SELECT * FROM color_slots WHERE spot_id = ? ORDER BY is_permanent, slot_number').all(spotId);
+    } catch(e) { console.error('Perm slot error:', e); event.returnValue = null; }
+  });
   ipcMain.on('db-update-color-slot', (event, { slotId, gel_number, gel_name, gelNumber, gelName }) => {
     try {
       const gNum = gel_number !== undefined ? gel_number : gelNumber;

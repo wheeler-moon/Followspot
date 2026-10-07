@@ -44,6 +44,14 @@ The SQLite file lives at `app.getPath('userData')/followspot.db`, with the schem
 
 **Show files** (`.spotplot`): handled in `src/showFile.js`. Export writes every row of the show (`SELECT *`) plus every image it uses (logo, character photos, custom action icons) as base64. Import inserts every column the local table has, so new plain columns need no changes; it remaps ids and links, and restores images into `userData/images`. If you add a **table**, a **foreign-key column** or a new **image path**, update `showFile.js`. Images the user adds are always copied into `userData/images` (`storeImageCopy` in `main.js`).
 
+**Rule: every feature must survive export → import.** Anything a user can set on a show (new columns, settings, images, JSON stored on `shows`) must come back identical after exporting a `.spotplot` file and importing it. After any change that adds or changes show data, run the round-trip test, which works on a copy of the local database and never the real one:
+
+```bash
+ELECTRON_RUN_AS_NODE=1 ./node_modules/.bin/electron scripts/test-show-roundtrip.js
+```
+
+It must print `PASSED`. If you add a new table, a link between rows, or a new kind of image path, update both `src/showFile.js` and the comparisons in `scripts/test-show-roundtrip.js`.
+
 ## Build, signing and release
 
 - `forge.config.js` signs with the owner's Developer ID and notarizes with the keychain profile `AC_PASSWORD`. The `postPackage` hook re-signs, notarizes, staples and writes `make/zip/darwin/arm64/SpotPlot-darwin.zip`. The `postMake` hook rebuilds the DMG with `dmgbuild` (Python) and `dmgbuild_settings.py` to embed the EULA (`LICENSE.rtf`/`LICENSE.txt`).

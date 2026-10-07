@@ -61,7 +61,8 @@ function GelPicker({ value, onChange, placeholder }) {
   );
 }
 
-function SpotCard({ spot, colorSlots, onUpdateSpot, onUpdateGel, onDelete, otherSpots, onCopyColorsFrom }) {
+function SpotCard({ spot, colorSlots, onUpdateSpot, onUpdateGel, onDelete, otherSpots, onCopyColorsFrom, onSetPermanent }) {
+  const [permJustOn, setPermJustOn] = useState(false);
   // Bumped after a copy so the gel pickers re-read their values
   const [copyCount, setCopyCount] = useState(0);
   const isCustomFixture = spot.fixture_type && !FIXTURES.includes(spot.fixture_type);
@@ -137,7 +138,14 @@ function SpotCard({ spot, colorSlots, onUpdateSpot, onUpdateGel, onDelete, other
           </div>
         ))}
       </div>
-      {permSlot && (
+      {/* Checked when the spot has a permanent gel (or the box was just ticked) */}
+      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: '#FFFFFF', margin: '4px 0 8px' }}>
+        <input type="checkbox" checked={!!(permSlot && (permJustOn || permSlot.gel_number || permSlot.gel_name))} onChange={e => { setPermJustOn(e.target.checked); onSetPermanent(spot.id, e.target.checked); }}
+          style={{ width: '15px', height: '15px', accentColor: '#0A84FF', cursor: 'pointer', margin: 0 }} />
+        Permanent color
+        <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)' }}>a gel that always stays in the fixture</span>
+      </label>
+      {permSlot && (permJustOn || permSlot.gel_number || permSlot.gel_name) && (
         <div style={{ background: '#2A2A2A', borderRadius: '8px', padding: '8px', border: '1px solid rgba(255,214,10,0.25)' }}>
           <div style={{ fontSize: '10px', color: '#C8A26B', marginBottom: '6px', fontWeight: '600' }}>Permanent frame</div>
           <GelPicker key={copyCount}
@@ -181,12 +189,23 @@ export default function SpotSettingsPanel({ show }) {
     }));
   };
 
+  const setPermanent = (spotId, enabled) => {
+    const slots = ipcRenderer.sendSync('db-set-perm-slot', { spotId, enabled });
+    if (Array.isArray(slots)) setColorSlots(prev => ({ ...prev, [spotId]: slots }));
+    return slots;
+  };
+
   const copyColors = (targetId, sourceId) => {
-    const target = colorSlots[targetId] || [];
+    let target = colorSlots[targetId] || [];
     const source = colorSlots[sourceId] || [];
+    const sourcePerm = source.find(sl => sl.is_permanent);
     const targetSpot = spots.find(s => s.id === targetId), sourceSpot = spots.find(s => s.id === sourceId);
     if (target.some(sl => sl.gel_number || sl.gel_name) &&
         !window.confirm(`Replace Spot ${targetSpot?.spot_number}'s colors with Spot ${sourceSpot?.spot_number}'s?`)) return false;
+    // The permanent color comes along too: give the target a permanent slot if it needs one
+    if (sourcePerm && (sourcePerm.gel_number || sourcePerm.gel_name) && !target.some(sl => sl.is_permanent)) {
+      target = setPermanent(targetId, true) || target;
+    }
     for (const slot of target) {
       const match = source.find(sl => !!sl.is_permanent === !!slot.is_permanent && (slot.is_permanent || sl.slot_number === slot.slot_number));
       updateGel(targetId, slot.id, { gel_number: match?.gel_number || '', gel_name: match?.gel_name || '' });
@@ -214,6 +233,7 @@ export default function SpotSettingsPanel({ show }) {
           onDelete={() => load()}
           otherSpots={spots.filter(s => s.id !== spot.id).map(s => ({ key: s.id, label: 'Spot ' + s.spot_number }))}
           onCopyColorsFrom={sourceId => copyColors(spot.id, sourceId)}
+          onSetPermanent={setPermanent}
         />
       ))}
             {spots.length < 4 && (

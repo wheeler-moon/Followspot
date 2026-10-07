@@ -13,7 +13,7 @@ Current version: Beta 0.2.1
 - Build: notarizes once with automatic retries
 
 **Also in 0.3.0 (to build):**
-- [ ] Permanent color: in Spot Settings and New Show, a "Permanent" checkbox per spot; when checked, a gel picker (from the gel list) appears for the gel that always stays in the fixture. Copyable between spots (Copy colors from…) and shown on the printed Color Load sheet
+- [x] Permanent color: in Spot Settings and New Show, a "Permanent" checkbox per spot; when checked, a gel picker (from the gel list) appears for the gel that always stays in the fixture. Copyable between spots (Copy colors from…) and shown on the printed Color Load sheet
 - [x] Printing: a cue never splits across pages; if it doesn't fit, the whole cue moves to the next page
 - [x] Printing: when a spot's color frames change from its previous cue, the color frame box is highlighted yellow on the printed sheets
 - [ ] Update the spot fixture options list
