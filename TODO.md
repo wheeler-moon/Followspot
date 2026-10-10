@@ -1,6 +1,6 @@
 # SpotPlot To-Do
 
-Current version: Beta 0.2.1
+Current version: Beta 0.3.0
 
 ## 0.3.0: release to the larger beta group
 
@@ -28,8 +28,8 @@ Current version: Beta 0.2.1
 
 
 **Before release:**
-- [ ] Bump version to 0.3.0 in `package.json` and `src/screens/HomeScreen.jsx` ("Beta 0.3.0")
-- [ ] `npm run make` succeeds (signed + notarized)
+- [x] Bump version to 0.3.0 in `package.json` and `src/screens/HomeScreen.jsx` ("Beta 0.3.0")
+- [x] `npm run make` succeeds (signed + notarized)
 - [ ] Installer license window shows formatted text and Agree / Disagree / Print / Save with the standard message
 - [ ] Click through every screen in the installed app: home, dashboard, cue list (scroll scenes, pinned headers), scenes, characters, spot notes, print (preview + export), show settings
 - [ ] First-run tips show on a fresh install, and existing 0.2.1 users see them once after updating
