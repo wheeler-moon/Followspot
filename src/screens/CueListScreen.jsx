@@ -777,6 +777,25 @@ export default function CueListScreen({ show, navigate }) {
   const scrollRestored = useRef(false);
   useEffect(() => {
     if (!loaded || scrollRestored.current) return;
+    // Spot Notes → Go to Cue: show that cue (in the middle) and outline the note's spot for a moment
+    const jump = JSON.parse(sessionStorage.getItem(`cueJump_${show.id}`) || 'null');
+    if (jump) {
+      sessionStorage.removeItem(`cueJump_${show.id}`);
+      let jumpTries = 0;
+      const show_ = () => {
+        const el = scrollRef.current;
+        const row = el && el.querySelector(`tr[data-cue-id="${jump.cueId}"]`);
+        if (!row && ++jumpTries < 30) return requestAnimationFrame(show_);
+        if (row) {
+          el.scrollTop += row.getBoundingClientRect().top - el.getBoundingClientRect().top - (el.clientHeight - row.offsetHeight) / 2;
+          setMenuCell({ cueId: jump.cueId, spotId: jump.spotId });
+          setTimeout(() => setMenuCell(m => (m && m.cueId === jump.cueId ? null : m)), 1800);
+        }
+        scrollRestored.current = true;
+      };
+      requestAnimationFrame(show_);
+      return;
+    }
     const saved = JSON.parse(sessionStorage.getItem(`cueScroll_${show.id}`) || 'null');
     if (!saved) { scrollRestored.current = true; return; }
     // Put the cue that was at the top back at the same spot (rows above can settle to slightly different

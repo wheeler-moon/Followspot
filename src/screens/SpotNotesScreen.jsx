@@ -26,6 +26,12 @@ export default function SpotNotesScreen({ show, navigate }) {
     }
   }, []);
 
+  // Opens the cue list scrolled to this note's cue, with that spot's box outlined for a moment
+  const goToCue = (sc) => {
+    sessionStorage.setItem(`cueJump_${show.id}`, JSON.stringify({ cueId: sc.cue_id, spotId: sc.spot_id }));
+    navigate('cue-list', show);
+  };
+
   const sceneMap = {};
   scenes.forEach(s => { sceneMap[s.id] = s; });
 
@@ -110,6 +116,10 @@ export default function SpotNotesScreen({ show, navigate }) {
                                 {sc.action && <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginTop: '2px' }}>{sc.action}{sc.character_id && charMap[sc.character_id] ? ' · ' + charMap[sc.character_id].name : ''}</div>}
                               </div>
                               <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                                <button onClick={() => goToCue(sc)} title="Show this cue in the cue list"
+                                  style={{ background: 'transparent', border: 'none', borderRadius: '6px', color: '#409CFF', padding: '3px 6px', fontSize: '11px', fontWeight: '500', cursor: 'pointer' }}>
+                                  Go to Cue ›
+                                </button>
                                 <button onClick={() => toggleChecked(sc.id, isChecked)}
                                   style={{ background: isChecked ? 'rgba(48,209,88,0.16)' : 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: isChecked ? '#30D158' : '#FFFFFF', padding: '3px 8px', fontSize: '11px', fontWeight: '500', cursor: 'pointer' }}>
                                   {isChecked ? '✓ Done' : 'Check off'}

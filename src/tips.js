@@ -88,6 +88,6 @@ export const TIPS = {
   ],
   spotNotes: [
     { id: 'notes-about', target: 'spot-notes', title: 'Notes for operators',
-      body: 'Double-click a cue in the cue list to write a spot note. Check notes off once you\'ve given them, and print them from Print.' },
+      body: 'Double-click a cue in the cue list to write a spot note. Go to Cue jumps to it in the cue list. Check notes off once you\'ve given them, and print them from Print.' },
   ],
 };
