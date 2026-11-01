@@ -152,6 +152,7 @@ function initSchema() {
   try { db.exec('ALTER TABLE cues ADD COLUMN all_spots_note TEXT DEFAULT NULL'); } catch(e) {} // a note for every spot (Spot Notes → All Spots)
   try { db.exec('ALTER TABLE cues ADD COLUMN all_spots_note_checked INTEGER DEFAULT 0'); } catch(e) {}
   try { db.exec('ALTER TABLE shows ADD COLUMN action_names TEXT DEFAULT NULL'); } catch(e) {} // built-in actions renamed for this show, see src/actionNames.js
+  try { db.exec('ALTER TABLE shows ADD COLUMN cue_defaults TEXT DEFAULT NULL'); } catch(e) {} // Show Settings → Cue Defaults, see src/cueDefaults.js
   try { db.exec('ALTER TABLE shows ADD COLUMN new_character_choice TEXT DEFAULT NULL'); } catch(e) {} // remembered answer to "Add to Characters?": 'custom', 'add' or NULL (ask)
   try {
     db.exec('ALTER TABLE spot_cues ADD COLUMN with_lq INTEGER DEFAULT 0');
@@ -711,7 +712,7 @@ ipcMain.on('get-app-icon', (event) => {
           form.programmer || '', form.logo_path || '', showId);
       } else {
         // Field-by-field update
-        const allowed = ['title','theatre','producer','designer','associate_ld','assistant_ld','production_electrician','programmer','logo_path','iris_sizes','custom_actions','cue_fields','action_names','new_character_choice'];
+        const allowed = ['title','theatre','producer','designer','associate_ld','assistant_ld','production_electrician','programmer','logo_path','iris_sizes','custom_actions','cue_fields','action_names','new_character_choice','cue_defaults'];
         for (const [key, value] of Object.entries(fields)) {
           if (allowed.includes(key)) {
             database.prepare(`UPDATE shows SET ${key} = ? WHERE id = ?`).run(value, showId);

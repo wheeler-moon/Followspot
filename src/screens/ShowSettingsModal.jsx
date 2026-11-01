@@ -8,6 +8,7 @@ import CustomActionsPanel from './settings/CustomActionsPanel';
 import EosControlPanel from './settings/EosControlPanel';
 import IpadSyncPanel from './settings/IpadSyncPanel';
 import CueSettingsPanel from './settings/CueSettingsPanel';
+import CueDefaultsPanel from './settings/CueDefaultsPanel';
 import Tips from '../components/Tips';
 import { TIPS } from '../tips';
 const { ipcRenderer } = window.require('electron');
@@ -17,6 +18,7 @@ const SECTIONS = [
   { id: 'spot-settings', label: 'Spot Settings' },
   { id: 'spot-order', label: 'Spot Order' },
   { id: 'cue-settings', label: 'Cue Settings' },
+  { id: 'cue-defaults', label: 'Cue Defaults' },
   { id: 'iris-sizes', label: 'Iris Sizes' },
   { id: 'custom-actions', label: 'Custom Actions' },
   { id: 'eos-control', label: 'EOS Control' },
@@ -62,6 +64,7 @@ export default function ShowSettingsModal({ show, onClose, onShowUpdate, initial
             {activeSection === 'spot-settings' && <SpotSettingsPanel show={show} />}
             {activeSection === 'spot-order' && <SpotOrderPanel show={show} />}
             {activeSection === 'cue-settings' && <CueSettingsPanel show={show} />}
+            {activeSection === 'cue-defaults' && <CueDefaultsPanel show={show} />}
             {activeSection === 'iris-sizes' && <IrisSizesPanel show={show} />}
             {activeSection === 'custom-actions' && <CustomActionsPanel show={show} />}
             {activeSection === 'eos-control' && <EosControlPanel />}

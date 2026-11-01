@@ -79,6 +79,8 @@ export const TIPS = {
       body: 'A short label and a full name, like Ks for Knees. It appears on every spot\'s cue list right away.' },
     { id: 'settings-cue-fields', target: 'cue-fields', title: 'What shows where',
       body: 'Choose which cue details appear on the cue list and which print. Unticking only hides a detail; nothing is deleted.' },
+    { id: 'settings-cue-defaults', target: 'cue-defaults', title: 'Starting values for new cues',
+      body: 'Pick a time, intensity, iris size or color here and it fills in when you pick an action in the cue list. Time fills in every time; the rest only when a spot is coming out of Off, so a spot that\'s already up keeps tracking.' },
   ],
   characters: [
     { id: 'chars-add', target: 'add-character', title: 'Add the cast',
