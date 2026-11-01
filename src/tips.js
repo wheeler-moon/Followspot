@@ -25,7 +25,7 @@ export const TIPS = {
     { id: 'dash-settings', target: 'show-settings', title: 'Show Settings',
       body: 'Change spots, operators, color frames, iris sizes and custom actions, and choose which cue details show on the cue list and on prints.' },
     { id: 'dash-export', target: 'export-show', title: 'Back up and share',
-      body: 'Export saves the whole show, photos and logo included, as one .spotplot file you can send to anyone with SpotPlot.' },
+      body: 'Export saves the whole show, photos and logo included, as one .spotplot file you can send to anyone with SpotPlot. Or export it as a spreadsheet: CSV files for Excel, Numbers or Google Sheets.' },
     { id: 'dash-cues', target: 'open-cues', title: 'Open the cue list',
       body: 'This is where you\'ll spend most of your time.' },
   ],

@@ -18,12 +18,14 @@ export function GelPicker({ value, onChange, placeholder }) {
   useEscape(() => setOpen(false), open);   // closes the results list, not the window it's in
   const ref = useRef();
 
-  useEffect(() => {
-    if (query.length < 1) { setResults([]); return; }
-    const r = ipcRenderer.sendSync('db-search-gels', query);
-    setResults(r || []);
-    setOpen((r || []).length > 0);
-  }, [query]);
+  // Searches only while typing: a saved gel (or a custom color typed earlier) just shows its text
+  // when Spot Settings opens, instead of popping the catalog list open
+  const search = (text) => {
+    setQuery(text);
+    const r = text.length < 1 ? [] : (ipcRenderer.sendSync('db-search-gels', text) || []);
+    setResults(r);
+    setOpen(r.length > 0);
+  };
 
   useEffect(() => {
     const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
@@ -42,7 +44,7 @@ export function GelPicker({ value, onChange, placeholder }) {
       <input style={inputStyle}
         value={query}
         placeholder={placeholder || 'Search gel...'}
-        onChange={e => { setQuery(e.target.value); onChange({ gel_number: e.target.value.trim(), gel_name: '' }); }}
+        onChange={e => { search(e.target.value); onChange({ gel_number: e.target.value.trim(), gel_name: '' }); }}
         onBlur={() => {
           const typed = query.trim();
           if (!typed) return;

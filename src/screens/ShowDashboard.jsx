@@ -62,15 +62,26 @@ const startEdit = () => {
     });
     setEditing(true);
   };
-    useEffect(() => {
+  // Export: a .spotplot show file (to open in SpotPlot on another Mac or the iPad) or a spreadsheet (CSV)
+  const exportShowFile = () => {
+    const result = ipcRenderer.sendSync('db-export-show', show.id);
+    if (result.success) alert('Show exported successfully!');
+    else if (!result.cancelled) alert('Export failed: ' + result.error);
+  };
+  const exportCSV = () => {
+    const result = ipcRenderer.sendSync('db-export-csv', show.id);
+    if (!result.success && !result.cancelled) alert('Export failed: ' + result.error);
+  };
+  useEffect(() => {
     const { ipcRenderer } = window.require('electron');
-    ipcRenderer.on('menu-export-show', () => {
-      const result = ipcRenderer.sendSync('db-export-show', show.id);
-      if (result.success) alert('Show exported successfully!');
-      else if (!result.cancelled) alert('Export failed: ' + result.error);
-    });
+    const onAction = (e, id) => { if (id === 'export-spotplot') exportShowFile(); if (id === 'export-csv') exportCSV(); };
+    ipcRenderer.on('menu-export-show', exportShowFile);
+    ipcRenderer.on('menu-export-csv', exportCSV);
+    ipcRenderer.on('context-menu-action', onAction);
     return () => {
-      ipcRenderer.removeAllListeners('menu-export-show');
+      ipcRenderer.removeListener('menu-export-show', exportShowFile);
+      ipcRenderer.removeListener('menu-export-csv', exportCSV);
+      ipcRenderer.removeListener('context-menu-action', onAction);
     };
   }, []);
 
@@ -113,12 +124,11 @@ const startEdit = () => {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#1E1E1E' }}>
            <AppHeader title={show.title} onBack={() => navigate('home')} backLabel="All shows">
         <div style={{ flex: 1 }} />
-        <button data-tour="export-show" onClick={() => {
-          const result = ipcRenderer.sendSync('db-export-show', show.id);
-          if (result.success) alert(`Show exported successfully!`);
-          else if (!result.cancelled) alert('Export failed: ' + result.error);
-        }} style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
-          ↑ Export
+        <button data-tour="export-show" onClick={() => ipcRenderer.send('show-context-menu', [
+          { id: 'export-spotplot', label: 'SpotPlot Show File…' },
+          { id: 'export-csv', label: 'Spreadsheet (CSV)…' },
+        ])} style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
+          ↑ Export ▾
         </button>
         <button data-tour="open-cues" onClick={() => navigate('cue-list', show)} style={{ height: '28px', padding: '0 14px', background: '#0A84FF', color: '#FFFFFF', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
           Open Cue List

@@ -422,6 +422,29 @@ function setupIPC() {
   ipcMain.on('reveal-file', (event, filePath) => {
     require('electron').shell.showItemInFolder(filePath);
   });
+  // Export → Spreadsheet (CSV): a folder of CSV files with the whole show (src/csvExport.js), shown in Finder
+  ipcMain.on('db-export-csv', async (event, showId) => {
+    try {
+      const { dialog, shell } = require('electron');
+      const fs = require('fs');
+      const { title, files } = require('./csvExport').buildShowCSVs(getDb(), showId);
+      const { filePath } = await dialog.showSaveDialog(mainWindow, {
+        title: 'Export as Spreadsheet (CSV)',
+        message: 'SpotPlot makes a folder with a CSV file for the cue list, spots, scenes, characters and notes.',
+        defaultPath: `${title.replace(/[\/:]/g, '-')} CSV`,
+        buttonLabel: 'Export',
+      });
+      if (!filePath) { event.returnValue = { success: false, cancelled: true }; return; }
+      fs.mkdirSync(filePath, { recursive: true });
+      for (const [name, text] of Object.entries(files)) fs.writeFileSync(path.join(filePath, name), text, 'utf8');
+      shell.showItemInFolder(path.join(filePath, 'Cue List.csv'));
+      event.returnValue = { success: true, path: filePath };
+    } catch (e) {
+      console.error('CSV export error:', e);
+      event.returnValue = { success: false, error: e.message };
+    }
+  });
+
   ipcMain.on('db-export-show', async (event, showId) => {
     try {
       const { dialog } = require('electron');
@@ -1192,6 +1215,7 @@ app.whenReady().then(async () => {
       submenu: [
         { label: 'New Show', accelerator: 'CmdOrCtrl+N', click: () => { mainWindow.webContents.send('menu-new-show'); } },
         { label: 'Export Show', accelerator: 'CmdOrCtrl+E', click: () => { mainWindow.webContents.send('menu-export-show'); } },
+        { label: 'Export as Spreadsheet (CSV)…', click: () => { mainWindow.webContents.send('menu-export-csv'); } },
         { label: 'Import Show', accelerator: 'CmdOrCtrl+I', click: () => { mainWindow.webContents.send('menu-import-show'); } },
         { label: 'Import from FileMaker…', click: () => { mainWindow.webContents.send('menu-import-filemaker'); } },
         { type: 'separator' },
