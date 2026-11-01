@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import NotesSidebar from '../components/NotesSidebar';
 import useEscape from '../useEscape';
 import { actionNameMap, displayAction } from '../actionNames';
@@ -674,25 +674,60 @@ function CueRow({ onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesB
   );
 }
 
-// A sidebar that slides in and out from the right edge (the cue list's Notes): its width grows from 0,
-// so the cue list makes room as it comes in. Opens instantly when the Mac is set to reduce motion.
-function SlidePanel({ open, width, children }) {
+// Notes sidebar open or closed (remembered on this Mac). Kept outside the cue list screen's own state so
+// opening it only redraws the button and the sidebar, not every cue row (which made the slide lag).
+const notesOpen = {
+  value: (() => { try { return localStorage.getItem('spotplot_notes_sidebar') === '1'; } catch (e) { return false; } })(),
+  listeners: new Set(),
+  set(v) {
+    this.value = v;
+    try { localStorage.setItem('spotplot_notes_sidebar', v ? '1' : '0'); } catch (e) {}
+    this.listeners.forEach(f => f(v));
+  },
+};
+function useNotesOpen() {
+  const [open, setOpen] = useState(notesOpen.value);
+  useEffect(() => { notesOpen.listeners.add(setOpen); return () => notesOpen.listeners.delete(setOpen); }, []);
+  return open;
+}
+
+function NotesButton({ count }) {
+  const open = useNotesOpen();
+  return (
+    <button data-tour="notes-toggle" aria-label="Notes" onClick={() => notesOpen.set(!notesOpen.value)} title={open ? 'Hide notes' : 'Show notes, and take notes during a run'}
+      style={{ height: '28px', padding: '0 8px', background: open ? 'rgba(10,132,255,0.22)' : 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: open ? '#409CFF' : '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+      {/* A page with a pen: the Notes sidebar */}
+      <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M12.5 2.5H5a1.5 1.5 0 0 0-1.5 1.5v12A1.5 1.5 0 0 0 5 17.5h9a1.5 1.5 0 0 0 1.5-1.5v-3" />
+        <path d="M6.5 7h4M6.5 10h3M6.5 13h2.5" />
+        <path d="M16.6 3.4a1.4 1.4 0 0 1 2 2L12.5 11.5l-2.7.7.7-2.7z" />
+      </svg>{count ? <span style={{ minWidth: '16px', height: '16px', borderRadius: '8px', background: '#FFD60A', color: '#1a1a1a', fontSize: '10px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px' }}>{count}</span> : null}
+    </button>
+  );
+}
+
+// The Notes sidebar's frame: slides in and out from the right edge. Its width grows from 0, so the cue
+// list makes room as it comes in. The slide starts on the click itself (the 0 width is measured before
+// the change, so the browser animates it straight away). Instant when the Mac is set to reduce motion.
+function SlidePanel({ width, children }) {
+  const open = useNotesOpen();
   const [mounted, setMounted] = useState(open);
   const [shown, setShown] = useState(open);
+  const ref = useRef(null);
+  useLayoutEffect(() => {
+    if (open && !mounted) { setMounted(true); return; }
+    if (open && mounted && !shown) { void ref.current?.offsetWidth; setShown(true); return; }
+    if (!open && shown) setShown(false);
+  }, [open, mounted, shown]);
   useEffect(() => {
-    if (open) {
-      setMounted(true);
-      const f = requestAnimationFrame(() => requestAnimationFrame(() => setShown(true)));   // start from 0 wide
-      return () => cancelAnimationFrame(f);
-    }
-    setShown(false);
+    if (open || !mounted) return;
     const t = setTimeout(() => setMounted(false), 260);   // keep it drawn while it slides out
     return () => clearTimeout(t);
-  }, [open]);
+  }, [open, mounted]);
   if (!mounted) return null;
   const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   return (
-    <div style={{ width: shown ? width : 0, flexShrink: 0, overflow: 'hidden', display: 'flex', transition: reduce ? 'none' : 'width 240ms cubic-bezier(0.2, 0.8, 0.2, 1)' }}>
+    <div ref={ref} style={{ width: shown ? width : 0, flexShrink: 0, overflow: 'hidden', display: 'flex', transition: reduce ? 'none' : 'width 240ms cubic-bezier(0.2, 0.8, 0.2, 1)', willChange: 'width' }}>
       {children}
     </div>
   );
@@ -1094,13 +1129,6 @@ export default function CueListScreen({ show, navigate }) {
     ipcRenderer.send('show-context-menu', items);
   };
 
-  // Notes sidebar (cue list → Notes): open or closed is remembered on this Mac
-  const [notesOpen, setNotesOpenState] = useState(() => { try { return localStorage.getItem('spotplot_notes_sidebar') === '1'; } catch (e) { return false; } });
-  const setNotesOpen = (v) => setNotesOpenState(prev => {
-    const next = typeof v === 'function' ? v(prev) : v;
-    try { localStorage.setItem('spotplot_notes_sidebar', next ? '1' : '0'); } catch (e) {}
-    return next;
-  });
   const openNoteCount = (data?.spotCues || []).filter(sc => sc.spot_note && sc.spot_note.trim() && !sc.note_checked).length
     + (data?.cues || []).filter(c => c.all_spots_note && c.all_spots_note.trim() && !c.all_spots_note_checked).length;
   // A note typed in the sidebar: found by its LQ, saved as that cue's spot note (added under any note already there)
@@ -1354,15 +1382,7 @@ const groupedCues = () => {
         <button onClick={() => setShowSceneModal(true)} style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>+ Scene</button>
         <button onClick={() => setShowCharModal(true)} style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>+ Character</button>
         </span>
-        <button data-tour="notes-toggle" aria-label="Notes" onClick={() => setNotesOpen(o => !o)} title={notesOpen ? 'Hide notes' : 'Show notes, and take notes during a run'}
-          style={{ height: '28px', padding: '0 8px', background: notesOpen ? 'rgba(10,132,255,0.22)' : 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: notesOpen ? '#409CFF' : '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-          {/* A page with a pen: the Notes sidebar */}
-          <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M12.5 2.5H5a1.5 1.5 0 0 0-1.5 1.5v12A1.5 1.5 0 0 0 5 17.5h9a1.5 1.5 0 0 0 1.5-1.5v-3" />
-            <path d="M6.5 7h4M6.5 10h3M6.5 13h2.5" />
-            <path d="M16.6 3.4a1.4 1.4 0 0 1 2 2L12.5 11.5l-2.7.7.7-2.7z" />
-          </svg>{openNoteCount ? <span style={{ minWidth: '16px', height: '16px', borderRadius: '8px', background: '#FFD60A', color: '#1a1a1a', fontSize: '10px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px' }}>{openNoteCount}</span> : null}
-        </button>
+        <NotesButton count={openNoteCount} />
       </AppHeader>
 
       <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
@@ -1675,9 +1695,9 @@ const groupedCues = () => {
         </div>
       )}
       </div>
-      <SlidePanel open={notesOpen} width={300}>
+      <SlidePanel width={300}>
         <NotesSidebar spots={data?.spots || []} cues={[...(data?.cues || [])].sort((a, b) => a.sort_order - b.sort_order)} spotCues={data?.spotCues || []}
-          onAddNote={addRunNote} onCheck={giveNote} onShowCue={showCue} onClose={() => setNotesOpen(false)} />
+          onAddNote={addRunNote} onCheck={giveNote} onShowCue={showCue} onClose={() => notesOpen.set(false)} />
       </SlidePanel>
       </div>
 
