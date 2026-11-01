@@ -42,7 +42,8 @@ Auth: `Authorization: Bearer <token>` from pairing (one token per show). `401` m
 - A gel can be anything typed (not only catalog numbers): `gel_number` holds the typed text and `gel_name` may be empty. In a multi-gel frame, a typed gel's name stands in as its own text, so names stay paired with numbers.
 - Gel colors: use the same catalog as the desktop, `src/gels.json` ([maker, number, name, color]); the iPad app should bundle a copy. A gel not in the catalog has no color: draw it clear/white.
 - `shows.iris_sizes` is a JSON array `{ label, value, builtin?, key? }` in display order (see `src/irisSizes.js`). `spot_cues.frame_size` holds the size's `value`.
-- `cues.all_spots_note` (text or null) and `cues.all_spots_note_checked` (0/1): a spot note for every spot on that cue (Spot Notes → All Spots), Mac only for now; the iPad can ignore them.
+- `cues.all_spots_note` (text or null): a spot note for every spot on that cue (Spot Notes → All Spots), Mac only for now; the iPad can ignore it.
+- `givenNotes` (array in the .spotplot file, table `given_notes`): spot notes that have been given (checked off), `{ id, show_id, cue_id, spot_id, note, given_at }`; `spot_id` is null for an All Spots note. A given note is no longer on its cue. `spot_cues.note_checked` and `cues.all_spots_note_checked` are no longer used (always 0); a file that still has checked notes has them moved to `givenNotes` on import. The iPad can ignore all of this.
 - `shows.new_character_choice` (`'custom'`, `'add'` or null): this show's remembered answer to "Add to Characters?" on the Mac. The iPad ignores it.
 - `cues.page` (text or null): the script page the cue is on, typed by the user ("13", "13a"). Shown on the cue list only for now.
 - `shows.cue_fields` is JSON `{ field: { list, print } }` (see `src/cueFields.js`). A missing field means shown, except `page` (the script page), whose `print` is off unless set. The iPad treats `page` the same way.

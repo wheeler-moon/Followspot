@@ -7,7 +7,7 @@
 //   Spots.csv       operator, location, fixture and color frames
 //   Scenes.csv      scene order, songs, act breaks and how many cues each has
 //   Characters.csv  characters, performers and costume notes
-//   Spot Notes.csv  every spot note (and All Spots note), given or not
+//   Spot Notes.csv  every spot note (and All Spots note), still to give or already given
 //
 // Ids are turned into names (characters, scenes, frames → gels), actions use this show's names,
 // When/Notes formatting is dropped, and everything is exported, even details hidden in Cue Settings.
@@ -129,18 +129,26 @@ function buildShowCSVs(db, showId) {
     ...characters.map(c => [c.name, c.actor_name || '', c.costume_notes || '', yesNo(c.print_on_sheet !== 0)]),
   ]);
 
-  // Spot Notes, in cue order (All Spots first within a cue)
+  // Spot Notes, in cue order (All Spots first within a cue): notes still to give, then given ones
+  let given = [];
+  try { given = db.prepare('SELECT * FROM given_notes WHERE show_id = ? ORDER BY given_at, id').all(showId); } catch (e) {}
+  const spotById = new Map(spots.map(s => [s.id, s]));
   const noteRows = [];
   for (const cue of cues) {
     const scene = sceneById.get(cue.scene_id);
     const base = [cue.lq_number || '', cue.track_number ?? '', cue.page || '', scene ? scene.label : ''];
-    if (cue.all_spots_note && cue.all_spots_note.trim()) noteRows.push([...base, 'All Spots', '', cue.all_spots_note, yesNo(cue.all_spots_note_checked)]);
+    if (cue.all_spots_note && cue.all_spots_note.trim()) noteRows.push([...base, 'All Spots', '', cue.all_spots_note, 'No', '']);
     for (const spot of spots) {
       const sc = scFor.get(`${cue.id}:${spot.id}`);
-      if (sc?.spot_note && sc.spot_note.trim()) noteRows.push([...base, spotName(spot), spot.operator_name || '', sc.spot_note, yesNo(sc.note_checked)]);
+      if (sc?.spot_note && sc.spot_note.trim()) noteRows.push([...base, spotName(spot), spot.operator_name || '', sc.spot_note, 'No', '']);
+    }
+    for (const g of given.filter(x => x.cue_id === cue.id)) {
+      const spot = g.spot_id === null ? null : spotById.get(g.spot_id);
+      if (g.spot_id !== null && !spot) continue;
+      noteRows.push([...base, spot ? spotName(spot) : 'All Spots', spot ? (spot.operator_name || '') : '', g.note, 'Yes', g.given_at || '']);
     }
   }
-  files['Spot Notes.csv'] = toCSV([['LQ', 'Track', 'Page', 'Scene', 'Spot', 'Operator', 'Note', 'Given'], ...noteRows]);
+  files['Spot Notes.csv'] = toCSV([['LQ', 'Track', 'Page', 'Scene', 'Spot', 'Operator', 'Note', 'Given', 'Given At (UTC)'], ...noteRows]);
 
   return { title: show.title || 'Show', files };
 }

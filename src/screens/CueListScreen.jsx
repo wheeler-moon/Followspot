@@ -1087,16 +1087,22 @@ export default function CueListScreen({ show, navigate }) {
     if (!cue) return `There's no LQ ${lqText} in this show.`;
     if (spotId === 'all') {   // a note for every spot, kept on the cue
       const existing = (cue.all_spots_note || '').trim();
-      updateCue(cue.id, 'all_spots_note', existing && !cue.all_spots_note_checked ? `${existing}\n${text}` : text);
-      if (cue.all_spots_note_checked) updateCue(cue.id, 'all_spots_note_checked', 0);
+      updateCue(cue.id, 'all_spots_note', existing ? `${existing}\n${text}` : text);
       return null;
     }
     const spot = (data?.spots || []).find(sp => sp.id === spotId);
     if (!spot) return 'Pick a spot.';
     const row = ensureSpotCue(spot, cue, (data?.spotCues || []).find(x => x.spot_id === spot.id && x.cue_id === cue.id));
     const existing = (row.spot_note || '').trim();
-    setSpotCueFields(row, { spot_note: existing && !row.note_checked ? `${existing}\n${text}` : text, note_checked: 0 });
+    setSpotCueFields(row, { spot_note: existing ? `${existing}\n${text}` : text });
     return null;
+  };
+  // ✓ in the sidebar: the note is given, so it leaves the cue (no more yellow dot) and goes to Spot Notes → Given
+  const giveNote = (n) => {
+    ipcRenderer.sendSync('db-give-note', n.allSpots ? { cueId: n.cue_id } : { spotCueId: n.id });
+    setData(d => ({ ...d,
+      cues: n.allSpots ? (d?.cues || []).map(c => c.id === n.cue_id ? { ...c, all_spots_note: '' } : c) : d.cues,
+      spotCues: n.allSpots ? d.spotCues : (d?.spotCues || []).map(sc => sc.id === n.id ? { ...sc, spot_note: '' } : sc) }));
   };
   // Scrolls the cue list to a cue (in the middle) and outlines that spot's box for a moment (every box for 'all')
   const showCue = (cueId, spotId) => {
@@ -1653,7 +1659,7 @@ const groupedCues = () => {
       </div>
       {notesOpen && (
         <NotesSidebar spots={data?.spots || []} cues={[...(data?.cues || [])].sort((a, b) => a.sort_order - b.sort_order)} spotCues={data?.spotCues || []}
-          onAddNote={addRunNote} onCheck={n => (n.allSpots ? updateCue(n.cue_id, 'all_spots_note_checked', 1) : setSpotCueFields(n, { note_checked: 1 }))} onShowCue={showCue} onClose={() => setNotesOpen(false)} />
+          onAddNote={addRunNote} onCheck={giveNote} onShowCue={showCue} onClose={() => setNotesOpen(false)} />
       )}
       </div>
 

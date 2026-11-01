@@ -4,6 +4,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { moveCheckedNotes } = require('./givenNotes');
 
 const FORMAT_VERSION = '2.0';
 // Actions renamed since older files were made (older SpotPlot called them Fade Up / Fade Down)
@@ -30,6 +31,7 @@ function exportShow(db, showId) {
   const characters = db.prepare('SELECT * FROM characters WHERE show_id = ? ORDER BY sort_order').all(showId);
   const cues = db.prepare('SELECT * FROM cues WHERE show_id = ? ORDER BY sort_order').all(showId);
   const spotCues = db.prepare('SELECT sc.* FROM spot_cues sc JOIN cues c ON sc.cue_id = c.id WHERE c.show_id = ?').all(showId);
+  const givenNotes = db.prepare('SELECT g.* FROM given_notes g JOIN cues c ON g.cue_id = c.id WHERE g.show_id = ? ORDER BY g.id').all(showId);
 
   const images = {};
   for (const p of imagePaths(show, characters)) {
@@ -39,7 +41,7 @@ function exportShow(db, showId) {
   // Older SpotPlot versions only read the logo from here
   const logoBase64 = images[show.logo_path] ? { data: images[show.logo_path].data, ext: images[show.logo_path].ext } : null;
 
-  return { version: FORMAT_VERSION, exported_at: new Date().toISOString(), show, spots, colorSlots, scenes, characters, cues, spotCues, images, logoBase64 };
+  return { version: FORMAT_VERSION, exported_at: new Date().toISOString(), show, spots, colorSlots, scenes, characters, cues, spotCues, givenNotes, images, logoBase64 };
 }
 
 // Creates a new show from exported data. imagesDir is where restored images are saved.
@@ -101,6 +103,13 @@ function importShow(db, data, { imagesDir }) {
       if (!cueMap[sc.cue_id] || !spotMap[sc.spot_id]) continue;
       insert('spot_cues', { ...sc, action: RENAMED_ACTIONS[sc.action] || sc.action, cue_id: cueMap[sc.cue_id], spot_id: spotMap[sc.spot_id], character_id: charMap[sc.character_id] || null });
     }
+    // Given (checked-off) spot notes; spot_id is null for an All Spots note
+    for (const g of data.givenNotes || []) {
+      if (!cueMap[g.cue_id] || (g.spot_id !== null && g.spot_id !== undefined && !spotMap[g.spot_id])) continue;
+      insert('given_notes', { ...g, show_id: showId, cue_id: cueMap[g.cue_id], spot_id: g.spot_id === null || g.spot_id === undefined ? null : spotMap[g.spot_id] });
+    }
+    // Files from before given_notes marked checked notes in place
+    moveCheckedNotes(db, showId);
   })();
 
   return { showId, title: data.show.title + ' (imported)' };

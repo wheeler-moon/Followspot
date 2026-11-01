@@ -11,6 +11,7 @@ const os = require('os');
 const path = require('path');
 const Database = require('better-sqlite3');
 const { exportShow, importShow } = require('../src/showFile');
+const givenNotes = require('../src/givenNotes');
 
 const source = process.argv[2] || path.join(os.homedir(), 'Library/Application Support/SpotPlot/followspot.db');
 const work = fs.mkdtempSync(path.join(os.tmpdir(), 'spotplot-roundtrip-'));
@@ -22,6 +23,8 @@ const db = new Database(dbPath);
 // so bring the copy up to date first, the same way
 db.exec("UPDATE spot_cues SET action = 'Increase' WHERE action = 'Fade Up'");
 db.exec("UPDATE spot_cues SET action = 'Decrease' WHERE action = 'Fade Down'");
+givenNotes.ensureTable(db);
+givenNotes.moveCheckedNotes(db);
 
 // Links between rows are compared by position instead of id
 const SKIP = new Set(['id', 'show_id', 'spot_id', 'cue_id', 'scene_id', 'character_id', 'created_at', 'updated_at']);
@@ -74,15 +77,18 @@ for (const { id, title } of db.prepare('SELECT id, title FROM shows ORDER BY id'
     ...compareRows('characters', exported.characters, back.characters, { photo_path: sameImage }),
     ...compareRows('cues', exported.cues, back.cues),
     ...compareRows('spotCues', sortCells(exported), sortCells(back)),
+    ...compareRows('givenNotes', exported.givenNotes, back.givenNotes),
   ];
   for (const [name, a, b] of [
     ['cue→scene', links(exported, exported.cues, 'scene_id', 'scenes'), links(back, back.cues, 'scene_id', 'scenes')],
     ['gel→spot', links(exported, sortSlots(exported), 'spot_id', 'spots'), links(back, sortSlots(back), 'spot_id', 'spots')],
     ['cell→character', links(exported, sortCells(exported), 'character_id', 'characters'), links(back, sortCells(back), 'character_id', 'characters')],
+    ['givenNote→cue', links(exported, exported.givenNotes, 'cue_id', 'cues'), links(back, back.givenNotes, 'cue_id', 'cues')],
+    ['givenNote→spot', links(exported, exported.givenNotes, 'spot_id', 'spots'), links(back, back.givenNotes, 'spot_id', 'spots')],
   ]) if (JSON.stringify(a) !== JSON.stringify(b)) problems.push(`links ${name} differ`);
 
   const perm = exported.colorSlots.filter(s => s.is_permanent && (s.gel_number || s.gel_name)).length;
-  console.log(`${problems.length ? '✗' : '✓'} ${title}: ${exported.spots.length} spots, ${exported.colorSlots.length} gel slots (${perm} permanent gels), ${exported.cues.length} cues, ${exported.spotCues.length} cells, ${Object.keys(exported.images).length} images`);
+  console.log(`${problems.length ? '✗' : '✓'} ${title}: ${exported.spots.length} spots, ${exported.colorSlots.length} gel slots (${perm} permanent gels), ${exported.cues.length} cues, ${exported.spotCues.length} cells, ${exported.givenNotes.length} given notes, ${Object.keys(exported.images).length} images`);
   problems.slice(0, 10).forEach(p => console.log('    ' + p));
   failures += problems.length;
 }

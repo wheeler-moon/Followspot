@@ -5,6 +5,7 @@ const { exportShow, importShow } = require('./showFile');
 const ipadSync = require('./ipadSync');
 const { initUpdates } = require('./updates');
 const fileMaker = require('./fileMakerImport');
+const givenNotes = require('./givenNotes');
 const { buildSpotSheetHTML, buildCallerSheetHTML, buildColorLoadHTML, buildSpotNotesHTML, buildCharactersHTML, buildActionKeyHTML, buildSceneListHTML, coverPageHTML, withCoverPage, renderPDF, renderPDFBuffer, countPages, closeBrowser, PAGE_MARGINS } = require('./pdfGenerator');
 
 if (require('electron-squirrel-startup')) app.quit();
@@ -199,6 +200,9 @@ function initSchema() {
       db.pragma('user_version = 3');
     })();
   }
+  // Checked-off spot notes live in given_notes (src/givenNotes.js); older checked notes move there
+  givenNotes.ensureTable(db);
+  givenNotes.moveCheckedNotes(db);
 }
 
 // The gel catalog comes from src/gels.json: [maker, number, name, color] for every gel the makers
@@ -730,6 +734,7 @@ ipcMain.on('get-app-icon', (event) => {
   ipcMain.on('db-delete-show', (event, showId) => {
     try {
       getDb().prepare('DELETE FROM shows WHERE id = ?').run(showId);
+      getDb().prepare('DELETE FROM given_notes WHERE show_id = ?').run(showId);
       event.returnValue = { success: true };
     } catch(e) { event.returnValue = { success: false }; }
   });
@@ -1069,6 +1074,26 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
       getDb().prepare(`UPDATE cues SET ${field} = ? WHERE id = ?`).run(value, cueId);
       event.returnValue = { success: true };
     } catch(e) { event.returnValue = { success: false }; }
+  });
+
+  // Spot notes that have been given (checked off): see src/givenNotes.js
+  ipcMain.on('db-get-given-notes', (event, showId) => {
+    try {
+      event.returnValue = getDb().prepare(`SELECT g.* FROM given_notes g JOIN cues c ON g.cue_id = c.id
+        WHERE g.show_id = ? ORDER BY g.given_at DESC, g.id DESC`).all(showId);
+    } catch(e) { event.returnValue = []; }
+  });
+  ipcMain.on('db-give-note', (event, which) => {
+    try { givenNotes.giveNote(getDb(), which); event.returnValue = { success: true }; }
+    catch(e) { console.error('give note:', e); event.returnValue = { success: false }; }
+  });
+  ipcMain.on('db-restore-given-note', (event, id) => {
+    try { givenNotes.restoreNote(getDb(), id); event.returnValue = { success: true }; }
+    catch(e) { event.returnValue = { success: false }; }
+  });
+  ipcMain.on('db-delete-given-note', (event, id) => {
+    try { getDb().prepare('DELETE FROM given_notes WHERE id = ?').run(id); event.returnValue = { success: true }; }
+    catch(e) { event.returnValue = { success: false }; }
   });
 
   ipcMain.on('db-update-spot-cue', (event, { spotCueId, field, value }) => {

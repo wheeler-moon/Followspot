@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- **Spot Notes** is easier to read: each card shows the LQ, then the scene in small capitals, then what the spot is doing, then the note, with the buttons along the bottom. **✓ Given** now moves a note off its cue (the cue list's yellow dot goes away) into a **Given** tray at the bottom of the screen, newest first, where **Restore** puts it back. Checking a note off in the cue list's Notes sidebar does the same. Notes you'd already checked off move to Given automatically
 - **Export as a spreadsheet**: the dashboard's Export ▾ (or File → Export as Spreadsheet (CSV)…) saves a folder of CSV files for Excel, Numbers or Google Sheets: the cue list with every spot side by side, one row per spot per cue for sorting and filtering, plus spots and their gels, scenes, characters and spot notes
 - Spot Settings: a color typed by hand (not from the gel list) no longer opens the gel list when you come back to Spot Settings; the list only appears while you type
 - **Custom actions** (Show Settings → Custom Actions): click any action to edit it. Rename your own actions (cues that use one follow along), change their icon or delete them. A new icon library lets a custom action use one of SpotPlot's own symbols or a plain green, red or yellow circle, or you can still choose your own image. SpotPlot's built-in actions can be renamed for one show (say "Pick Up" to "Pickup"); the new name shows on the cue list, prints, the action key and the iPad

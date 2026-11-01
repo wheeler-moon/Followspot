@@ -58,6 +58,7 @@ The SQLite file lives at `app.getPath('userData')/followspot.db`, with the schem
 - `shows` → `spots` → `color_slots` (gel frames per spot; `is_permanent` marks permanent frames)
 - `shows` → `scenes`, `characters`, `cues` (ordered by `sort_order`)
 - `spot_cues`: one row per (cue, spot), holding what that spot does in that cue (action, character, frame size, intensity, fade, highlight, notes, …). Adding a spot to a show with existing cues creates "Off" `spot_cues` rows for every cue, and new cues get rows for every spot.
+- `given_notes`: spot notes that have been checked off (Spot Notes → Given tray), moved off their cue; `spot_id` null = All Spots. Logic in `src/givenNotes.js`, exported/imported in `showFile.js`.
 - `gels`: gel catalog, seeded by `seedGels()`.
 - `shows.iris_sizes` and `shows.custom_actions` are **JSON strings**. Parse them before use.
 
