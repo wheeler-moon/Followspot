@@ -158,6 +158,8 @@ function IrisStrip({ sizes, selected, onPick }) {
 const COPY_FIELDS = ['action', 'character_id', 'custom_character', 'frame_size', 'intensity', 'fade_time', 'active_frames',
   'description', 'with_lq', 'notes', 'no_color', 'highlight', 'when_highlight', 'notes_highlight'];
 let cueClipboard = null;
+// Copy Whole Cue / Paste Whole Cue: what every spot does in one cue, by spot id (same show only)
+let wholeCueClipboard = null;
 
 function SpotCueCell({ onDragEnd, onContextMenu, spotCue, spot, cue, fieldsShown = {}, characters, colorSlots, onUpdate, onNewCustomCharacter, lqNumber, onDragStart, onDragOver, onDragLeave, onDrop, isDragTarget, isMenuTarget, colorSame, onDoubleClick, irisSizes, customActions }) {
   const [showActionPicker, setShowActionPicker] = useState(false);
@@ -552,7 +554,7 @@ function HeaderColorLoad({ slots, perm }) {
   );
 }
 
-function CueRow({ onDragFinished, onCellMenu, menuCell, colorChangesBySpot, cue, isLastCue, fieldsShown, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onNewCustomCharacter, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal, onCueDoubleClick, irisSizes, customActions }) {
+function CueRow({ onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesBySpot, cue, isLastCue, fieldsShown, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onNewCustomCharacter, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal, onCueDoubleClick, irisSizes, customActions }) {
   const [editingLQ, setEditingLQ] = useState(false);
   const [lqVal, setLqVal] = useState(cue.lq_number || '');
 
@@ -577,7 +579,8 @@ function CueRow({ onDragFinished, onCellMenu, menuCell, colorChangesBySpot, cue,
       <tr data-cue-id={cue.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
         onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.025)'}
         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-        <td style={{ padding: '8px 6px', borderRight: '1px solid rgba(255,255,255,0.06)', verticalAlign: 'top', width: '90px', minWidth: '90px' }}>
+        <td onContextMenu={e => { if (e.target.closest('input, select')) return; e.preventDefault(); onCueMenu(cue); }}
+          style={{ padding: '8px 6px', borderRight: '1px solid rgba(255,255,255,0.06)', verticalAlign: 'top', width: '90px', minWidth: '90px' }}>
           <div data-tour="cue-lq" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
             {editingLQ ? (
               <input autoFocus value={lqVal} onChange={e => setLqVal(e.target.value)}
@@ -957,11 +960,13 @@ export default function CueListScreen({ show, navigate }) {
     undoStackRef.current = [...undoStackRef.current.slice(-49), { type: 'batch', entries }];
   };
 
+  // The changes that setting these fields would make (for undo)
+  const fieldEntries = (row, values) => Object.keys(values)
+    .filter(f => (row[f] ?? null) !== (values[f] ?? null))
+    .map(f => ({ type: 'spot-cue', spotCueId: row.id, field: f, oldValue: row[f] ?? null, newValue: values[f] ?? null }));
   // Sets several fields of one spot cue as a single ⌘Z step
   const setSpotCueFields = (row, values) => {
-    const entries = Object.keys(values)
-      .filter(f => (row[f] ?? null) !== (values[f] ?? null))
-      .map(f => ({ type: 'spot-cue', spotCueId: row.id, field: f, oldValue: row[f] ?? null, newValue: values[f] ?? null }));
+    const entries = fieldEntries(row, values);
     if (!entries.length) return;
     entries.forEach(e => updateSpotCue(row.id, e.field, e.newValue, true));
     undoStackRef.current = [...undoStackRef.current.slice(-49), { type: 'batch', entries }];
@@ -988,6 +993,7 @@ export default function CueListScreen({ show, navigate }) {
       { id: 'copy', label: 'Copy Cue', enabled: !!sc },
       { id: 'paste', label: clip ? `Paste Cue (Spot ${clip.spotNumber} · ${clip.cueName})` : 'Paste Cue', enabled: !!clip },
       { id: 'paste-no-char', label: 'Paste Cue Without Character', enabled: !!clip },
+      ...wholeCueItems(cue),
       sep,
       { label: 'Highlight', submenu: [...highlightItems('highlight', 'Whole Cue'), sep, ...highlightItems('when_highlight', 'When Line'), sep, ...highlightItems('notes_highlight', 'Notes Line')] },
       { id: 'ignore', label: 'Ignore Cue', checked: !!sc?.ignored },
@@ -1004,12 +1010,59 @@ export default function CueListScreen({ show, navigate }) {
     ipcRenderer.send('show-context-menu', items);
   };
 
+  // Copy / Paste Whole Cue items (in both right-click menus)
+  const wholeCueItems = (cue) => {
+    const clip = wholeCueClipboard && wholeCueClipboard.showId === show.id ? wholeCueClipboard : null;
+    return [
+      { type: 'separator' },
+      { id: 'copy-row', label: 'Copy Whole Cue (All Spots)' },
+      { id: 'paste-row', label: clip ? `Paste Whole Cue (${clip.cueName})` : 'Paste Whole Cue', enabled: !!clip && clip.cueId !== cue.id },
+    ];
+  };
+  // Right-click an LQ number: whole-cue copy and paste, insert, delete
+  const openCueMenu = (cue) => {
+    const sep = { type: 'separator' };
+    menuTargetRef.current = { spotCue: null, spot: null, cue };
+    ipcRenderer.send('show-context-menu', [
+      { label: cueName(cue), enabled: false },
+      ...wholeCueItems(cue),
+      sep,
+      { id: 'insert-above', label: 'Insert Cue Above' },
+      { id: 'insert-below', label: 'Insert Cue Below' },
+      { id: 'delete', label: `Delete ${cueName(cue)}…` },
+    ]);
+  };
+  const copyWholeCue = (cue) => {
+    const bySpot = {};
+    for (const sp of data?.spots || []) {
+      const row = (data?.spotCues || []).find(x => x.spot_id === sp.id && x.cue_id === cue.id);
+      bySpot[sp.id] = Object.fromEntries(COPY_FIELDS.map(f => [f, row?.[f] ?? null]));
+    }
+    wholeCueClipboard = { showId: show.id, cueId: cue.id, cueName: cueName(cue), bySpot };
+  };
+  // Every spot takes what it did in the copied cue; one ⌘Z puts the whole cue back
+  const pasteWholeCue = (cue) => {
+    if (!wholeCueClipboard || wholeCueClipboard.showId !== show.id) return;
+    const entries = [];
+    for (const sp of data?.spots || []) {
+      const values = wholeCueClipboard.bySpot[sp.id];
+      if (!values) continue;
+      const row = ensureSpotCue(sp, cue, (data?.spotCues || []).find(x => x.spot_id === sp.id && x.cue_id === cue.id));
+      entries.push(...fieldEntries(row, values));
+    }
+    if (!entries.length) return;
+    entries.forEach(e => updateSpotCue(e.spotCueId, e.field, e.newValue, true));
+    undoStackRef.current = [...undoStackRef.current.slice(-49), { type: 'batch', entries }];
+  };
+
   // Runs the chosen menu item (refreshed every render so it sees the latest cues)
   menuActionRef.current = (id) => {
     const target = menuTargetRef.current;
     if (!target) return;
     const { spot, cue } = target;
-    const sc = (data?.spotCues || []).find(x => x.spot_id === spot.id && x.cue_id === cue.id) || target.spotCue;
+    if (id === 'copy-row') return copyWholeCue(cue);
+    if (id === 'paste-row') return pasteWholeCue(cue);
+    const sc = spot ? ((data?.spotCues || []).find(x => x.spot_id === spot.id && x.cue_id === cue.id) || target.spotCue) : null;
     if (id === 'copy') {
       cueClipboard = { showId: show.id, spotNumber: spot.spot_number, cueName: cueName(cue),
         values: Object.fromEntries(COPY_FIELDS.map(f => [f, sc?.[f] ?? null])) };
@@ -1256,7 +1309,7 @@ const groupedCues = () => {
                       onUpdateCue={updateCue} onUpdateSpotCue={updateSpotCue} onNewCustomCharacter={addCustomCharacterToShow}
                       onDelete={deleteCue} onInsertAfter={insertCueAfter}
                       dragSource={dragSource} dragTarget={dragTarget}
-                      setDragSource={setDragSource} setDragTarget={setDragTarget} onDragFinished={dragFinished} onCellMenu={openCellMenu} menuCell={menuCell}
+                      setDragSource={setDragSource} setDragTarget={setDragTarget} onDragFinished={dragFinished} onCellMenu={openCellMenu} onCueMenu={openCueMenu} menuCell={menuCell}
                       setShowDragModal={setShowDragModal}
                       irisSizes={irisSizes}
                       customActions={customActions}
