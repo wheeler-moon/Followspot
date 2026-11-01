@@ -674,6 +674,30 @@ function CueRow({ onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesB
   );
 }
 
+// A sidebar that slides in and out from the right edge (the cue list's Notes): its width grows from 0,
+// so the cue list makes room as it comes in. Opens instantly when the Mac is set to reduce motion.
+function SlidePanel({ open, width, children }) {
+  const [mounted, setMounted] = useState(open);
+  const [shown, setShown] = useState(open);
+  useEffect(() => {
+    if (open) {
+      setMounted(true);
+      const f = requestAnimationFrame(() => requestAnimationFrame(() => setShown(true)));   // start from 0 wide
+      return () => cancelAnimationFrame(f);
+    }
+    setShown(false);
+    const t = setTimeout(() => setMounted(false), 260);   // keep it drawn while it slides out
+    return () => clearTimeout(t);
+  }, [open]);
+  if (!mounted) return null;
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return (
+    <div style={{ width: shown ? width : 0, flexShrink: 0, overflow: 'hidden', display: 'flex', transition: reduce ? 'none' : 'width 240ms cubic-bezier(0.2, 0.8, 0.2, 1)' }}>
+      {children}
+    </div>
+  );
+}
+
 // Double-clicked scene header: rename the scene right there (Enter or clicking away saves, Escape cancels).
 // Its own component so typing only redraws these two boxes, not the whole cue list.
 const sceneInputStyle = { height: '22px', background: 'rgba(0,0,0,0.25)', border: '1px solid #0A84FF', borderRadius: '5px', padding: '0 6px', fontSize: '12px', outline: 'none', fontFamily: 'inherit', textAlign: 'center' };
@@ -1651,10 +1675,10 @@ const groupedCues = () => {
         </div>
       )}
       </div>
-      {notesOpen && (
+      <SlidePanel open={notesOpen} width={300}>
         <NotesSidebar spots={data?.spots || []} cues={[...(data?.cues || [])].sort((a, b) => a.sort_order - b.sort_order)} spotCues={data?.spotCues || []}
           onAddNote={addRunNote} onCheck={giveNote} onShowCue={showCue} onClose={() => setNotesOpen(false)} />
-      )}
+      </SlidePanel>
       </div>
 
       {showSceneModal && (
