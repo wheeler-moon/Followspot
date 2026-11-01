@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- Reordering scenes, characters, iris sizes and spot order: while you drag, a blue line shows exactly where the item will land, instead of highlighting the row it goes next to
 - Copy and paste a whole cue: right-click a cue's LQ number (or any spot's box) and choose **Copy Whole Cue (All Spots)**, then **Paste Whole Cue** on another cue. Every spot takes what it did in the copied cue, and one ⌘Z undoes it. The LQ number's right-click menu also has Insert Cue Above / Below and Delete
 - **Page number** is now a cue detail in Show Settings → Cue Settings, like the others: shown on the cue list (turn it off to hide the "pg"), and off on prints until you tick it. When it's on, spot sheets, the caller sheet and Spot Notes show each cue's page under its T· number
 - "Actor" is now "Performer" everywhere: the Characters screen, the add-character box, Print and the Characters sheet

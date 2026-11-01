@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { dropSlot, moveTo, moveItem, dropLineStyle } from '../dropLine';
 import Tips from '../components/Tips';
 import { TIPS } from '../tips';
 import AppHeader from '../components/AppHeader';
@@ -102,15 +103,15 @@ export default function CharactersScreen({ show, navigate }) {
 
   const handleDragOver = (e, index) => {
     e.preventDefault();
-    setDragOverId(index);
+    if (dragItem.current === null) return;   // a photo being dropped, not a character being moved
+    setDragOverId(dropSlot(e, index));
   };
 
   const handleDrop = (e, index) => {
     e.preventDefault();
-    if (dragItem.current === null || dragItem.current === index) { setDragOverId(null); return; }
-    const newChars = [...characters];
-    const dragged = newChars.splice(dragItem.current, 1)[0];
-    newChars.splice(index, 0, dragged);
+    const slot = dragOverId || dropSlot(e, index);
+    if (dragItem.current === null || moveTo(dragItem.current, slot) === dragItem.current) { dragItem.current = null; setDragOverId(null); return; }
+    const newChars = moveItem(characters, dragItem.current, slot);
     const updates = newChars.map((c, i) => ({ id: c.id, sort_order: (i + 1) * 1000 }));
     ipcRenderer.sendSync('db-reorder-characters', updates);
     dragItem.current = null;
@@ -205,10 +206,10 @@ export default function CharactersScreen({ show, navigate }) {
                   onDragOver={e => handleDragOver(e, index)}
                   onDrop={e => handleDrop(e, index)}
                   onDragLeave={() => setDragOverId(null)}
+                  onDragEnd={() => { dragItem.current = null; setDragOverId(null); }}
                   style={{
-                    background: dragOverId === index ? 'rgba(10,132,255,0.16)' : 'transparent',
                     borderTop: index > 0 ? '1px solid rgba(255,255,255,0.07)' : 'none',
-                    boxShadow: dragOverId === index ? 'inset 0 0 0 1px #0A84FF' : 'none',
+                    ...dropLineStyle(dragOverId, index, dragItem.current),
                     padding: '10px 14px',
                     cursor: 'grab', transition: 'background 0.1s',
                   }}>

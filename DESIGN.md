@@ -147,6 +147,9 @@ Several color frames are written **F1+2** (the F once, frames in number order), 
 ### Window and top bar
 The window has no title bar (`titleBarStyle: 'hidden'` in main.js). The macOS window buttons sit inside the top bar (`AppHeader`, 52px, Toolbar color) at its left, so the bar keeps 88px clear on the left, and 20px in full screen, when the buttons hide. The bar's empty space drags the window, and double-clicking it zooms. Anything clickable in it must opt out of dragging: buttons, fields, menus and links do automatically (index.html), and so does anything styled `cursor: pointer`. Screens without the top bar (license, loading) use the invisible `.window-drag-strip`.
 
+### Reordering (drag)
+While an item is dragged, a 2px accent (`#0A84FF`) line shows exactly where it will land: along the top edge of the row under the pointer (top half) or its bottom edge (bottom half). Side-by-side items (Spot Order) use a 3px line on the left or right edge. Don't highlight the whole row, and show no line where the drop wouldn't move anything. Shared code: `src/dropLine.js`.
+
 ### Settings-style grouped rows
 For settings and account screens, like macOS System Settings: a group title (Body 13, semibold, Label 1) above a rounded group (Fill 3, radius 10) of rows separated by hairlines (Separator, inset 12px). Each row is at least 36px: label on the left (Body 13, optional Subheadline 11 hint in Label 2 below), value (Label 2) or a control (Regular 24px button, switch) on the right. Rows that are links show `›` (opens something in the app) or `↗` (leaves the app) in Label 3 and turn accent text on hover. A short footer (Subheadline 11, Label 2) can sit under a group. Example: `src/components/SettingsPanel.jsx`.
 

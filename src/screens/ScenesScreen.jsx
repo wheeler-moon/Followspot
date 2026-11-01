@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { dropSlot, moveTo, moveItem, dropLineStyle } from '../dropLine';
 import Tips from '../components/Tips';
 import { TIPS } from '../tips';
 import AppHeader from '../components/AppHeader';
@@ -68,15 +69,14 @@ export default function ScenesScreen({ show, navigate }) {
 
   const handleDragOver = (e, index) => {
     e.preventDefault();
-    setDragOverId(index);
+    setDragOverId(dropSlot(e, index));
   };
 
   const handleDrop = (e, index) => {
     e.preventDefault();
-    if (dragItem.current === null || dragItem.current === index) { setDragOverId(null); return; }
-    const newScenes = [...scenes];
-    const dragged = newScenes.splice(dragItem.current, 1)[0];
-    newScenes.splice(index, 0, dragged);
+    const slot = dragOverId || dropSlot(e, index);
+    if (dragItem.current === null || moveTo(dragItem.current, slot) === dragItem.current) { dragItem.current = null; setDragOverId(null); return; }
+    const newScenes = moveItem(scenes, dragItem.current, slot);
     const updates = newScenes.map((s, i) => ({ id: s.id, sort_order: (i + 1) * 1000 }));
     ipcRenderer.sendSync('db-reorder-scenes', updates);
     dragItem.current = null;
@@ -162,10 +162,10 @@ export default function ScenesScreen({ show, navigate }) {
                         onDragOver={e => handleDragOver(e, index)}
                         onDrop={e => handleDrop(e, index)}
                         onDragLeave={() => setDragOverId(null)}
+                        onDragEnd={() => { dragItem.current = null; setDragOverId(null); }}
                         style={{
-                          background: dragOverId === index ? 'rgba(10,132,255,0.16)' : 'transparent',
                           borderTop: rowIndex > 0 ? '1px solid rgba(255,255,255,0.07)' : 'none',
-                          boxShadow: dragOverId === index ? 'inset 0 0 0 1px #0A84FF' : 'none',
+                          ...dropLineStyle(dragOverId, index, dragItem.current),
                           padding: '10px 12px 10px 10px',
                           cursor: 'grab', transition: 'background 0.1s',
                           minWidth: 0,

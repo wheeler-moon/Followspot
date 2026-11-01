@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { dropSlot, moveTo, moveItem, dropLineStyle } from '../../dropLine';
 import { irisSizeList, DEFAULT_IRIS_SIZES } from '../../irisSizes';
 const { ipcRenderer } = window.require('electron');
 
@@ -41,13 +42,8 @@ export default function IrisSizesPanel({ show }) {
   const [dragArmed, setDragArmed] = useState(null);
   const [dragFrom, setDragFrom] = useState(null);
   const [dragOver, setDragOver] = useState(null);
-  const drop = (to) => {
-    if (dragFrom !== null && dragFrom !== to) {
-      const list = [...sizes];
-      const [moved] = list.splice(dragFrom, 1);
-      list.splice(to, 0, moved);
-      save(list);
-    }
+  const drop = (slot) => {
+    if (dragFrom !== null && slot && moveTo(dragFrom, slot) !== dragFrom) save(moveItem(sizes, dragFrom, slot));
     setDragFrom(null); setDragOver(null); setDragArmed(null);
   };
 
@@ -96,12 +92,12 @@ export default function IrisSizesPanel({ show }) {
           <div key={i}
             draggable={dragArmed === i}
             onDragStart={e => { setDragFrom(i); e.dataTransfer.effectAllowed = 'move'; }}
-            onDragOver={e => { e.preventDefault(); setDragOver(i); }}
+            onDragOver={e => { e.preventDefault(); setDragOver(dropSlot(e, i)); }}
             onDragLeave={() => setDragOver(null)}
-            onDrop={e => { e.preventDefault(); drop(i); }}
+            onDrop={e => { e.preventDefault(); drop(dragOver || dropSlot(e, i)); }}
             onDragEnd={() => { setDragFrom(null); setDragOver(null); setDragArmed(null); }}
             style={{ display: 'flex', alignItems: 'center', gap: '10px', minHeight: '44px', padding: '6px 14px', borderTop: i ? '1px solid rgba(255,255,255,0.07)' : 'none',
-              background: dragOver === i && dragFrom !== i ? 'rgba(10,132,255,0.16)' : 'transparent', boxShadow: dragOver === i && dragFrom !== i ? 'inset 0 0 0 1px #0A84FF' : 'none', opacity: dragFrom === i ? 0.5 : 1 }}>
+              ...dropLineStyle(dragOver, i, dragFrom), opacity: dragFrom === i ? 0.5 : 1 }}>
             <div title="Drag to reorder" onMouseDown={() => setDragArmed(i)} onMouseUp={() => setDragArmed(null)}
               style={{ width: '24px', textAlign: 'center', fontSize: '15px', color: 'rgba(255,255,255,0.35)', cursor: 'grab', userSelect: 'none' }}>⠿</div>
             <input value={s.label} onChange={e => edit(i, 'label', e.target.value)} onBlur={() => commit(i)}

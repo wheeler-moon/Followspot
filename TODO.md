@@ -21,7 +21,6 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 - [ ] Custom actions: edit a custom action's name and icon after making it; a library of icons to pick from when making one (including SpotPlot's own action icons, duplicates are fine; users can still add their own); rename SpotPlot's built-in actions per show
 - [ ] Spot Notes: a button on each note that jumps to that cue in the cue list
 - [ ] Notes sidebar in the cue list: a toggle for a left sidebar showing current notes, where you can write notes during a run; stays in step with the Spot Notes page
-- [ ] Reordering scenes, characters and iris sizes: while dragging, show a line where the item will land instead of highlighting the item it goes in front of
 - [ ] Beta feedback: add items here as testers report them
 - [ ] Right-click menu on scene headers (rename, add cue), same real macOS menu (`show-context-menu` in main.js). The LQ number's menu is done
 - [ ] ⌘C / ⌘V for a cue box without right-clicking (needs a way to select a box first)

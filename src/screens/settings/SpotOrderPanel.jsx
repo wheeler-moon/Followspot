@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { dropSlot, moveTo, moveItem, dropLineStyle } from '../../dropLine';
 const { ipcRenderer } = window.require('electron');
 
 export default function SpotOrderPanel({ show }) {
@@ -20,15 +21,14 @@ export default function SpotOrderPanel({ show }) {
 
   const handleDragOver = (e, index) => {
     e.preventDefault();
-    setDragOverId(index);
+    setDragOverId(dropSlot(e, index, true));
   };
 
   const handleDrop = (e, index) => {
     e.preventDefault();
-    if (dragItem.current === null || dragItem.current === index) { setDragOverId(null); return; }
-    const newSpots = [...spots];
-    const dragged = newSpots.splice(dragItem.current, 1)[0];
-    newSpots.splice(index, 0, dragged);
+    const slot = dragOverId || dropSlot(e, index, true);
+    if (dragItem.current === null || moveTo(dragItem.current, slot) === dragItem.current) { dragItem.current = null; setDragOverId(null); return; }
+    const newSpots = moveItem(spots, dragItem.current, slot);
     setSpots(newSpots);
     const updates = newSpots.map((s, i) => ({ id: s.id, display_order: (i + 1) * 1000 }));
     ipcRenderer.sendSync('db-reorder-spots', updates);
@@ -49,10 +49,12 @@ export default function SpotOrderPanel({ show }) {
             onDragOver={e => handleDragOver(e, index)}
             onDrop={e => handleDrop(e, index)}
             onDragLeave={() => setDragOverId(null)}
+            onDragEnd={() => { dragItem.current = null; setDragOverId(null); }}
             style={{
               flex: 1,
-              background: dragOverId === index ? 'rgba(10,132,255,0.16)' : 'rgba(255,255,255,0.05)',
-              border: `2px solid ${dragOverId === index ? '#0A84FF' : 'rgba(255,255,255,0.1)'}`,
+              background: 'rgba(255,255,255,0.05)',
+              border: '2px solid rgba(255,255,255,0.1)',
+              ...dropLineStyle(dragOverId, index, dragItem.current, true),
               borderRadius: '10px',
               padding: '16px 12px',
               cursor: 'grab',
