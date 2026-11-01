@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import useEscape from '../useEscape';
 import { getCachedLicense, setCachedLicense, validateLicense, deactivateLicense } from '../license';
 import WhatsNew from './WhatsNew';
 const { ipcRenderer, shell } = window.require('electron');
@@ -154,13 +155,11 @@ export default function SettingsPanel({ onClose }) {
   useEffect(() => {
     const onStatus = (_e, status) => setUpdates({ ...status });
     ipcRenderer.on('updates-status', onStatus);
-    const onKey = (e) => {
-      if (e.key !== 'Escape' || confirmDeactivate) return;
-      if (showWhatsNew) setShowWhatsNew(false); else onClose();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => { ipcRenderer.removeListener('updates-status', onStatus); window.removeEventListener('keydown', onKey); };
-  }, [confirmDeactivate, showWhatsNew]);
+    return () => ipcRenderer.removeListener('updates-status', onStatus);
+  }, []);
+  // Escape closes the top-most: the deactivate box, then the panel (What's New handles its own)
+  useEscape(onClose);
+  useEscape(() => { if (!deactivating) setConfirmDeactivate(false); }, confirmDeactivate);
 
   const copyKey = () => {
     if (!lic?.license_key) return;

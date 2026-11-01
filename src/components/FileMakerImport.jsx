@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import useEscape from '../useEscape';
 const { ipcRenderer } = window.require('electron');
 
 // Import from FileMaker: what's in the file, then a menu for each action or iris size in the file that
@@ -42,6 +43,7 @@ export default function FileMakerImport({ summary, onCancel, onImported }) {
   const [actions, setActions] = useState(() => start(summary.actions));
   const [sizes, setSizes] = useState(() => start(summary.sizes));
   const [importing, setImporting] = useState(false);
+  useEscape(() => { if (!importing) onCancel(); });
   const [error, setError] = useState(null);
 
   const doImport = () => {

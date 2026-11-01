@@ -1409,7 +1409,7 @@ function buildSpotNotesHTML({ show, spots, cues, scenes, spotCues, characters, l
 </html>`;
 }
 
-// Cast grid: photo, character, actor and costume notes for every character, with the standard show header
+// Cast grid: photo, character, performer and costume notes for every character, with the standard show header
 function buildCharactersHTML({ show, characters, label, showCostumeNotes }) {
   const fs = require('fs');
   const imageData = (filePath) => {

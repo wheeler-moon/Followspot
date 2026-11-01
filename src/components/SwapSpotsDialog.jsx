@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import useEscape from '../useEscape';
 const { ipcRenderer } = window.require('electron');
 
 const secondaryBtn = { flex: 1, height: '28px', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: '14px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' };
@@ -9,6 +10,7 @@ export default function SwapSpotsDialog({ spots, onClose, onSwapped }) {
   const [a, setA] = useState(spots[0]?.id);
   const [b, setB] = useState(spots[1]?.id);
   const [confirming, setConfirming] = useState(false);
+  useEscape(() => (confirming ? setConfirming(false) : onClose()));
   const [gelsDiffer, setGelsDiffer] = useState(false);
 
   const spotLabel = id => 'Spot ' + (spots.find(s => s.id === id)?.spot_number ?? '?');

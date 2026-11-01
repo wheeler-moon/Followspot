@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import useEscape from '../useEscape';
 import ShowInfoPanel from './settings/ShowInfoPanel';
 import SpotSettingsPanel from './settings/SpotSettingsPanel';
 import SpotOrderPanel from './settings/SpotOrderPanel';
@@ -24,6 +25,7 @@ const SECTIONS = [
 
 export default function ShowSettingsModal({ show, onClose, onShowUpdate, initialSection = 'show-info' }) {
   const [activeSection, setActiveSection] = useState(initialSection);
+  useEscape(onClose);
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}

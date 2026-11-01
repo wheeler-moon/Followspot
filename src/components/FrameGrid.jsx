@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import useEscape from '../useEscape';
 import { GelFramePicker } from './GelPicker';
 
 export const MAX_FRAMES = 6;
@@ -37,11 +38,11 @@ export default function FrameGrid({ frames, cardBackground, onGelChange, onRemov
 
 // Asked when a frame that cues use is removed: switch those cues to another frame, or take it out of them.
 export function RemoveFrameDialog({ slot, cueCount, otherSlots, onCancel, onRemove }) {
+  useEscape(onCancel);
   const [replaceWith, setReplaceWith] = useState('');
   const btn = { flex: 1, height: '28px', borderRadius: '6px', border: 'none', fontSize: '13px', fontWeight: '500', cursor: 'pointer' };
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-      onKeyDown={e => e.key === 'Escape' && onCancel()}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ width: '300px', background: '#2A2A2A', borderRadius: '16px', padding: '16px', boxShadow: '0 18px 48px rgba(0,0,0,0.45)' }}>
         <div style={{ fontSize: '13px', fontWeight: '700', color: '#FFFFFF', marginBottom: '6px' }}>Remove Frame {slot}?</div>
         <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.78)', marginBottom: '12px' }}>

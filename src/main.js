@@ -1087,10 +1087,11 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
       type: 'question',
       message: `Add "${name}" to this show's characters?`,
       detail: 'It will show on the Characters screen and in every cue\'s character list. Or keep it as a custom name for just this cue.',
-      buttons: ['Add to Characters', 'Keep as Custom'],
+      // Keeping it custom is the default (Return); adding it starts unticked for the Characters sheet
+      buttons: ['Keep as Custom', 'Add to Characters'],
       defaultId: 0,
-      cancelId: 1,
-    }) === 0;
+      cancelId: 0,
+    }) === 1;
   });
 
   ipcMain.on('db-delete-cue', (event, cueId) => {

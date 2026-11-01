@@ -141,7 +141,7 @@ export default function CharactersScreen({ show, navigate }) {
                   onKeyDown={e => e.key === 'Enter' && addCharacter()} placeholder="e.g. MARIO" />
               </div>
               <div>
-                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Actor name</div>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Performer</div>
                 <input style={inputStyle} value={newActor} onChange={e => setNewActor(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addCharacter()} placeholder="e.g. John Smith" />
               </div>
@@ -220,7 +220,7 @@ export default function CharactersScreen({ show, navigate }) {
                           <input style={inputStyle} value={editName} onChange={e => setEditName(e.target.value)} />
                         </div>
                         <div>
-                          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Actor name</div>
+                          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Performer</div>
                           <input style={inputStyle} value={editActor} onChange={e => setEditActor(e.target.value)} />
                         </div>
                       </div>

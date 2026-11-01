@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import useEscape from '../useEscape';
 import Tips from '../components/Tips';
 import { TIPS } from '../tips';
 import AppHeader from '../components/AppHeader';
@@ -81,6 +82,7 @@ function ActionIcon({ action, size = 20 }) {
 }
 
 function ActionPicker({ value, onChange, onClose, pos, customActions }) {
+  useEscape(onClose);
   return (
     <div style={{ position: 'fixed', top: pos ? pos.top : 0, left: pos ? pos.left : 0, zIndex: 99999, background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.14)', borderRadius: '10px', padding: '8px', width: '280px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', marginTop: '4px' }}>
       {[...ACTIONS, ...(customActions || []).map(a => ({ name: a.name, short: a.name.substring(0, 4), color: a.color || 'rgba(255,255,255,0.62)', icon: a.icon || null }))].map(a => (
@@ -375,7 +377,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
             {showCustomTime ? (
               <input autoFocus value={customTimeVal} onChange={e => setCustomTimeVal(e.target.value)}
                 onBlur={() => { onUpdate(spotCue.id, 'fade_time', customTimeVal); setShowCustomTime(false); }}
-                onKeyDown={e => { if (e.key === 'Enter') { onUpdate(spotCue.id, 'fade_time', customTimeVal); setShowCustomTime(false); }}}
+                onKeyDown={e => { if (e.key === 'Enter') { onUpdate(spotCue.id, 'fade_time', customTimeVal); setShowCustomTime(false); } if (e.key === 'Escape') setShowCustomTime(false); }}
                 style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid #0A84FF', borderRadius: '6px', color: '#FFFFFF', padding: '3px 4px', fontSize: '11px', outline: 'none' }}
                 placeholder="e.g. 2.5" />
             ) : (
@@ -572,15 +574,15 @@ function CueRow({ onDragFinished, onCellMenu, menuCell, colorChangesBySpot, cue,
 
   return (
     <>
-      <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+      <tr data-cue-id={cue.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
         onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.025)'}
         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
         <td style={{ padding: '8px 6px', borderRight: '1px solid rgba(255,255,255,0.06)', verticalAlign: 'top', width: '90px', minWidth: '90px' }}>
           <div data-tour="cue-lq" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
             {editingLQ ? (
               <input autoFocus value={lqVal} onChange={e => setLqVal(e.target.value)}
-                onBlur={saveLQ} onKeyDown={e => e.key === 'Enter' && saveLQ()}
-                style={{ width: '64px', background: 'rgba(255,255,255,0.05)', border: '1px solid #0A84FF', borderRadius: '6px', color: '#FFFFFF', padding: '3px 6px', fontSize: '16px', fontWeight: '700', textAlign: 'center', outline: 'none' }} />
+                onBlur={saveLQ} onKeyDown={e => { if (e.key === 'Enter') saveLQ(); if (e.key === 'Escape') { setLqVal(cue.lq_number || ''); setEditingLQ(false); } }}
+                style={{ width: '100%', maxWidth: '78px', boxSizing: 'border-box', background: 'rgba(255,255,255,0.05)', border: '1px solid #0A84FF', borderRadius: '6px', color: '#FFFFFF', padding: '3px 2px', fontSize: '16px', fontWeight: '700', textAlign: 'center', outline: 'none', fontVariantNumeric: 'tabular-nums' }} />
             ) : (
               <div onClick={() => setEditingLQ(true)} style={{ fontSize: '20px', fontWeight: '700', color: lqVal ? '#FFFFFF' : 'rgba(255,255,255,0.28)', cursor: 'pointer', minHeight: '24px', fontVariantNumeric: 'tabular-nums' }}>
                 {lqVal || '—'}
@@ -675,11 +677,14 @@ export default function CueListScreen({ show, navigate }) {
   });
   const [showSceneModal, setShowSceneModal] = useState(false);
   const [showCharModal, setShowCharModal] = useState(false);
+  useEscape(() => setShowSceneModal(false), showSceneModal);
+  useEscape(() => setShowCharModal(false), showCharModal);
   const [newSceneLabel, setNewSceneLabel] = useState('');
   const [newSceneSong, setNewSceneSong] = useState('');
   const [newCharName, setNewCharName] = useState('');
   const [newCharActor, setNewCharActor] = useState('');
-  const [selectedSceneId, setSelectedSceneId] = useState(null);
+  const [selectedSceneId, setSelectedSceneId] = useState(null);   // where new cues go
+  const [jumpSceneId, setJumpSceneId] = useState('');   // the Jump to menu: starts as "Jump to scene…" each time
   const scrollRef = useRef(null);
   // Sticky scene headers sit just under the sticky spot header
   const theadRef = useRef(null);
@@ -722,8 +727,16 @@ export default function CueListScreen({ show, navigate }) {
   };
   const [dragTarget, setDragTarget] = useState(null);
   const [showDragModal, setShowDragModal] = useState(false);
+  useEscape(() => { setShowDragModal(false); setDragSource(null); setDragTarget(null); setDragModalStep('action'); }, showDragModal);
   const [dragModalStep, setDragModalStep] = useState('action');
   const [cuePopup, setCuePopup] = useState(null);
+  // Escape closes the cue box's options (saving the spot note), the drag box, and the add scene / character boxes
+  const closeCuePopup = () => {
+    const ta = document.getElementById('popup-note-textarea');
+    if (ta && cuePopup?.spotCue?.id) updateSpotCue(cuePopup.spotCue.id, 'spot_note', ta.value);
+    setCuePopup(null);
+  };
+  useEscape(() => closeCuePopup(), !!cuePopup);
   const undoStackRef = useRef([]);
   const [popupNote, setPopupNote] = useState('');
 
@@ -751,23 +764,33 @@ export default function CueListScreen({ show, navigate }) {
     const customActionData = updatedShow?.custom_actions ? JSON.parse(updatedShow.custom_actions) : [];
     setCustomActions(customActionData);
     setListFields(Object.fromEntries(Object.entries(cueFieldSettings(updatedShow?.cue_fields)).map(([k, v]) => [k, v.list])));
-    if (safe.scenes && safe.scenes.length > 0) {
-      const savedScene = sessionStorage.getItem(`cueScene_${show.id}`);
-      if (savedScene) {
-        setSelectedSceneId(parseInt(savedScene));
-      } else if (!selectedSceneId) {
-        setSelectedSceneId(safe.scenes[0].id);
-      }
-    }
-    setTimeout(() => {
-      const savedScroll = sessionStorage.getItem(`cueScroll_${show.id}`);
-      if (savedScroll && scrollRef.current) {
-        scrollRef.current.scrollTop = parseInt(savedScroll);
-      }
-    }, 100);
+    if (safe.scenes && safe.scenes.length > 0 && !selectedSceneId) setSelectedSceneId(safe.scenes[0].id);
   };
 
   useEffect(() => { load(); }, []);
+
+  // Coming back to the cue list reopens exactly where you left off (kept per show while SpotPlot is open).
+  // The position is put back once the cues are drawn; until then scrolling isn't saved, so it can't be overwritten.
+  const scrollRestored = useRef(false);
+  useEffect(() => {
+    if (!loaded || scrollRestored.current) return;
+    const saved = JSON.parse(sessionStorage.getItem(`cueScroll_${show.id}`) || 'null');
+    if (!saved) { scrollRestored.current = true; return; }
+    // Put the cue that was at the top back at the same spot (rows above can settle to slightly different
+    // heights while the list draws, so a pixel count alone would drift). Re-checked for a few frames.
+    let tries = 0;
+    const put = () => {
+      const el = scrollRef.current;
+      if (!el) return;
+      el.scrollLeft = saved.left || 0;
+      const row = saved.cueId && el.querySelector(`tr[data-cue-id="${saved.cueId}"]`);
+      if (row) el.scrollTop += (row.getBoundingClientRect().top - el.getBoundingClientRect().top) - saved.offset;
+      else el.scrollTop = saved.top;
+      if (++tries > 20) scrollRestored.current = true;
+      else requestAnimationFrame(put);
+    };
+    requestAnimationFrame(put);
+  }, [loaded, data]);
 
     const dataRef = useRef(data);
   useEffect(() => { dataRef.current = data; }, [data]);
@@ -1069,6 +1092,20 @@ export default function CueListScreen({ show, navigate }) {
     load();
   };
 
+  // Renaming a scene from its header in the cue list (saved to the scene, so it changes everywhere)
+  const [editingScene, setEditingScene] = useState(null);   // { id, label, song }
+  useEscape(() => setEditingScene(null), !!editingScene);
+  const sceneInputStyle = { height: '22px', background: 'rgba(0,0,0,0.25)', border: '1px solid #0A84FF', borderRadius: '5px', padding: '0 6px', fontSize: '12px', outline: 'none', fontFamily: 'inherit', textAlign: 'center' };
+  const saveSceneName = () => {
+    const edit = editingScene;
+    setEditingScene(null);
+    if (!edit) return;
+    const scene = (data?.scenes || []).find(sc => sc.id === edit.id);
+    if (!scene || !edit.label.trim() || (edit.label.trim() === scene.label && edit.song.trim() === (scene.song || ''))) return;
+    ipcRenderer.sendSync('db-update-scene', { sceneId: scene.id, label: edit.label.trim(), song: edit.song.trim(), actBreak: !!scene.act_break });
+    setData(d => ({ ...d, scenes: (d?.scenes || []).map(sc => sc.id === scene.id ? { ...sc, label: edit.label.trim(), song: edit.song.trim() } : sc) }));
+  };
+
 const groupedCues = () => {
     const cues = data?.cues || [];
     const scenes = data?.scenes || [];
@@ -1105,9 +1142,10 @@ const groupedCues = () => {
     <AppHeader title="Cue List" onBack={() => navigate('show', show)} backLabel={show.title}>
         <div style={{ flex: 1 }} />
          <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)' }}>Jump to</span>
-        <select value={selectedSceneId || ''} onChange={e => {
+        <select value={jumpSceneId} onChange={e => {
           const sceneId = e.target.value ? parseInt(e.target.value) : null;
           setSelectedSceneId(sceneId);
+          setJumpSceneId(e.target.value);
           if (sceneId && scrollRef.current) {
             const sceneRow = document.querySelector(`[data-scene-id="${sceneId}"]`);
             if (sceneRow && scrollRef.current) {
@@ -1133,9 +1171,13 @@ const groupedCues = () => {
 
       <div ref={scrollRef} onScroll={() => {
         updateContinuedScene();
-        if (scrollRef.current) {
-          sessionStorage.setItem(`cueScroll_${show.id}`, scrollRef.current.scrollTop);
-          sessionStorage.setItem(`cueScene_${show.id}`, selectedSceneId);
+        const el = scrollRef.current;
+        if (el && scrollRestored.current) {
+          // The first cue row below the pinned spot names, and how far down it sits
+          const topEdge = el.getBoundingClientRect().top + theadHeight;
+          const row = [...el.querySelectorAll('tr[data-cue-id]')].find(r => r.getBoundingClientRect().bottom > topEdge);
+          sessionStorage.setItem(`cueScroll_${show.id}`, JSON.stringify({ top: el.scrollTop, left: el.scrollLeft,
+            cueId: row ? row.dataset.cueId : null, offset: row ? row.getBoundingClientRect().top - el.getBoundingClientRect().top : 0 }));
         }
       }} style={{ flex: 1, overflowY: 'auto', overflowX: 'auto' }}>
         {!loaded ? (
@@ -1152,10 +1194,11 @@ const groupedCues = () => {
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', position: 'relative' }}>
             <thead ref={theadRef} style={{ position: 'sticky', top: 0, zIndex: 10 }}>
-              <tr style={{ background: '#262626', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                <th style={{ padding: '8px', textAlign: 'left', fontSize: '10px', color: 'rgba(255,255,255,0.28)', fontWeight: '600', width: '90px', borderRight: '1px solid rgba(255,255,255,0.06)' }}>CUE</th>
+              {/* The bar's bottom line is drawn inside each cell (boxShadow): a table border wouldn't move with the pinned bar */}
+              <tr style={{ background: '#262626' }}>
+                <th style={{ boxShadow: 'inset 0 -1px 0 rgba(255,255,255,0.1)', padding: '8px', textAlign: 'left', fontSize: '10px', color: 'rgba(255,255,255,0.28)', fontWeight: '600', width: '90px', borderRight: '1px solid rgba(255,255,255,0.06)' }}>CUE</th>
                 {(data?.spots || []).map(spot => (
-                  <th key={spot.id} style={{ padding: '8px 18px', textAlign: 'left', verticalAlign: 'top', borderRight: '1px solid rgba(255,255,255,0.12)', minWidth: '260px', width: `${100 / (data?.spots || []).length}%` }}>
+                  <th key={spot.id} style={{ boxShadow: 'inset 0 -1px 0 rgba(255,255,255,0.1)', padding: '8px 18px', textAlign: 'left', verticalAlign: 'top', borderRight: '1px solid rgba(255,255,255,0.12)', minWidth: '260px', width: `${100 / (data?.spots || []).length}%` }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: '13px', color: '#409CFF', fontWeight: '700' }}>SPOT {spot.spot_number}</div>
@@ -1175,11 +1218,33 @@ const groupedCues = () => {
               {groupedCues().map((group, groupIndex, groups) => (
                 <React.Fragment key={group.sceneId || 'unassigned'}>
                   <tr data-scene-id={group.sceneId} data-scene-key={group.sceneId || 'unassigned'}>
-                    <td colSpan={(data?.spots || []).length + 1} style={{ position: 'sticky', top: theadHeight, zIndex: 6, padding: '7px 14px', textAlign: 'center', background: group.actBreak ? '#3E301B' : '#203A2A', borderTop: `1px solid ${group.actBreak ? 'rgba(255,159,10,0.35)' : 'rgba(48,209,88,0.32)'}`, borderBottom: `1px solid ${group.actBreak ? 'rgba(255,159,10,0.35)' : 'rgba(48,209,88,0.32)'}` }}>
-                      <span style={{ fontSize: '12px', fontWeight: '700', color: group.actBreak ? '#FF9F0A' : '#30D158', letterSpacing: '0.01em' }}>
-                        {continuedScene === String(group.sceneId || 'unassigned') ? `[${group.sceneLabel}]` : group.sceneLabel}
-                      </span>
-                      {group.sceneSong && <span style={{ fontSize: '12px', color: group.actBreak ? 'rgba(255,159,10,0.75)' : 'rgba(48,209,88,0.72)', marginLeft: '8px' }}>{group.sceneSong}</span>}
+                    <td colSpan={(data?.spots || []).length + 1} style={{ position: 'sticky', top: Math.floor(theadHeight) - 1, zIndex: 6, padding: '7px 14px', textAlign: 'center', background: group.actBreak ? '#3E301B' : '#203A2A',
+                      // Lines drawn inside the cell: a table's own borders don't move with a pinned (sticky) cell, which left
+                      // a see-through sliver above it. Tucked 1px under the spot-name bar so no cue shows between them.
+                      boxShadow: `inset 0 1px 0 ${group.actBreak ? 'rgba(255,159,10,0.35)' : 'rgba(48,209,88,0.32)'}, inset 0 -1px 0 ${group.actBreak ? 'rgba(255,159,10,0.35)' : 'rgba(48,209,88,0.32)'}` }}>
+                      {editingScene && editingScene.id === group.sceneId ? (
+                        // Double-clicked: rename the scene right here (Enter or clicking away saves, Escape cancels)
+                        <span onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget)) saveSceneName(); }}
+                          style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
+                          <input autoFocus value={editingScene.label} placeholder="Scene"
+                            onChange={e => setEditingScene(v => ({ ...v, label: e.target.value }))}
+                            onKeyDown={e => { if (e.key === 'Enter') saveSceneName(); }}
+                            style={{ ...sceneInputStyle, width: '180px', fontWeight: '700', color: group.actBreak ? '#FF9F0A' : '#30D158' }} />
+                          <input value={editingScene.song} placeholder="Song or title"
+                            onChange={e => setEditingScene(v => ({ ...v, song: e.target.value }))}
+                            onKeyDown={e => { if (e.key === 'Enter') saveSceneName(); }}
+                            style={{ ...sceneInputStyle, width: '220px', color: group.actBreak ? 'rgba(255,159,10,0.85)' : 'rgba(48,209,88,0.85)' }} />
+                        </span>
+                      ) : (
+                        <span title={group.sceneId ? 'Double-click to rename' : undefined}
+                          onDoubleClick={() => group.sceneId && setEditingScene({ id: group.sceneId, label: group.sceneLabel || '', song: group.sceneSong || '' })}
+                          style={{ cursor: group.sceneId ? 'text' : 'default' }}>
+                          <span style={{ fontSize: '12px', fontWeight: '700', color: group.actBreak ? '#FF9F0A' : '#30D158', letterSpacing: '0.01em' }}>
+                            {continuedScene === String(group.sceneId || 'unassigned') ? `[${group.sceneLabel}]` : group.sceneLabel}
+                          </span>
+                          {group.sceneSong && <span style={{ fontSize: '12px', color: group.actBreak ? 'rgba(255,159,10,0.75)' : 'rgba(48,209,88,0.72)', marginLeft: '8px' }}>{group.sceneSong}</span>}
+                        </span>
+                      )}
                     </td>
                   </tr>
                   {group.cues.map((cue, cueIndex) => (
@@ -1461,7 +1526,7 @@ const groupedCues = () => {
                 placeholder="e.g. MARIO" />
             </div>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.62)', display: 'block', marginBottom: '4px' }}>Actor name (optional)</label>
+              <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.62)', display: 'block', marginBottom: '4px' }}>Performer (optional)</label>
               <input value={newCharActor} onChange={e => setNewCharActor(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addCharacter()}
                 style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: '#FFFFFF', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import useEscape from '../useEscape';
 const { ipcRenderer } = window.require('electron');
 
 const inputStyle = {
@@ -14,6 +15,7 @@ export function GelPicker({ value, onChange, placeholder }) {
   const [query, setQuery] = useState(value || '');
   const [results, setResults] = useState([]);
   const [open, setOpen] = useState(false);
+  useEscape(() => setOpen(false), open);   // closes the results list, not the window it's in
   const ref = useRef();
 
   useEffect(() => {

@@ -72,7 +72,7 @@ export default function PrintScreen({ show, navigate }) {
     { key: 'caller', kind: 'caller', title: 'Caller sheet', sub: 'All spots side by side' },
     { key: 'color', kind: 'color', title: 'Color load', sub: 'Gel frames for every spot' },
     { key: 'notes', kind: 'notes', title: 'Spot notes', sub: 'Notes for operators' },
-    { key: 'characters', kind: 'characters', title: 'Characters', sub: 'Cast photos, actors & costumes' },
+    { key: 'characters', kind: 'characters', title: 'Characters', sub: 'Cast photos, performers & costumes' },
     { key: 'scenes', kind: 'scenes', title: 'Scene list', sub: 'Scenes, songs, cues and pages' },
     { key: 'actions', kind: 'actions', title: 'Action key', sub: 'What every action symbol means' },
   ];

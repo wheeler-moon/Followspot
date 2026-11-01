@@ -6,6 +6,13 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- "Actor" is now "Performer" everywhere: the Characters screen, the add-character box, Print and the Characters sheet
+- When you type a new character name in a cue, the question now defaults to **Keep as Custom**; choosing Add to Characters still starts it unticked for the Characters sheet
+- Escape closes menus, pop-ups and dialogs throughout the app: Show Settings, a cue's options, the action menu, gel search results, the add scene / character boxes, Settings, What's New and more. It closes only the top-most one
+- Cue list: no more thin see-through line above a scene header when it's pinned at the top while scrolling
+- Cue list: double-click a scene header to rename the scene and its song right there; the new name shows everywhere
+- Cue list: the LQ number box is wider, so long numbers (like 1234.5) fit while typing. Escape cancels a change
+- Cue list: leaving and coming back reopens exactly where you were, and the Jump to menu starts fresh
 - First-run tips for Show Settings: the first time you open it, and the first time you open Spot Settings, Iris Sizes or Cue Settings, short tips point out the controls (color frames, copying colors, the permanent color, swapping spots, adding iris sizes, what shows where). Help → Show Tips Again brings them back
 - The window's grey title bar is gone: the red, yellow and green window buttons now sit in SpotPlot's own top bar, like Apple's apps on current macOS. Drag the window by any empty part of the top bar, or double-click it to zoom
 

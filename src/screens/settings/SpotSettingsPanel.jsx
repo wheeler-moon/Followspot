@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import useEscape from '../../useEscape';
 import SwapSpotsDialog from '../../components/SwapSpotsDialog';
 import CopyColorsSelect from '../../components/CopyColorsSelect';
 import { GelFramePicker } from '../../components/GelPicker';
@@ -133,6 +134,7 @@ function SpotCard({ spot, spotNumbers, colorSlots, onUpdateSpot, onUpdateGel, on
 
 // Asks before deleting a spot: it's permanent, and the other spots can keep their numbers or be renumbered
 function DeleteSpotDialog({ spotNumber, spotNumbers, onCancel, onDelete }) {
+  useEscape(onCancel);
   const [renumber, setRenumber] = useState(false);
   const others = spotNumbers.filter(n => n !== spotNumber).sort((a, b) => a - b);
   const moves = others.map((n, i) => [n, i + 1]).filter(([from, to]) => from !== to);

@@ -1,4 +1,5 @@
 import React from 'react';
+import useEscape from '../useEscape';
 import changelog from '../../CHANGELOG.md';
 
 // What's New: this version's section of CHANGELOG.md, built into the app (no internet needed).
@@ -57,6 +58,7 @@ function Notes({ body }) {
 }
 
 export default function WhatsNew({ version, onClose }) {
+  useEscape(onClose);
   const notes = releaseNotes(version);
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
