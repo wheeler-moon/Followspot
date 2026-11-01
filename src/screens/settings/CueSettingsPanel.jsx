@@ -31,7 +31,7 @@ export default function CueSettingsPanel({ show }) {
         <div style={colHead}>Show on cue list</div>
         <div style={colHead}>Show on print</div>
       </div>
-      <div style={{ background: '#2A2A2A', borderRadius: '10px', overflow: 'hidden' }}>
+      <div data-tour="cue-fields" style={{ background: '#2A2A2A', borderRadius: '10px', overflow: 'hidden' }}>
         {CUE_FIELDS.map(({ key, label }, i) => (
           <div key={key} style={{ display: 'flex', alignItems: 'center', minHeight: '40px', padding: '0 14px', borderTop: i > 0 ? '1px solid rgba(255,255,255,0.07)' : 'none' }}>
             <div style={{ flex: 1, fontSize: '13px', color: '#FFFFFF' }}>{label}</div>

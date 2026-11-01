@@ -91,7 +91,7 @@ export default function IrisSizesPanel({ show }) {
         <div style={{ ...colHead, width: '72px' }}>Button</div>
         <div style={{ ...colHead, flex: 1 }}>Full name</div>
       </div>
-      <div style={{ background: '#2A2A2A', borderRadius: '10px', overflow: 'hidden', marginBottom: '8px' }}>
+      <div data-tour="iris-list" style={{ background: '#2A2A2A', borderRadius: '10px', overflow: 'hidden', marginBottom: '8px' }}>
         {sizes.map((s, i) => (
           <div key={i}
             draggable={dragArmed === i}
@@ -120,7 +120,7 @@ export default function IrisSizesPanel({ show }) {
       <div style={{ fontSize: '12px', color: '#30D158', minHeight: '18px', margin: '0 0 16px 14px' }}>{message}</div>
 
       <div style={{ fontSize: '13px', fontWeight: '600', color: 'rgba(255,255,255,0.55)', margin: '0 0 6px 14px' }}>Add a size</div>
-      <div style={{ background: '#2A2A2A', borderRadius: '10px', padding: '12px 14px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+      <div data-tour="iris-add" style={{ background: '#2A2A2A', borderRadius: '10px', padding: '12px 14px', display: 'flex', gap: '10px', alignItems: 'center' }}>
         <input style={{ ...field, width: '72px' }} value={newLabel} onChange={e => setNewLabel(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && addSize()} placeholder="Ks" />
         <input style={{ ...field, flex: 1 }} value={newValue} onChange={e => setNewValue(e.target.value)}

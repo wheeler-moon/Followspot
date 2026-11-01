@@ -43,13 +43,13 @@ function SpotCard({ spot, spotNumbers, colorSlots, onUpdateSpot, onUpdateGel, on
   const permSlot = slots.find(s => s.is_permanent);
 
   return (
-    <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+    <div data-tour="spot-card" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
         <div style={{ fontSize: '14px', fontWeight: '700', color: '#409CFF' }}>
           Spot {spot.spot_number}
         </div>
         <div style={{ flex: 1 }} />
-        <CopyColorsSelect otherSpots={otherSpots} onPick={key => { if (onCopyColorsFrom(parseInt(key))) setCopyCount(c => c + 1); }} />
+        <span data-tour="spot-copy"><CopyColorsSelect otherSpots={otherSpots} onPick={key => { if (onCopyColorsFrom(parseInt(key))) setCopyCount(c => c + 1); }} /></span>
         <button onClick={() => setConfirmDelete(true)} style={{ background: 'rgba(255,69,58,0.14)', border: 'none', borderRadius: '6px', color: '#FF453A', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', marginLeft: '8px' }}>
           Delete spot
         </button>
@@ -101,11 +101,11 @@ function SpotCard({ spot, spotNumbers, colorSlots, onUpdateSpot, onUpdateGel, on
             onDelete();
           }} />
       )}
-      <FrameGrid key={copyCount} cardBackground="#2A2A2A"
+      <div data-tour="spot-frames"><FrameGrid key={copyCount} cardBackground="#2A2A2A"
         frames={regularSlots.map(s => ({ key: s.id, slot: s.slot_number, gel_number: s.gel_number, gel_name: s.gel_name, row: s }))}
         onGelChange={(f, gel) => onUpdateGel(spot.id, f.row.id, gel)}
         onRemove={f => askRemoveFrame(f.row)}
-        onAdd={addFrame} />
+        onAdd={addFrame} /></div>
       {removing && (
         <RemoveFrameDialog slot={removing.slot.slot_number} cueCount={removing.cueCount}
           otherSlots={regularSlots.filter(s => s.id !== removing.slot.id).map(s => s.slot_number)}
@@ -113,7 +113,7 @@ function SpotCard({ spot, spotNumbers, colorSlots, onUpdateSpot, onUpdateGel, on
           onRemove={replaceWith => removeFrame(removing.slot, replaceWith)} />
       )}
       {/* Checked when the spot has a permanent gel (or the box was just ticked) */}
-      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: '#FFFFFF', margin: '4px 0 8px' }}>
+      <label data-tour="spot-permanent" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: '#FFFFFF', margin: '4px 0 8px' }}>
         <input type="checkbox" checked={!!(permSlot && (permJustOn || permSlot.gel_number || permSlot.gel_name))} onChange={e => { setPermJustOn(e.target.checked); onSetPermanent(spot.id, e.target.checked); }}
           style={{ width: '15px', height: '15px', accentColor: '#0A84FF', cursor: 'pointer', margin: 0 }} />
         Permanent color
@@ -236,7 +236,7 @@ export default function SpotSettingsPanel({ show }) {
     <div>
       {spots.length >= 2 && (
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
-          <button onClick={() => setShowSwap(true)} style={{ height: '28px', padding: '0 14px', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: '14px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
+          <button data-tour="swap-spots" onClick={() => setShowSwap(true)} style={{ height: '28px', padding: '0 14px', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: '14px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
             ⇄ Swap spots
           </button>
         </div>

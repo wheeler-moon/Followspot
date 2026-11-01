@@ -7,6 +7,8 @@ import CustomActionsPanel from './settings/CustomActionsPanel';
 import EosControlPanel from './settings/EosControlPanel';
 import IpadSyncPanel from './settings/IpadSyncPanel';
 import CueSettingsPanel from './settings/CueSettingsPanel';
+import Tips from '../components/Tips';
+import { TIPS } from '../tips';
 const { ipcRenderer } = window.require('electron');
 
 const SECTIONS = [
@@ -30,7 +32,7 @@ export default function ShowSettingsModal({ show, onClose, onShowUpdate, initial
         onClick={e => e.stopPropagation()}>
 
         {/* Sidebar */}
-        <div style={{ width: '200px', background: '#242424', borderRight: '1px solid rgba(0,0,0,0.35)', padding: '20px 0', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+        <div data-tour="settings-sections" style={{ width: '200px', background: '#242424', borderRight: '1px solid rgba(0,0,0,0.35)', padding: '20px 0', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
           <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.40)', padding: '0 20px', marginBottom: '10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {show.title}
           </div>
@@ -64,6 +66,8 @@ export default function ShowSettingsModal({ show, onClose, onShowUpdate, initial
             {activeSection === 'ipad-sync' && <IpadSyncPanel show={show} />}
           </div>
         </div>
+        {/* Inside the window, so clicking a tip doesn't close Show Settings; each section's tips show the first time it opens */}
+        <Tips steps={TIPS.showSettings} watch={activeSection} />
       </div>
     </div>
   );

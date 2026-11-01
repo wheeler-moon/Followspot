@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- First-run tips for Show Settings: the first time you open it, and the first time you open Spot Settings, Iris Sizes or Cue Settings, short tips point out the controls (color frames, copying colors, the permanent color, swapping spots, adding iris sizes, what shows where). Help → Show Tips Again brings them back
 - The window's grey title bar is gone: the red, yellow and green window buttons now sit in SpotPlot's own top bar, like Apple's apps on current macOS. Drag the window by any empty part of the top bar, or double-click it to zoom
 
 ## SpotPlot for iPad (not released yet)
