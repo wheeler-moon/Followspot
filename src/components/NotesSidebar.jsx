@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 
-// Cue list → Notes: a sidebar on the left for taking spot notes during a run. Type the LQ, pick the
+// Cue list → Notes: a sidebar on the right for taking spot notes during a run. Type the LQ, pick the
 // spot and write the note; it's saved as that cue's spot note, so the Spot Notes page and prints stay
 // in step. Lists the notes not given yet, in cue order; click one to show its cue, ✓ to check it off.
 
@@ -39,7 +39,7 @@ export default function NotesSidebar({ spots, cues, spotCues, onAddNote, onCheck
   const cueName = (c) => (c.lq_number ? `LQ ${c.lq_number}` : `T·${c.track_number}`);
 
   return (
-    <div style={{ width: '300px', flexShrink: 0, background: C.panel, borderRight: '1px solid rgba(0,0,0,0.45)', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+    <div style={{ width: '300px', flexShrink: 0, background: C.panel, borderLeft: '1px solid rgba(0,0,0,0.45)', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
       <div style={{ height: '44px', padding: '0 12px 0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${C.separator}`, flexShrink: 0 }}>
         <span style={{ fontSize: '13px', fontWeight: '600', color: C.label1 }}>Notes <span style={{ color: C.label2, fontWeight: '400' }}>{open.length ? `· ${open.length} to give` : ''}</span></span>
         <button onClick={onClose} title="Hide notes" style={{ background: 'none', border: 'none', color: C.label2, fontSize: '18px', cursor: 'pointer', lineHeight: 1 }}>×</button>

@@ -1283,10 +1283,6 @@ const groupedCues = () => {
       </AppHeader>
 
       <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
-      {notesOpen && (
-        <NotesSidebar spots={data?.spots || []} cues={[...(data?.cues || [])].sort((a, b) => a.sort_order - b.sort_order)} spotCues={data?.spotCues || []}
-          onAddNote={addRunNote} onCheck={sc => setSpotCueFields(sc, { note_checked: 1 })} onShowCue={showCue} onClose={() => setNotesOpen(false)} />
-      )}
       <div ref={scrollRef} onScroll={() => {
         updateContinuedScene();
         const el = scrollRef.current;
@@ -1606,6 +1602,10 @@ const groupedCues = () => {
         </div>
       )}
       </div>
+      {notesOpen && (
+        <NotesSidebar spots={data?.spots || []} cues={[...(data?.cues || [])].sort((a, b) => a.sort_order - b.sort_order)} spotCues={data?.spotCues || []}
+          onAddNote={addRunNote} onCheck={sc => setSpotCueFields(sc, { note_checked: 1 })} onShowCue={showCue} onClose={() => setNotesOpen(false)} />
+      )}
       </div>
 
       {showSceneModal && (
