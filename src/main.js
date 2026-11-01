@@ -1140,6 +1140,26 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
     } catch(e) { event.returnValue = { success: false }; }
   });
   // A new custom character name was typed in a cue: add it to the show's characters, or keep it custom?
+  // A new character name was typed in a cue: the Mac's own question. Keep as Custom is the default
+  // (blue, Return); no button is tied to Escape, because on macOS that takes the blue off the default.
+  // Returns { add, remember }; "remember" saves the answer on the show (src/screens/CueListScreen.jsx).
+  ipcMain.on('dialog-add-character', async (event, name) => {
+    const { dialog } = require('electron');
+    try {
+      const r = await dialog.showMessageBox(mainWindow, {
+        type: 'question',
+        message: `Add "${name}" to this show's characters?`,
+        detail: 'It will show on the Characters screen and in every cue\'s character list. Or keep it as a custom name for just this cue.',
+        buttons: ['Keep as Custom', 'Add to Characters'],
+        defaultId: 0,
+        cancelId: -1,
+        checkboxLabel: 'Remember my choice for this show',
+        checkboxChecked: false,
+      });
+      event.returnValue = { add: r.response === 1, remember: !!r.checkboxChecked };
+    } catch (e) { event.returnValue = { add: false, remember: false }; }
+  });
+
   // View → Ask About New Characters Again: only works while a show is open (the renderer says when)
   ipcMain.on('show-open', (event, isOpen) => {
     const item = require('electron').Menu.getApplicationMenu()?.getMenuItemById('reset-character-choice');

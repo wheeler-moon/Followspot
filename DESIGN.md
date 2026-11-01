@@ -151,7 +151,7 @@ The window has no title bar (`titleBarStyle: 'hidden'` in main.js). The macOS wi
 While an item is dragged, a 2px accent (`#0A84FF`) line shows exactly where it will land: along the top edge of the row under the pointer (top half) or its bottom edge (bottom half). Side-by-side cards (Spot Order) show a taller 4px bar in the gap where the card will land, reaching 8px above and below the cards. Don't highlight the whole row, and show no line where the drop wouldn't move anything. Shared code: `src/dropLine.js`.
 
 ### Small questions
-A yes/no question SpotPlot asks mid-task (e.g. adding a typed character) is an in-app dialog, not a system one: `#2A2A2A`, 16px radius, 13px semibold question, 11px secondary detail, an optional "Remember my choice for this show" checkbox, and the default answer as the accent button on the right (Return chooses it, Escape picks the safe answer). Anything remembered can be reset from the menu bar.
+A yes/no question SpotPlot asks mid-task (e.g. adding a typed character) uses the Mac's own alert, so it looks like every other Mac app. The safe answer is the default (blue, Return). Don't tie Escape to the default button: macOS then shows it grey instead of blue. An optional "Remember my choice for this show" checkbox goes in the alert; anything remembered can be reset from the menu bar.
 
 ### Bottom tray
 A list of finished items that stays out of the way (Spot Notes → Given): a 36px bar along the bottom (`#232323`, hairline above) with a title, count and Show ▴ / Hide ▾; open, it shows compact rows up to about a third of the window, scrolling on its own. Whether it's open is remembered.

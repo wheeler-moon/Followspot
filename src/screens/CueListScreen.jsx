@@ -1211,23 +1211,17 @@ export default function CueListScreen({ show, navigate }) {
     if (result.success) { setSelectedSceneId(result.id); setNewSceneLabel(''); setNewSceneSong(''); setShowSceneModal(false); load(); }
   };
 
-  // A new custom name was typed in a cue: ask whether to add it to the show's characters (starts unticked
-  // for printing on the Characters sheet) and link the cue to it. "Remember for this show" saves the answer
-  // on the show and stops asking; View → Ask About New Characters Again clears it.
-  const [newCharAsk, setNewCharAsk] = useState(null);   // { spotCueId, name, remember }
-  useEscape(() => answerNewChar(false), !!newCharAsk);
+  // A new custom name was typed in a cue: ask (the Mac's own question box) whether to add it to the show's
+  // characters (starts unticked for printing on the Characters sheet) and link the cue to it. "Remember my
+  // choice for this show" saves the answer on the show and stops asking; View → Ask About New Characters
+  // Again clears it.
   const addCustomCharacterToShow = (spotCueId, name) => {
     const choice = ipcRenderer.sendSync('db-get-show', show.id)?.new_character_choice;
     if (choice === 'custom') return;
     if (choice === 'add') { linkNewCharacter(spotCueId, name); return; }
-    setNewCharAsk({ spotCueId, name, remember: false });
-  };
-  const answerNewChar = (add) => {
-    const ask = newCharAsk;
-    setNewCharAsk(null);
-    if (!ask) return;
-    if (ask.remember) ipcRenderer.sendSync('db-update-show', { showId: show.id, new_character_choice: add ? 'add' : 'custom' });
-    if (add) linkNewCharacter(ask.spotCueId, ask.name);
+    const answer = ipcRenderer.sendSync('dialog-add-character', name) || {};
+    if (answer.remember) ipcRenderer.sendSync('db-update-show', { showId: show.id, new_character_choice: answer.add ? 'add' : 'custom' });
+    if (answer.add) linkNewCharacter(spotCueId, name);
   };
   const linkNewCharacter = (spotCueId, name) => {
     const result = ipcRenderer.sendSync('db-create-character', { showId: show.id, name, actorName: '', printOnSheet: 0 });
@@ -1710,24 +1704,6 @@ const groupedCues = () => {
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <button onClick={() => setShowCharModal(false)} style={{ padding: '7px 14px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
               <button onClick={addCharacter} style={{ padding: '7px 14px', background: '#0A84FF', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer' }}>Add Character</button>
-            </div>
-          </div>
-        </div>
-      )}
-      {newCharAsk && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000 }}>
-          <div style={{ background: '#2A2A2A', borderRadius: '16px', padding: '20px', width: '320px', boxShadow: '0 18px 48px rgba(0,0,0,0.45)' }}>
-            <div style={{ fontSize: '13px', fontWeight: '600', color: '#FFFFFF', marginBottom: '6px' }}>Add “{newCharAsk.name}” to this show’s characters?</div>
-            <div style={{ fontSize: '11px', lineHeight: '15px', color: 'rgba(255,255,255,0.55)', marginBottom: '14px' }}>
-              It will show on the Characters screen and in every cue’s character list. Or keep it as a custom name for just this cue.
-            </div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#FFFFFF', marginBottom: '16px', cursor: 'pointer' }}>
-              <input type="checkbox" checked={newCharAsk.remember} onChange={e => setNewCharAsk(a => ({ ...a, remember: e.target.checked }))} />
-              Remember my choice for this show
-            </label>
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-              <button onClick={() => answerNewChar(true)} style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>Add to Characters</button>
-              <button autoFocus onClick={() => answerNewChar(false)} style={{ height: '28px', padding: '0 12px', background: '#0A84FF', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>Keep as Custom</button>
             </div>
           </div>
         </div>
