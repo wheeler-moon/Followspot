@@ -44,6 +44,8 @@ export const TIPS = {
       body: 'Double-click a cue for highlights and spot notes. Drag one cue onto another to copy it, or right-click it to copy, paste, highlight, insert or clear. In When and Notes, Cmd+B, I and U format the text.' },
     { id: 'cue-add', target: 'add-cue-end', title: 'Adding cues',
       body: 'Add a cue at the end here, or hover between two cues to insert one.' },
+    { id: 'cue-notes', target: 'notes-toggle', title: 'Notes during a run',
+      body: 'Open the notes sidebar to jot spot notes as you watch: type the LQ, pick the spot and press Return. Notes you haven\'t given yet are listed in cue order; click one to see its cue, ✓ to check it off.' },
     { id: 'cue-scene', target: 'add-scene', title: 'Scenes and characters',
       body: 'Add a scene or character without leaving the cue list. Scenes become the green headers here and on your prints.' },
   ],

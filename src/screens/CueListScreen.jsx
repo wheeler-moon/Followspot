@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import NotesSidebar from '../components/NotesSidebar';
 import useEscape from '../useEscape';
 import Tips from '../components/Tips';
 import { TIPS } from '../tips';
@@ -1029,6 +1030,37 @@ export default function CueListScreen({ show, navigate }) {
     ipcRenderer.send('show-context-menu', items);
   };
 
+  // Notes sidebar (cue list → Notes): open or closed is remembered on this Mac
+  const [notesOpen, setNotesOpenState] = useState(() => { try { return localStorage.getItem('spotplot_notes_sidebar') === '1'; } catch (e) { return false; } });
+  const setNotesOpen = (v) => setNotesOpenState(prev => {
+    const next = typeof v === 'function' ? v(prev) : v;
+    try { localStorage.setItem('spotplot_notes_sidebar', next ? '1' : '0'); } catch (e) {}
+    return next;
+  });
+  const openNoteCount = (data?.spotCues || []).filter(sc => sc.spot_note && sc.spot_note.trim() && !sc.note_checked).length;
+  // A note typed in the sidebar: found by its LQ, saved as that cue's spot note (added under any note already there)
+  const addRunNote = (lqText, spotId, text) => {
+    if (!lqText) return 'Type the LQ first.';
+    const cue = [...(data?.cues || [])].sort((a, b) => a.sort_order - b.sort_order)
+      .find(c => String(c.lq_number || '').trim().toLowerCase() === lqText.toLowerCase());
+    if (!cue) return `There's no LQ ${lqText} in this show.`;
+    const spot = (data?.spots || []).find(sp => sp.id === spotId);
+    if (!spot) return 'Pick a spot.';
+    const row = ensureSpotCue(spot, cue, (data?.spotCues || []).find(x => x.spot_id === spot.id && x.cue_id === cue.id));
+    const existing = (row.spot_note || '').trim();
+    setSpotCueFields(row, { spot_note: existing && !row.note_checked ? `${existing}\n${text}` : text, note_checked: 0 });
+    return null;
+  };
+  // Scrolls the cue list to a cue (in the middle) and outlines that spot's box for a moment
+  const showCue = (cueId, spotId) => {
+    const el = scrollRef.current;
+    const row = el && el.querySelector(`tr[data-cue-id="${cueId}"]`);
+    if (!row) return;
+    el.scrollTo({ top: el.scrollTop + row.getBoundingClientRect().top - el.getBoundingClientRect().top - (el.clientHeight - row.offsetHeight) / 2, behavior: 'smooth' });
+    setMenuCell({ cueId, spotId });
+    setTimeout(() => setMenuCell(m => (m && m.cueId === cueId ? null : m)), 1800);
+  };
+
   // Copy / Paste Whole Cue items (in both right-click menus)
   const wholeCueItems = (cue) => {
     const clip = wholeCueClipboard && wholeCueClipboard.showId === show.id ? wholeCueClipboard : null;
@@ -1213,6 +1245,10 @@ const groupedCues = () => {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#1E1E1E' }}>
     <AppHeader title="Cue List" onBack={() => navigate('show', show)} backLabel={show.title}>
         <div style={{ flex: 1 }} />
+        <button data-tour="notes-toggle" onClick={() => setNotesOpen(o => !o)} title={notesOpen ? 'Hide notes' : 'Show notes, and take notes during a run'}
+          style={{ height: '28px', padding: '0 12px', background: notesOpen ? 'rgba(10,132,255,0.22)' : 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: notesOpen ? '#409CFF' : '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          Notes{openNoteCount ? <span style={{ minWidth: '16px', height: '16px', borderRadius: '8px', background: '#FFD60A', color: '#1a1a1a', fontSize: '10px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px' }}>{openNoteCount}</span> : null}
+        </button>
          <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)' }}>Jump to</span>
         <select value={jumpSceneId} onChange={e => {
           const sceneId = e.target.value ? parseInt(e.target.value) : null;
@@ -1241,6 +1277,11 @@ const groupedCues = () => {
         </span>
       </AppHeader>
 
+      <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+      {notesOpen && (
+        <NotesSidebar spots={data?.spots || []} cues={[...(data?.cues || [])].sort((a, b) => a.sort_order - b.sort_order)} spotCues={data?.spotCues || []}
+          onAddNote={addRunNote} onCheck={sc => setSpotCueFields(sc, { note_checked: 1 })} onShowCue={showCue} onClose={() => setNotesOpen(false)} />
+      )}
       <div ref={scrollRef} onScroll={() => {
         updateContinuedScene();
         const el = scrollRef.current;
@@ -1251,7 +1292,7 @@ const groupedCues = () => {
           sessionStorage.setItem(`cueScroll_${show.id}`, JSON.stringify({ top: el.scrollTop, left: el.scrollLeft,
             cueId: row ? row.dataset.cueId : null, offset: row ? row.getBoundingClientRect().top - el.getBoundingClientRect().top : 0 }));
         }
-      }} style={{ flex: 1, overflowY: 'auto', overflowX: 'auto' }}>
+      }} style={{ flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'auto' }}>
         {!loaded ? (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60%', color: 'rgba(255,255,255,0.45)', fontSize: '14px' }}>
             Loading cues…
@@ -1558,6 +1599,7 @@ const groupedCues = () => {
           </div>
         </div>
       )}
+      </div>
       </div>
 
       {showSceneModal && (

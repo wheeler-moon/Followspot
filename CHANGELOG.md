@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- Cue list: a **Notes** sidebar for taking notes during a run. Click Notes in the top bar, type the LQ, pick the spot and press Return; the note is saved as that cue's spot note (Spot Notes and prints have it). It lists notes not given yet in cue order: click one to jump to its cue, ✓ to check it off. The Notes button shows how many are still to give
 - Spot Notes: **Go to Cue** on each note opens the cue list at that cue, with the spot's box outlined for a moment
 - Reordering scenes, characters, iris sizes and spot order: while you drag, a blue line shows exactly where the item will land, instead of highlighting the row it goes next to
 - Copy and paste a whole cue: right-click a cue's LQ number (or any spot's box) and choose **Copy Whole Cue (All Spots)**, then **Paste Whole Cue** on another cue. Every spot takes what it did in the copied cue, and one ⌘Z undoes it. The LQ number's right-click menu also has Insert Cue Above / Below and Delete
