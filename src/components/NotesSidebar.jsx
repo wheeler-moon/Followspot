@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 
 // Cue list → Notes: a sidebar on the right for taking spot notes during a run. Type the LQ, pick the
-// spot and write the note; it's saved as that cue's spot note, so the Spot Notes page and prints stay
+// spot (or All Spots) and write the note; it's saved as that cue's spot note, so the Spot Notes page and prints stay
 // in step. Lists the notes not given yet, in cue order; click one to show its cue, ✓ to check it off.
 
 const C = {
@@ -13,7 +13,8 @@ const field = { height: '28px', background: '#1E1E1E', border: '1px solid rgba(2
 
 export default function NotesSidebar({ spots, cues, spotCues, onAddNote, onCheck, onShowCue, onClose }) {
   const [lq, setLq] = useState('');
-  const [spotId, setSpotId] = useState(spots[0]?.id || '');
+  const [pickedSpot, setSpotId] = useState(null);
+  const spotId = pickedSpot ?? spots[0]?.id ?? 'all';   // the first spot until one is picked (spots may still be loading)
   const [text, setText] = useState('');
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all');
@@ -23,14 +24,17 @@ export default function NotesSidebar({ spots, cues, spotCues, onAddNote, onCheck
   const cueOrder = new Map(cues.map((c, i) => [c.id, i]));
   const cueById = new Map(cues.map(c => [c.id, c]));
   const spotById = new Map(spots.map(s => [s.id, s]));
-  const open = spotCues
+  // Notes for every spot live on the cue; they're listed under any spot filter, since they're for everyone
+  const allSpotsNotes = cues.filter(c => c.all_spots_note && c.all_spots_note.trim() && !c.all_spots_note_checked)
+    .map(c => ({ id: `all-${c.id}`, allSpots: true, cue_id: c.id, spot_id: null, spot_note: c.all_spots_note }));
+  const open = [...allSpotsNotes, ...spotCues
     .filter(sc => sc.spot_note && sc.spot_note.trim() && !sc.note_checked && cueById.has(sc.cue_id))
-    .filter(sc => filter === 'all' || sc.spot_id === Number(filter))
-    .sort((a, b) => (cueOrder.get(a.cue_id) - cueOrder.get(b.cue_id)) || ((spotById.get(a.spot_id)?.spot_number || 0) - (spotById.get(b.spot_id)?.spot_number || 0)));
+    .filter(sc => filter === 'all' || sc.spot_id === Number(filter))]
+    .sort((a, b) => (cueOrder.get(a.cue_id) - cueOrder.get(b.cue_id)) || ((a.allSpots ? 0 : spotById.get(a.spot_id)?.spot_number || 0) - (b.allSpots ? 0 : spotById.get(b.spot_id)?.spot_number || 0)));
 
   const add = () => {
     if (!text.trim()) return;
-    const problem = onAddNote(lq.trim(), Number(spotId), text.trim());
+    const problem = onAddNote(lq.trim(), spotId === 'all' ? 'all' : Number(spotId), text.trim());
     if (problem) { setError(problem); return; }
     setText(''); setError(null);
     lqRef.current?.focus();   // ready for the next note
@@ -52,6 +56,7 @@ export default function NotesSidebar({ spots, cues, spotCues, onAddNote, onCheck
             onKeyDown={e => { if (e.key === 'Enter') textRef.current?.focus(); }}
             style={{ ...field, width: '70px', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }} />
           <select value={spotId} onChange={e => setSpotId(e.target.value)} style={{ ...field, flex: 1, minWidth: 0 }}>
+            <option value="all">All Spots</option>
             {spots.map(s => <option key={s.id} value={s.id}>Spot {s.spot_number}{s.operator_name ? ` · ${s.operator_name}` : ''}</option>)}
           </select>
         </div>
@@ -81,12 +86,12 @@ export default function NotesSidebar({ spots, cues, spotCues, onAddNote, onCheck
           const cue = cueById.get(sc.cue_id);
           const spot = spotById.get(sc.spot_id);
           return (
-            <div key={sc.id} onClick={() => onShowCue(sc.cue_id, sc.spot_id)} title="Show this cue"
+            <div key={sc.id} onClick={() => onShowCue(sc.cue_id, sc.allSpots ? 'all' : sc.spot_id)} title="Show this cue"
               style={{ background: C.group, borderRadius: '8px', padding: '8px 10px', marginBottom: '6px', cursor: 'pointer', display: 'flex', gap: '8px', alignItems: 'flex-start' }}
               onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
               onMouseLeave={e => { e.currentTarget.style.background = C.group; }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '11px', fontWeight: '600', color: C.accentText, marginBottom: '2px' }}>{cueName(cue)} · Spot {spot?.spot_number}</div>
+                <div style={{ fontSize: '11px', fontWeight: '600', color: C.accentText, marginBottom: '2px' }}>{cueName(cue)} · {sc.allSpots ? 'All Spots' : `Spot ${spot?.spot_number}`}</div>
                 <div style={{ fontSize: '13px', color: C.label1, lineHeight: '17px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{sc.spot_note}</div>
               </div>
               <button onClick={e => { e.stopPropagation(); onCheck(sc); }} title="Check off (given)"

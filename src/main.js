@@ -148,7 +148,10 @@ function initSchema() {
   try { db.exec('ALTER TABLE characters ADD COLUMN print_on_sheet INTEGER DEFAULT 1'); } catch(e) {}
   try { db.exec('ALTER TABLE spot_cues ADD COLUMN notes_highlight TEXT DEFAULT NULL'); } catch(e) {}
   try { db.exec('ALTER TABLE cues ADD COLUMN page TEXT DEFAULT NULL'); } catch(e) {} // script page, cue list only
+  try { db.exec('ALTER TABLE cues ADD COLUMN all_spots_note TEXT DEFAULT NULL'); } catch(e) {} // a note for every spot (Spot Notes → All Spots)
+  try { db.exec('ALTER TABLE cues ADD COLUMN all_spots_note_checked INTEGER DEFAULT 0'); } catch(e) {}
   try { db.exec('ALTER TABLE shows ADD COLUMN action_names TEXT DEFAULT NULL'); } catch(e) {} // built-in actions renamed for this show, see src/actionNames.js
+  try { db.exec('ALTER TABLE shows ADD COLUMN new_character_choice TEXT DEFAULT NULL'); } catch(e) {} // remembered answer to "Add to Characters?": 'custom', 'add' or NULL (ask)
   try {
     db.exec('ALTER TABLE spot_cues ADD COLUMN with_lq INTEGER DEFAULT 0');
     // One-time: link "When" text that the old w/LQ button typed in for the cue's current number,
@@ -681,7 +684,7 @@ ipcMain.on('get-app-icon', (event) => {
           form.programmer || '', form.logo_path || '', showId);
       } else {
         // Field-by-field update
-        const allowed = ['title','theatre','producer','designer','associate_ld','assistant_ld','production_electrician','programmer','logo_path','iris_sizes','custom_actions','cue_fields','action_names'];
+        const allowed = ['title','theatre','producer','designer','associate_ld','assistant_ld','production_electrician','programmer','logo_path','iris_sizes','custom_actions','cue_fields','action_names','new_character_choice'];
         for (const [key, value] of Object.entries(fields)) {
           if (allowed.includes(key)) {
             database.prepare(`UPDATE shows SET ${key} = ? WHERE id = ?`).run(value, showId);
@@ -1038,7 +1041,7 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
 
   ipcMain.on('db-update-cue', (event, { cueId, field, value }) => {
     try {
-      const safe = ['lq_number','scene_id','caller_notes','rehearsal_notes','ignore','sort_order','page'];
+      const safe = ['lq_number','scene_id','caller_notes','rehearsal_notes','ignore','sort_order','page','all_spots_note','all_spots_note_checked'];
       if (!safe.includes(field)) { event.returnValue = { success: false }; return; }
       getDb().prepare(`UPDATE cues SET ${field} = ? WHERE id = ?`).run(value, cueId);
       event.returnValue = { success: true };
@@ -1089,17 +1092,10 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
     } catch(e) { event.returnValue = { success: false }; }
   });
   // A new custom character name was typed in a cue: add it to the show's characters, or keep it custom?
-  ipcMain.on('dialog-add-character', (event, name) => {
-    const { dialog } = require('electron');
-    event.returnValue = dialog.showMessageBoxSync(mainWindow, {
-      type: 'question',
-      message: `Add "${name}" to this show's characters?`,
-      detail: 'It will show on the Characters screen and in every cue\'s character list. Or keep it as a custom name for just this cue.',
-      // Keeping it custom is the default (Return); adding it starts unticked for the Characters sheet
-      buttons: ['Keep as Custom', 'Add to Characters'],
-      defaultId: 0,
-      cancelId: 0,
-    }) === 1;
+  // View → Ask About New Characters Again: only works while a show is open (the renderer says when)
+  ipcMain.on('show-open', (event, isOpen) => {
+    const item = require('electron').Menu.getApplicationMenu()?.getMenuItemById('reset-character-choice');
+    if (item) item.enabled = !!isOpen;
   });
 
   ipcMain.on('db-delete-cue', (event, cueId) => {
@@ -1229,6 +1225,8 @@ app.whenReady().then(async () => {
         { label: 'Zoom Out', role: 'zoomOut' },
         { type: 'separator' },
         { label: 'Toggle Full Screen', role: 'togglefullscreen' },
+        { type: 'separator' },
+        { id: 'reset-character-choice', label: 'Ask About New Characters Again', enabled: false, click: () => { mainWindow.webContents.send('menu-reset-character-choice'); } },
       ],
     },
     {

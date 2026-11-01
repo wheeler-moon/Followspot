@@ -28,8 +28,9 @@ export default function SpotNotesScreen({ show, navigate }) {
   }, []);
 
   // Opens the cue list scrolled to this note's cue, with that spot's box outlined for a moment
-  const goToCue = (sc) => {
-    sessionStorage.setItem(`cueJump_${show.id}`, JSON.stringify({ cueId: sc.cue_id, spotId: sc.spot_id }));
+  // (an All Spots note outlines every spot's box)
+  const goToCue = (n) => {
+    sessionStorage.setItem(`cueJump_${show.id}`, JSON.stringify({ cueId: n.cue.id, spotId: n.allSpots ? 'all' : n.sc.spot_id }));
     navigate('cue-list', show);
   };
 
@@ -44,40 +45,44 @@ export default function SpotNotesScreen({ show, navigate }) {
   const sceneOrderMap = {};
   scenes.forEach((s, i) => { sceneOrderMap[s.id] = i; });
 
-  const notesForSpot = (spotId) => {
-    return spotCues
-      .filter(sc => sc.spot_id === spotId && sc.spot_note && sc.spot_note.trim())
-      .map(sc => {
-        const cue = cues.find(c => c.id === sc.cue_id);
-        return { sc, cue };
-      })
-      .filter(({ cue }) => cue)
-      .sort((a, b) => {
-        const sceneA = sceneOrderMap[a.cue?.scene_id] ?? 999;
-        const sceneB = sceneOrderMap[b.cue?.scene_id] ?? 999;
-        if (sceneA !== sceneB) return sceneA - sceneB;
-        return (a.cue?.sort_order || 0) - (b.cue?.sort_order || 0);
-      });
+  const byCueOrder = (a, b) => {
+    const sceneA = sceneOrderMap[a.cue?.scene_id] ?? 999;
+    const sceneB = sceneOrderMap[b.cue?.scene_id] ?? 999;
+    if (sceneA !== sceneB) return sceneA - sceneB;
+    return (a.cue?.sort_order || 0) - (b.cue?.sort_order || 0);
   };
 
-  const deleteNote = (spotCueId) => {
-    ipcRenderer.sendSync('db-update-spot-cue', { spotCueId, field: 'spot_note', value: '' });
-    setSpotCues(prev => prev.map(sc => sc.id === spotCueId ? { ...sc, spot_note: '' } : sc));
-  };
+  // Each note as { id, cue, text, checked, sc } (sc: the spot's row; none for an All Spots note, kept on the cue)
+  const notesForSpot = (spotId) => spotCues
+    .filter(sc => sc.spot_id === spotId && sc.spot_note && sc.spot_note.trim())
+    .map(sc => ({ id: `sc-${sc.id}`, sc, cue: cues.find(c => c.id === sc.cue_id), text: sc.spot_note, checked: !!sc.note_checked }))
+    .filter(n => n.cue)
+    .sort(byCueOrder);
+  const allSpotsNotes = cues
+    .filter(c => c.all_spots_note && c.all_spots_note.trim())
+    .map(c => ({ id: `all-${c.id}`, allSpots: true, cue: c, text: c.all_spots_note, checked: !!c.all_spots_note_checked }))
+    .sort(byCueOrder);
 
-  const toggleChecked = (spotCueId, current) => {
-    const newVal = current ? 0 : 1;
-    ipcRenderer.sendSync('db-update-spot-cue', { spotCueId, field: 'note_checked', value: newVal });
-    setSpotCues(prev => prev.map(sc => sc.id === spotCueId ? { ...sc, note_checked: newVal } : sc));
+  const setNote = (n, fields) => {
+    if (n.allSpots) {
+      const cueFields = { text: 'all_spots_note', checked: 'all_spots_note_checked' };
+      for (const [k, v] of Object.entries(fields)) ipcRenderer.sendSync('db-update-cue', { cueId: n.cue.id, field: cueFields[k], value: v });
+      setCues(prev => prev.map(c => c.id === n.cue.id ? { ...c, ...Object.fromEntries(Object.entries(fields).map(([k, v]) => [cueFields[k], v])) } : c));
+    } else {
+      const scFields = { text: 'spot_note', checked: 'note_checked' };
+      for (const [k, v] of Object.entries(fields)) ipcRenderer.sendSync('db-update-spot-cue', { spotCueId: n.sc.id, field: scFields[k], value: v });
+      setSpotCues(prev => prev.map(sc => sc.id === n.sc.id ? { ...sc, ...Object.fromEntries(Object.entries(fields).map(([k, v]) => [scFields[k], v])) } : sc));
+    }
   };
+  const deleteNote = (n) => setNote(n, { text: '' });
+  const toggleChecked = (n) => setNote(n, { checked: n.checked ? 0 : 1 });
+  const saveEdit = (n) => { setNote(n, { text: editText }); setEditingId(null); };
 
-  const saveEdit = (spotCueId) => {
-    ipcRenderer.sendSync('db-update-spot-cue', { spotCueId, field: 'spot_note', value: editText });
-    setSpotCues(prev => prev.map(sc => sc.id === spotCueId ? { ...sc, spot_note: editText } : sc));
-    setEditingId(null);
-  };
-
-  const totalNotes = spotCues.filter(sc => sc.spot_note && sc.spot_note.trim()).length;
+  const totalNotes = spotCues.filter(sc => sc.spot_note && sc.spot_note.trim()).length + allSpotsNotes.length;
+  const columns = [
+    ...(allSpotsNotes.length ? [{ key: 'all', title: 'All Spots', notes: allSpotsNotes }] : []),
+    ...spots.map(spot => ({ key: spot.id, title: `Spot ${spot.spot_number}${spot.operator_name ? ' · ' + spot.operator_name : ''}`, notes: notesForSpot(spot.id) })),
+  ];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#1E1E1E' }}>
@@ -91,24 +96,25 @@ export default function SpotNotesScreen({ show, navigate }) {
             No notes yet — double-click any cue to add a note
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${spots.length}, 1fr)`, gap: '16px' }}>
-            {spots.map(spot => {
-              const notes = notesForSpot(spot.id);
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${columns.length}, 1fr)`, gap: '16px' }}>
+            {columns.map(col => {
+              const notes = col.notes;
               return (
-                <div key={spot.id}>
-                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#FFFFFF', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
-                    Spot {spot.spot_number}{spot.operator_name ? ' · ' + spot.operator_name : ''}
+                <div key={col.key}>
+                  <div style={{ fontSize: '13px', fontWeight: '700', color: col.key === 'all' ? '#FFD60A' : '#FFFFFF', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+                    {col.title}
                   </div>
                   {notes.length === 0 ? (
                     <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.28)', fontStyle: 'italic' }}>No notes</div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      {notes.map(({ sc, cue }) => {
+                      {notes.map(n => {
+                        const { sc, cue } = n;
                         const scene = sceneMap[cue.scene_id];
-                        const isChecked = !!sc.note_checked;
-                        const isEditing = editingId === sc.id;
+                        const isChecked = n.checked;
+                        const isEditing = editingId === n.id;
                         return (
-                          <div key={sc.id} style={{ background: isChecked ? 'rgba(255,255,255,0.05)' : '#2A2A2A', border: `1px solid ${isChecked ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '10px', padding: '14px', opacity: isChecked ? 0.6 : 1 }}>
+                          <div key={n.id} style={{ background: isChecked ? 'rgba(255,255,255,0.05)' : '#2A2A2A', border: `1px solid ${isChecked ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '10px', padding: '14px', opacity: isChecked ? 0.6 : 1 }}>
                             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '8px' }}>
                               <div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -116,22 +122,22 @@ export default function SpotNotesScreen({ show, navigate }) {
                                   <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>T·{cue.track_number}</span>
                                   {scene && <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)', fontWeight: '600' }}>{scene.label}</span>}
                                 </div>
-                                {sc.action && <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginTop: '2px' }}>{displayAction(sc.action, actionNames)}{sc.character_id && charMap[sc.character_id] ? ' · ' + charMap[sc.character_id].name : ''}</div>}
+                                {sc?.action && <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginTop: '2px' }}>{displayAction(sc.action, actionNames)}{sc.character_id && charMap[sc.character_id] ? ' · ' + charMap[sc.character_id].name : ''}</div>}
                               </div>
                               <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
-                                <button onClick={() => goToCue(sc)} title="Show this cue in the cue list"
+                                <button onClick={() => goToCue(n)} title="Show this cue in the cue list"
                                   style={{ background: 'transparent', border: 'none', borderRadius: '6px', color: '#409CFF', padding: '3px 6px', fontSize: '11px', fontWeight: '500', cursor: 'pointer' }}>
                                   Go to Cue ›
                                 </button>
-                                <button onClick={() => toggleChecked(sc.id, isChecked)}
+                                <button onClick={() => toggleChecked(n)}
                                   style={{ background: isChecked ? 'rgba(48,209,88,0.16)' : 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: isChecked ? '#30D158' : '#FFFFFF', padding: '3px 8px', fontSize: '11px', fontWeight: '500', cursor: 'pointer' }}>
                                   {isChecked ? '✓ Done' : 'Check off'}
                                 </button>
-                                <button onClick={() => { setEditingId(sc.id); setEditText(sc.spot_note); }}
+                                <button onClick={() => { setEditingId(n.id); setEditText(n.text); }}
                                   style={{ background: 'transparent', border: 'none', borderRadius: '6px', color: '#409CFF', padding: '3px 6px', fontSize: '11px', fontWeight: '500', cursor: 'pointer' }}>
                                   Edit
                                 </button>
-                                <button onClick={() => deleteNote(sc.id)}
+                                <button onClick={() => deleteNote(n)}
                                   style={{ background: 'transparent', border: 'none', borderRadius: '6px', color: '#FF453A', padding: '3px 6px', fontSize: '11px', fontWeight: '500', cursor: 'pointer' }}>
                                   Delete
                                 </button>
@@ -144,13 +150,13 @@ export default function SpotNotesScreen({ show, navigate }) {
                                 <div style={{ display: 'flex', gap: '6px', marginTop: '6px', justifyContent: 'flex-end' }}>
                                   <button onClick={() => setEditingId(null)}
                                     style={{ background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', padding: '4px 12px', fontSize: '12px', cursor: 'pointer' }}>Cancel</button>
-                                  <button onClick={() => saveEdit(sc.id)}
+                                  <button onClick={() => saveEdit(n)}
                                     style={{ background: '#0A84FF', border: 'none', borderRadius: '6px', color: '#FFFFFF', padding: '4px 12px', fontSize: '12px', cursor: 'pointer' }}>Save</button>
                                 </div>
                               </div>
                             ) : (
                               <div style={{ fontSize: '13px', color: isChecked ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.78)', lineHeight: 1.5, whiteSpace: 'pre-wrap', textDecoration: isChecked ? 'line-through' : 'none' }}>
-                                {sc.spot_note}
+                                {n.text}
                               </div>
                             )}
                           </div>

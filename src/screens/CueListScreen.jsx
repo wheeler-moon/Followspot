@@ -77,6 +77,10 @@ function ActionIcon({ action, size = 20 }) {
     case 'Bump Color': return <svg width={s} height={s} viewBox="0 0 32 32"><rect x="9" y="8" width="14" height="16" rx="2" fill="none" stroke="#FF9F0A" strokeWidth="1.5"/><rect x="12" y="11" width="3" height="10" fill="#6BD58A"/><rect x="16" y="11" width="3" height="10" fill="#FF6961"/></svg>;
     case 'Roll Color': return <svg width={s} height={s} viewBox="0 0 32 32"><rect x="9" y="8" width="14" height="16" rx="2" fill="none" stroke="#FF9F0A" strokeWidth="1.5"/><rect x="9" y="8" width="3.5" height="16" rx="1" fill="#FF6961"/><rect x="12.5" y="8" width="3.5" height="16" fill="#FFB340"/><rect x="16" y="8" width="3.5" height="16" fill="#6BD58A"/><rect x="19.5" y="8" width="3.5" height="16" rx="1" fill="#64D2FF"/></svg>;
     case 'Ballyhoo': return <svg width={s} height={s} viewBox="0 0 32 32"><path d="M8 16 C8 10 12 6 16 6 C20 6 24 10 24 16 C24 22 20 26 16 26 C12 26 8 22 8 16 Z" fill="none" stroke="#FF9F0A" strokeWidth="2.5"/><path d="M16 6 C16 6 20 16 16 26" fill="none" stroke="#FF9F0A" strokeWidth="2"/><path d="M16 6 C16 6 12 16 16 26" fill="none" stroke="#FF9F0A" strokeWidth="2"/></svg>;
+    // Plain colored circles: extra icons for custom actions (Show Settings → Custom Actions)
+    case 'Green Circle': return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="#30D158"/></svg>;
+    case 'Red Circle': return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="#FF453A"/></svg>;
+    case 'Yellow Circle': return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="#FFD60A"/></svg>;
     case 'Off': return <svg width={s} height={s} viewBox="0 0 32 32"><line x1="8" y1="8" x2="24" y2="24" stroke="#555" strokeWidth="2.5" strokeLinecap="round"/><line x1="24" y1="8" x2="8" y2="24" stroke="#555" strokeWidth="2.5" strokeLinecap="round"/></svg>;
     case 'Tracked': return <svg width={s} height={s} viewBox="0 0 32 32"><line x1="6" y1="16" x2="26" y2="16" stroke="#555" strokeWidth="2.5" strokeLinecap="round"/><polygon points="20,10 26,16 20,22" fill="#555"/></svg>;
     default: return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="16" r="8" fill="#333"/></svg>;
@@ -583,7 +587,10 @@ function CueRow({ onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesB
         onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.025)'}
         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
         <td onContextMenu={e => { if (e.target.closest('input, select')) return; e.preventDefault(); onCueMenu(cue); }}
-          style={{ padding: '8px 6px', borderRight: '1px solid rgba(255,255,255,0.06)', verticalAlign: 'top', width: '90px', minWidth: '90px' }}>
+          style={{ padding: '8px 6px', borderRight: '1px solid rgba(255,255,255,0.06)', verticalAlign: 'top', width: '90px', minWidth: '90px', position: 'relative' }}>
+          {cue.all_spots_note && cue.all_spots_note.trim() && (
+            <div title={`Note for all spots: ${cue.all_spots_note}`} style={{ position: 'absolute', top: '4px', right: '4px', width: '6px', height: '6px', borderRadius: '50%', background: '#FFD60A' }} />
+          )}
           <div data-tour="cue-lq" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
             {editingLQ ? (
               <input autoFocus value={lqVal} onChange={e => setLqVal(e.target.value)}
@@ -648,7 +655,7 @@ function CueRow({ onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesB
               onDragEnd={() => onDragFinished(false)}
               onContextMenu={(e) => { e.preventDefault(); onCellMenu({ x: e.clientX, y: e.clientY, spotCue: sc, spot, cue }); }}
               isDragTarget={dragTarget?.cue?.id === cue?.id && dragTarget?.spot?.id === spot?.id}
-              isMenuTarget={menuCell?.cueId === cue.id && menuCell?.spotId === spot.id}
+              isMenuTarget={menuCell?.cueId === cue.id && (menuCell?.spotId === spot.id || menuCell?.spotId === 'all')}
               colorSame={!!sc && sc.action !== 'Off' && !!(sc.no_color || sc.active_frames) && !colorChangesBySpot?.[spot.id]?.has(cue.id)}
               irisSizes={irisSizes}
               customActions={customActions}
@@ -664,6 +671,26 @@ function CueRow({ onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesB
       </tr>
       {!isLastCue && <InsertButton onInsert={() => onInsertAfter(cue.id, cue.scene_id)} />}
     </>
+  );
+}
+
+// Double-clicked scene header: rename the scene right there (Enter or clicking away saves, Escape cancels).
+// Its own component so typing only redraws these two boxes, not the whole cue list.
+const sceneInputStyle = { height: '22px', background: 'rgba(0,0,0,0.25)', border: '1px solid #0A84FF', borderRadius: '5px', padding: '0 6px', fontSize: '12px', outline: 'none', fontFamily: 'inherit', textAlign: 'center' };
+function SceneNameEditor({ label: startLabel, song: startSong, actBreak, onSave }) {
+  const [label, setLabel] = useState(startLabel);
+  const [song, setSong] = useState(startSong);
+  const save = () => onSave(label, song);
+  return (
+    <span onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget)) save(); }}
+      style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
+      <input autoFocus value={label} placeholder="Scene" onChange={e => setLabel(e.target.value)}
+        onKeyDown={e => { if (e.key === 'Enter') save(); }}
+        style={{ ...sceneInputStyle, width: '180px', fontWeight: '700', color: actBreak ? '#FF9F0A' : '#30D158' }} />
+      <input value={song} placeholder="Song or title" onChange={e => setSong(e.target.value)}
+        onKeyDown={e => { if (e.key === 'Enter') save(); }}
+        style={{ ...sceneInputStyle, width: '220px', color: actBreak ? 'rgba(255,159,10,0.85)' : 'rgba(48,209,88,0.85)' }} />
+    </span>
   );
 }
 
@@ -781,23 +808,31 @@ export default function CueListScreen({ show, navigate }) {
   // Coming back to the cue list reopens exactly where you left off (kept per show while SpotPlot is open).
   // The position is put back once the cues are drawn; until then scrolling isn't saved, so it can't be overwritten.
   const scrollRestored = useRef(false);
+  const restoreStarted = useRef(false);   // runs once: a later data change mustn't start a second restore over a jump
   useEffect(() => {
-    if (!loaded || scrollRestored.current) return;
+    if (!loaded || restoreStarted.current) return;
+    restoreStarted.current = true;
     // Spot Notes → Go to Cue: show that cue (in the middle) and outline the note's spot for a moment
     const jump = JSON.parse(sessionStorage.getItem(`cueJump_${show.id}`) || 'null');
     if (jump) {
       sessionStorage.removeItem(`cueJump_${show.id}`);
-      let jumpTries = 0;
+      // A big show can take a few seconds to draw, and rows above settle in height while it does, so wait
+      // for the row (up to 8s) and keep it in the middle for a few frames once it's there
+      const started = Date.now();
+      let settled = 0;
       const show_ = () => {
         const el = scrollRef.current;
         const row = el && el.querySelector(`tr[data-cue-id="${jump.cueId}"]`);
-        if (!row && ++jumpTries < 30) return requestAnimationFrame(show_);
-        if (row) {
-          el.scrollTop += row.getBoundingClientRect().top - el.getBoundingClientRect().top - (el.clientHeight - row.offsetHeight) / 2;
+        if (!row) {
+          if (Date.now() - started < 8000) requestAnimationFrame(show_); else scrollRestored.current = true;
+          return;
+        }
+        el.scrollTop += row.getBoundingClientRect().top - el.getBoundingClientRect().top - (el.clientHeight - row.offsetHeight) / 2;
+        if (settled === 0) {
           setMenuCell({ cueId: jump.cueId, spotId: jump.spotId });
           setTimeout(() => setMenuCell(m => (m && m.cueId === jump.cueId ? null : m)), 1800);
         }
-        scrollRestored.current = true;
+        if (++settled < 15) requestAnimationFrame(show_); else scrollRestored.current = true;
       };
       requestAnimationFrame(show_);
       return;
@@ -1042,13 +1077,20 @@ export default function CueListScreen({ show, navigate }) {
     try { localStorage.setItem('spotplot_notes_sidebar', next ? '1' : '0'); } catch (e) {}
     return next;
   });
-  const openNoteCount = (data?.spotCues || []).filter(sc => sc.spot_note && sc.spot_note.trim() && !sc.note_checked).length;
+  const openNoteCount = (data?.spotCues || []).filter(sc => sc.spot_note && sc.spot_note.trim() && !sc.note_checked).length
+    + (data?.cues || []).filter(c => c.all_spots_note && c.all_spots_note.trim() && !c.all_spots_note_checked).length;
   // A note typed in the sidebar: found by its LQ, saved as that cue's spot note (added under any note already there)
   const addRunNote = (lqText, spotId, text) => {
     if (!lqText) return 'Type the LQ first.';
     const cue = [...(data?.cues || [])].sort((a, b) => a.sort_order - b.sort_order)
       .find(c => String(c.lq_number || '').trim().toLowerCase() === lqText.toLowerCase());
     if (!cue) return `There's no LQ ${lqText} in this show.`;
+    if (spotId === 'all') {   // a note for every spot, kept on the cue
+      const existing = (cue.all_spots_note || '').trim();
+      updateCue(cue.id, 'all_spots_note', existing && !cue.all_spots_note_checked ? `${existing}\n${text}` : text);
+      if (cue.all_spots_note_checked) updateCue(cue.id, 'all_spots_note_checked', 0);
+      return null;
+    }
     const spot = (data?.spots || []).find(sp => sp.id === spotId);
     if (!spot) return 'Pick a spot.';
     const row = ensureSpotCue(spot, cue, (data?.spotCues || []).find(x => x.spot_id === spot.id && x.cue_id === cue.id));
@@ -1056,7 +1098,7 @@ export default function CueListScreen({ show, navigate }) {
     setSpotCueFields(row, { spot_note: existing && !row.note_checked ? `${existing}\n${text}` : text, note_checked: 0 });
     return null;
   };
-  // Scrolls the cue list to a cue (in the middle) and outlines that spot's box for a moment
+  // Scrolls the cue list to a cue (in the middle) and outlines that spot's box for a moment (every box for 'all')
   const showCue = (cueId, spotId) => {
     const el = scrollRef.current;
     const row = el && el.querySelector(`tr[data-cue-id="${cueId}"]`);
@@ -1163,10 +1205,25 @@ export default function CueListScreen({ show, navigate }) {
     if (result.success) { setSelectedSceneId(result.id); setNewSceneLabel(''); setNewSceneSong(''); setShowSceneModal(false); load(); }
   };
 
-  // A new custom name was typed in a cue: optionally add it to the show's characters
-  // (starts unticked for printing on the Characters sheet) and link the cue to it
+  // A new custom name was typed in a cue: ask whether to add it to the show's characters (starts unticked
+  // for printing on the Characters sheet) and link the cue to it. "Remember for this show" saves the answer
+  // on the show and stops asking; View → Ask About New Characters Again clears it.
+  const [newCharAsk, setNewCharAsk] = useState(null);   // { spotCueId, name, remember }
+  useEscape(() => answerNewChar(false), !!newCharAsk);
   const addCustomCharacterToShow = (spotCueId, name) => {
-    if (!ipcRenderer.sendSync('dialog-add-character', name)) return;
+    const choice = ipcRenderer.sendSync('db-get-show', show.id)?.new_character_choice;
+    if (choice === 'custom') return;
+    if (choice === 'add') { linkNewCharacter(spotCueId, name); return; }
+    setNewCharAsk({ spotCueId, name, remember: false });
+  };
+  const answerNewChar = (add) => {
+    const ask = newCharAsk;
+    setNewCharAsk(null);
+    if (!ask) return;
+    if (ask.remember) ipcRenderer.sendSync('db-update-show', { showId: show.id, new_character_choice: add ? 'add' : 'custom' });
+    if (add) linkNewCharacter(ask.spotCueId, ask.name);
+  };
+  const linkNewCharacter = (spotCueId, name) => {
     const result = ipcRenderer.sendSync('db-create-character', { showId: show.id, name, actorName: '', printOnSheet: 0 });
     if (!result?.success) return;
     const chars = ipcRenderer.sendSync('db-get-characters', show.id);
@@ -1202,17 +1259,14 @@ export default function CueListScreen({ show, navigate }) {
   };
 
   // Renaming a scene from its header in the cue list (saved to the scene, so it changes everywhere)
-  const [editingScene, setEditingScene] = useState(null);   // { id, label, song }
+  const [editingScene, setEditingScene] = useState(null);   // scene id
   useEscape(() => setEditingScene(null), !!editingScene);
-  const sceneInputStyle = { height: '22px', background: 'rgba(0,0,0,0.25)', border: '1px solid #0A84FF', borderRadius: '5px', padding: '0 6px', fontSize: '12px', outline: 'none', fontFamily: 'inherit', textAlign: 'center' };
-  const saveSceneName = () => {
-    const edit = editingScene;
+  const saveSceneName = (sceneId, label, song) => {
     setEditingScene(null);
-    if (!edit) return;
-    const scene = (data?.scenes || []).find(sc => sc.id === edit.id);
-    if (!scene || !edit.label.trim() || (edit.label.trim() === scene.label && edit.song.trim() === (scene.song || ''))) return;
-    ipcRenderer.sendSync('db-update-scene', { sceneId: scene.id, label: edit.label.trim(), song: edit.song.trim(), actBreak: !!scene.act_break });
-    setData(d => ({ ...d, scenes: (d?.scenes || []).map(sc => sc.id === scene.id ? { ...sc, label: edit.label.trim(), song: edit.song.trim() } : sc) }));
+    const scene = (data?.scenes || []).find(sc => sc.id === sceneId);
+    if (!scene || !label.trim() || (label.trim() === scene.label && song.trim() === (scene.song || ''))) return;
+    ipcRenderer.sendSync('db-update-scene', { sceneId: scene.id, label: label.trim(), song: song.trim(), actBreak: !!scene.act_break });
+    setData(d => ({ ...d, scenes: (d?.scenes || []).map(sc => sc.id === scene.id ? { ...sc, label: label.trim(), song: song.trim() } : sc) }));
   };
 
 const groupedCues = () => {
@@ -1250,10 +1304,6 @@ const groupedCues = () => {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#1E1E1E' }}>
     <AppHeader title="Cue List" onBack={() => navigate('show', show)} backLabel={show.title}>
         <div style={{ flex: 1 }} />
-        <button data-tour="notes-toggle" onClick={() => setNotesOpen(o => !o)} title={notesOpen ? 'Hide notes' : 'Show notes, and take notes during a run'}
-          style={{ height: '28px', padding: '0 12px', background: notesOpen ? 'rgba(10,132,255,0.22)' : 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: notesOpen ? '#409CFF' : '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-          Notes{openNoteCount ? <span style={{ minWidth: '16px', height: '16px', borderRadius: '8px', background: '#FFD60A', color: '#1a1a1a', fontSize: '10px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px' }}>{openNoteCount}</span> : null}
-        </button>
          <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)' }}>Jump to</span>
         <select value={jumpSceneId} onChange={e => {
           const sceneId = e.target.value ? parseInt(e.target.value) : null;
@@ -1280,6 +1330,15 @@ const groupedCues = () => {
         <button onClick={() => setShowSceneModal(true)} style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>+ Scene</button>
         <button onClick={() => setShowCharModal(true)} style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>+ Character</button>
         </span>
+        <button data-tour="notes-toggle" aria-label="Notes" onClick={() => setNotesOpen(o => !o)} title={notesOpen ? 'Hide notes' : 'Show notes, and take notes during a run'}
+          style={{ height: '28px', padding: '0 8px', background: notesOpen ? 'rgba(10,132,255,0.22)' : 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: notesOpen ? '#409CFF' : '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          {/* A page with a pen: the Notes sidebar */}
+          <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12.5 2.5H5a1.5 1.5 0 0 0-1.5 1.5v12A1.5 1.5 0 0 0 5 17.5h9a1.5 1.5 0 0 0 1.5-1.5v-3" />
+            <path d="M6.5 7h4M6.5 10h3M6.5 13h2.5" />
+            <path d="M16.6 3.4a1.4 1.4 0 0 1 2 2L12.5 11.5l-2.7.7.7-2.7z" />
+          </svg>{openNoteCount ? <span style={{ minWidth: '16px', height: '16px', borderRadius: '8px', background: '#FFD60A', color: '#1a1a1a', fontSize: '10px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px' }}>{openNoteCount}</span> : null}
+        </button>
       </AppHeader>
 
       <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
@@ -1336,22 +1395,12 @@ const groupedCues = () => {
                       // Lines drawn inside the cell: a table's own borders don't move with a pinned (sticky) cell, which left
                       // a see-through sliver above it. Tucked 1px under the spot-name bar so no cue shows between them.
                       boxShadow: `inset 0 1px 0 ${group.actBreak ? 'rgba(255,159,10,0.35)' : 'rgba(48,209,88,0.32)'}, inset 0 -1px 0 ${group.actBreak ? 'rgba(255,159,10,0.35)' : 'rgba(48,209,88,0.32)'}` }}>
-                      {editingScene && editingScene.id === group.sceneId ? (
-                        // Double-clicked: rename the scene right here (Enter or clicking away saves, Escape cancels)
-                        <span onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget)) saveSceneName(); }}
-                          style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
-                          <input autoFocus value={editingScene.label} placeholder="Scene"
-                            onChange={e => setEditingScene(v => ({ ...v, label: e.target.value }))}
-                            onKeyDown={e => { if (e.key === 'Enter') saveSceneName(); }}
-                            style={{ ...sceneInputStyle, width: '180px', fontWeight: '700', color: group.actBreak ? '#FF9F0A' : '#30D158' }} />
-                          <input value={editingScene.song} placeholder="Song or title"
-                            onChange={e => setEditingScene(v => ({ ...v, song: e.target.value }))}
-                            onKeyDown={e => { if (e.key === 'Enter') saveSceneName(); }}
-                            style={{ ...sceneInputStyle, width: '220px', color: group.actBreak ? 'rgba(255,159,10,0.85)' : 'rgba(48,209,88,0.85)' }} />
-                        </span>
+                      {editingScene && editingScene === group.sceneId ? (
+                        <SceneNameEditor label={group.sceneLabel || ''} song={group.sceneSong || ''} actBreak={group.actBreak}
+                          onSave={(label, song) => saveSceneName(group.sceneId, label, song)} />
                       ) : (
                         <span title={group.sceneId ? 'Double-click to rename' : undefined}
-                          onDoubleClick={() => group.sceneId && setEditingScene({ id: group.sceneId, label: group.sceneLabel || '', song: group.sceneSong || '' })}
+                          onDoubleClick={() => group.sceneId && setEditingScene(group.sceneId)}
                           style={{ cursor: group.sceneId ? 'text' : 'default' }}>
                           <span style={{ fontSize: '12px', fontWeight: '700', color: group.actBreak ? '#FF9F0A' : '#30D158', letterSpacing: '0.01em' }}>
                             {continuedScene === String(group.sceneId || 'unassigned') ? `[${group.sceneLabel}]` : group.sceneLabel}
@@ -1604,7 +1653,7 @@ const groupedCues = () => {
       </div>
       {notesOpen && (
         <NotesSidebar spots={data?.spots || []} cues={[...(data?.cues || [])].sort((a, b) => a.sort_order - b.sort_order)} spotCues={data?.spotCues || []}
-          onAddNote={addRunNote} onCheck={sc => setSpotCueFields(sc, { note_checked: 1 })} onShowCue={showCue} onClose={() => setNotesOpen(false)} />
+          onAddNote={addRunNote} onCheck={n => (n.allSpots ? updateCue(n.cue_id, 'all_spots_note_checked', 1) : setSpotCueFields(n, { note_checked: 1 }))} onShowCue={showCue} onClose={() => setNotesOpen(false)} />
       )}
       </div>
 
@@ -1655,6 +1704,24 @@ const groupedCues = () => {
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <button onClick={() => setShowCharModal(false)} style={{ padding: '7px 14px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
               <button onClick={addCharacter} style={{ padding: '7px 14px', background: '#0A84FF', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer' }}>Add Character</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {newCharAsk && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000 }}>
+          <div style={{ background: '#2A2A2A', borderRadius: '16px', padding: '20px', width: '320px', boxShadow: '0 18px 48px rgba(0,0,0,0.45)' }}>
+            <div style={{ fontSize: '13px', fontWeight: '600', color: '#FFFFFF', marginBottom: '6px' }}>Add “{newCharAsk.name}” to this show’s characters?</div>
+            <div style={{ fontSize: '11px', lineHeight: '15px', color: 'rgba(255,255,255,0.55)', marginBottom: '14px' }}>
+              It will show on the Characters screen and in every cue’s character list. Or keep it as a custom name for just this cue.
+            </div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#FFFFFF', marginBottom: '16px', cursor: 'pointer' }}>
+              <input type="checkbox" checked={newCharAsk.remember} onChange={e => setNewCharAsk(a => ({ ...a, remember: e.target.checked }))} />
+              Remember my choice for this show
+            </label>
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <button onClick={() => answerNewChar(true)} style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>Add to Characters</button>
+              <button autoFocus onClick={() => answerNewChar(false)} style={{ height: '28px', padding: '0 12px', background: '#0A84FF', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>Keep as Custom</button>
             </div>
           </div>
         </div>

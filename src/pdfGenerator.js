@@ -52,6 +52,9 @@ function actionIconSVG(action, size = 28) {
     'Bump Color': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><rect x="9" y="8" width="14" height="16" rx="2" fill="none" stroke="#BA7517" stroke-width="1.5"/><rect x="12" y="11" width="3" height="10" fill="#639922"/><rect x="16" y="11" width="3" height="10" fill="#E24B4A"/></svg>`,
     'Roll Color': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><rect x="9" y="8" width="14" height="16" rx="2" fill="none" stroke="#BA7517" stroke-width="1.5"/><rect x="9" y="8" width="3.5" height="16" rx="1" fill="#E24B4A"/><rect x="12.5" y="8" width="3.5" height="16" fill="#EF9F27"/><rect x="16" y="8" width="3.5" height="16" fill="#639922"/><rect x="19.5" y="8" width="3.5" height="16" rx="1" fill="#185FA5"/></svg>`,
     'Ballyhoo': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><path d="M8 16 C8 10 12 6 16 6 C20 6 24 10 24 16 C24 22 20 26 16 26 C12 26 8 22 8 16 Z" fill="none" stroke="#D85A30" stroke-width="2.5"/><path d="M16 6 C16 6 20 16 16 26" fill="none" stroke="#D85A30" stroke-width="2"/><path d="M16 6 C16 6 12 16 16 26" fill="none" stroke="#D85A30" stroke-width="2"/></svg>`,
+    'Green Circle': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="#3B6D11"/></svg>`,
+    'Red Circle': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="#A32D2D"/></svg>`,
+    'Yellow Circle': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="#E0B000"/></svg>`,
     'Off': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><line x1="8" y1="8" x2="24" y2="24" stroke="#999" stroke-width="2.5" stroke-linecap="round"/><line x1="24" y1="8" x2="8" y2="24" stroke="#999" stroke-width="2.5" stroke-linecap="round"/></svg>`,
   };
   return icons[action] || `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><circle cx="16" cy="16" r="8" fill="#ccc"/></svg>`;
@@ -1345,7 +1348,31 @@ function buildSpotNotesHTML({ show, spots, cues, scenes, spotCues, characters, l
       });
   };
 
-  const spotsHTML = spots.map(spot => {
+  // Notes for all spots (kept on the cue) come first, in their own section, on every spot's printout
+  const allSpotsNotes = cues.filter(c => c.all_spots_note && c.all_spots_note.trim())
+    .sort((a, b) => ((sceneOrderMap[a.scene_id] ?? 999) - (sceneOrderMap[b.scene_id] ?? 999)) || ((a.sort_order || 0) - (b.sort_order || 0)));
+  const allSpotsHTML = allSpotsNotes.length ? `
+      <div class="spot-section">
+        <div class="spot-header">ALL SPOTS</div>
+        ${allSpotsNotes.map(cue => {
+          const scene = sceneMap[cue.scene_id];
+          return `
+            <div class="note-card ${cue.all_spots_note_checked ? 'checked' : ''}">
+              <div class="note-meta">
+                <span class="lq">LQ ${cue.lq_number || '—'}</span>
+                <span class="track">T·${cue.track_number}</span>
+                ${pagePrint && cue.page ? `<span class="track">pg ${cue.page}</span>` : ''}
+                ${scene ? `<span class="scene">${scene.label}</span>` : ''}
+                ${cue.all_spots_note_checked ? `<span class="done-badge">GIVEN</span>` : ''}
+              </div>
+              <div class="note-text">${cue.all_spots_note}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    ` : '';
+
+  const spotsHTML = allSpotsHTML + spots.map(spot => {
     const notes = notesForSpot(spot.id);
     if (notes.length === 0) return '';
     return `

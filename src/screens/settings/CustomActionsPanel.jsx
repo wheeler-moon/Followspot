@@ -51,6 +51,10 @@ function ActionIcon({ action, size = 28 }) {
     case 'Bump Color': return <svg width={s} height={s} viewBox="0 0 32 32"><rect x="9" y="8" width="14" height="16" rx="2" fill="none" stroke="#FF9F0A" strokeWidth="1.5"/><rect x="12" y="11" width="3" height="10" fill="#6BD58A"/><rect x="16" y="11" width="3" height="10" fill="#FF6961"/></svg>;
     case 'Roll Color': return <svg width={s} height={s} viewBox="0 0 32 32"><rect x="9" y="8" width="14" height="16" rx="2" fill="none" stroke="#FF9F0A" strokeWidth="1.5"/><rect x="9" y="8" width="3.5" height="16" rx="1" fill="#FF6961"/><rect x="12.5" y="8" width="3.5" height="16" fill="#FFB340"/><rect x="16" y="8" width="3.5" height="16" fill="#6BD58A"/><rect x="19.5" y="8" width="3.5" height="16" rx="1" fill="#64D2FF"/></svg>;
     case 'Ballyhoo': return <svg width={s} height={s} viewBox="0 0 32 32"><path d="M8 16 C8 10 12 6 16 6 C20 6 24 10 24 16 C24 22 20 26 16 26 C12 26 8 22 8 16 Z" fill="none" stroke="#FF9F0A" strokeWidth="2.5"/><path d="M16 6 C16 6 20 16 16 26" fill="none" stroke="#FF9F0A" strokeWidth="2"/><path d="M16 6 C16 6 12 16 16 26" fill="none" stroke="#FF9F0A" strokeWidth="2"/></svg>;
+    // Plain colored circles: extra icons for custom actions (Show Settings → Custom Actions)
+    case 'Green Circle': return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="#30D158"/></svg>;
+    case 'Red Circle': return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="#FF453A"/></svg>;
+    case 'Yellow Circle': return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="#FFD60A"/></svg>;
     case 'Off': return <svg width={s} height={s} viewBox="0 0 32 32"><line x1="8" y1="8" x2="24" y2="24" stroke="#555" strokeWidth="2.5" strokeLinecap="round"/><line x1="24" y1="8" x2="8" y2="24" stroke="#555" strokeWidth="2.5" strokeLinecap="round"/></svg>;
     case 'Tracked': return <svg width={s} height={s} viewBox="0 0 32 32"><line x1="6" y1="16" x2="26" y2="16" stroke="#555" strokeWidth="2.5" strokeLinecap="round"/><polygon points="20,10 26,16 20,22" fill="#555"/></svg>;
     default: return <svg width={s} height={s} viewBox="0 0 32 32"><circle cx="16" cy="16" r="8" fill="#333"/></svg>;
@@ -63,7 +67,8 @@ function ActionIcon({ action, size = 28 }) {
 // it (its cues follow), change its icon or delete it. Icons come from SpotPlot's own symbols (the library)
 // or an image you choose.
 
-const LIBRARY = DEFAULT_ACTIONS.filter(a => a.name !== 'Tracked').map(a => a.name);   // symbols a custom action can borrow
+// Symbols a custom action can borrow: the built-in actions' plus three plain colored circles
+const LIBRARY = [...DEFAULT_ACTIONS.filter(a => a.name !== 'Tracked').map(a => a.name), 'Green Circle', 'Red Circle', 'Yellow Circle'];
 
 const imageSrc = (path) => {
   if (!path) return null;

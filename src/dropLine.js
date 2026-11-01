@@ -26,9 +26,15 @@ export function moveItem(list, from, slot) {
   return next;
 }
 
+// Which edge of this row the line goes on: 'before', 'after', or null (not this row, or nothing would move)
+export function dropLineSide(slot, index, from) {
+  if (!slot || slot.index !== index || from === null || from === undefined || moveTo(from, slot) === from) return null;
+  return slot.after ? 'after' : 'before';
+}
+
 // The line on this row, if the drop would land at its top or bottom edge (none where nothing would move)
 export function dropLineStyle(slot, index, from, horizontal = false) {
-  if (!slot || slot.index !== index || from === null || from === undefined || moveTo(from, slot) === from) return {};
+  if (!dropLineSide(slot, index, from)) return {};
   if (horizontal) return { boxShadow: slot.after ? `inset -3px 0 0 ${LINE}` : `inset 3px 0 0 ${LINE}` };
   return { boxShadow: slot.after ? `inset 0 -2px 0 ${LINE}` : `inset 0 2px 0 ${LINE}` };
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { dropSlot, moveTo, moveItem, dropLineStyle } from '../../dropLine';
+import { dropSlot, moveTo, moveItem, dropLineSide } from '../../dropLine';
 const { ipcRenderer } = window.require('electron');
 
 export default function SpotOrderPanel({ show }) {
@@ -41,7 +41,7 @@ export default function SpotOrderPanel({ show }) {
       <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.52)', marginBottom: '16px' }}>
         Drag to reorder. This changes the column order in the cue list and the spot order on the caller sheet.
       </div>
-      <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch' }}>
+      <div style={{ display: 'flex', gap: '16px', alignItems: 'stretch' }}>
         {spots.map((spot, index) => (
           <div key={spot.id}
             draggable
@@ -54,8 +54,8 @@ export default function SpotOrderPanel({ show }) {
               flex: 1,
               background: 'rgba(255,255,255,0.05)',
               border: '2px solid rgba(255,255,255,0.1)',
-              ...dropLineStyle(dragOverId, index, dragItem.current, true),
               borderRadius: '10px',
+              position: 'relative',
               padding: '16px 12px',
               cursor: 'grab',
               display: 'flex',
@@ -64,6 +64,11 @@ export default function SpotOrderPanel({ show }) {
               gap: '8px',
               minWidth: '100px',
             }}>
+            {/* Spots sit side by side, so the drop line is a tall bar in the gap where the spot will land */}
+            {dropLineSide(dragOverId, index, dragItem.current) && (
+              <div style={{ position: 'absolute', top: '-8px', bottom: '-8px', width: '4px', borderRadius: '2px', background: '#0A84FF', pointerEvents: 'none',
+                [dropLineSide(dragOverId, index, dragItem.current) === 'after' ? 'right' : 'left']: '-12px' }} />
+            )}
             <div style={{ color: 'rgba(255,255,255,0.28)', fontSize: '16px' }}>⠿</div>
             <div style={{ fontSize: '14px', fontWeight: '700', color: '#FFFFFF', textAlign: 'center' }}>
               Spot {spot.spot_number}

@@ -84,6 +84,16 @@ export default function App() {
     return () => ipcRenderer.removeListener('menu-show-tips', resetTips);
   }, []);
 
+  // View → Ask About New Characters Again: forget this show's remembered "Add to Characters?" answer
+  useEffect(() => {
+    const { ipcRenderer } = window.require('electron');
+    ipcRenderer.send('show-open', !!currentShow);
+    if (!currentShow) return;
+    const reset = () => ipcRenderer.sendSync('db-update-show', { showId: currentShow.id, new_character_choice: null });
+    ipcRenderer.on('menu-reset-character-choice', reset);
+    return () => ipcRenderer.removeListener('menu-reset-character-choice', reset);
+  }, [currentShow]);
+
   const navigate = (dest, data) => {
     setCurrentShow(data || null);
     setScreen(dest);
