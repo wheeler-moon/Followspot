@@ -16,8 +16,21 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 ### Next (0.4.1)
 - [ ] Faster cue list loading: big shows take a couple of seconds to open
 - [ ] Update notices: Settings → Updates now shows checking / downloading / ready and re-checks every 4 hours. Still to do: a small "Downloading SpotPlot X.X.X…" notice outside Settings, and SpotPlot → Check for Updates… saying "You're up to date" instead of nothing visible. Only helps once people have 0.4.0
-- [ ] FileMaker import, next: try more FileMaker show files (older template versions, other designers' shows, 4-spot shows, encrypted ones) and add any action names or field layouts they use; bring across logos and actor photos if the files keep them inside (FMP Tools doesn't read pictures yet); first `npm run make` with the reader inside: check it's signed and runs in the installed app
+- [ ] FileMaker import, next: try more FileMaker show files (older template versions, other designers' shows, 4-spot shows, encrypted ones) and add any action names or field layouts they use; bring across logos and actor photos if the files keep them inside (FMP Tools doesn't read pictures yet)
 - [ ] Example text pass: go through every field's grey example text (show title, operator, location, characters, search boxes… about 25 in the app, plus the iPad app's) and make sure Wheeler likes each one: real theatre-sounding examples, same style everywhere
+- [ ] Actor → Performer: every mention in the app, prints, website and iPad app
+- [ ] Copy and paste a whole cue row: everything every spot does in that cue, pasted into another cue
+- [ ] Page number as a cue detail in Cue Settings like the others: shown on the cue list by default, hidden on prints by default, and able to print on every sheet
+- [ ] Custom actions: edit a custom action's name and icon after making it; a library of icons to pick from when making one (including SpotPlot's own action icons, duplicates are fine; users can still add their own); rename SpotPlot's built-in actions per show
+- [ ] New custom character prompt: the default choice is "Leave as custom" (not add); a custom character added to Characters starts unticked for printing on the Characters sheet
+- [ ] Spot Notes: a button on each note that jumps to that cue in the cue list
+- [ ] Notes sidebar in the cue list: a toggle for a left sidebar showing current notes, where you can write notes during a run; stays in step with the Spot Notes page
+- [ ] Cue list: remove the thin sliver above a pinned scene header where cues show through while scrolling
+- [ ] Cue list: double-click a scene header to rename the scene (updates everywhere)
+- [ ] Escape closes menus, pop-ups and dialogs everywhere
+- [ ] LQ number box: a tester sees only about 3 digits while typing (Wheeler's shows many); make the box fit longer LQ numbers on every Mac
+- [ ] Cue list: coming back to it reopens exactly where you left off, and the Jump to menu resets
+- [ ] Reordering scenes, characters and iris sizes: while dragging, show a line where the item will land instead of highlighting the item it goes in front of
 - [ ] Beta feedback: add items here as testers report them
 - [ ] Right-click menus beyond the cue boxes (same real macOS menu, `show-context-menu` in main.js): scene headers (rename, add cue), the LQ column (insert, delete, page number)
 - [ ] ⌘C / ⌘V for a cue box without right-clicking (needs a way to select a box first)
