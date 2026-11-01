@@ -38,6 +38,8 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 
   Beta testers on very old versions may need one manual download. Making it private doesn't erase what was public before; no secrets were ever in it
 
+- [ ] **Think about app security and license verification** (talked through 2026-10-31). Ways SpotPlot can be used without a license, biggest first: the source code is public (anyone technical can build a copy without the license check; see "Make the app's code private" above); blocking the license server keeps a copy running offline forever, and the app can't tell a real saved license from a forged one; a key can be shared across 2 Macs (or passed around via the 30-day free-up). Already protected: changing the installed app's files stops it launching. Ideas to weigh: licenses signed by the server so forged ones are rejected even offline, and an expiry (e.g. must reach the server once every 30 days) so a canceled subscription stops after a month offline. Decide what's worth doing before launch
+
 ## iPad app (`spotplot-ipad`)
 
 Plan: `docs/ipad-app-plan.md`. Contract with the desktop: `docs/sync-protocol.md`.
