@@ -43,7 +43,7 @@ Auth: `Authorization: Bearer <token>` from pairing (one token per show). `401` m
 - Gel colors: use the same catalog as the desktop, `src/gels.json` ([maker, number, name, color]); the iPad app should bundle a copy. A gel not in the catalog has no color: draw it clear/white.
 - `shows.iris_sizes` is a JSON array `{ label, value, builtin?, key? }` in display order (see `src/irisSizes.js`). `spot_cues.frame_size` holds the size's `value`.
 - `cues.page` (text or null): the script page the cue is on, typed by the user ("13", "13a"). Shown on the cue list only for now.
-- `shows.cue_fields` is JSON `{ field: { list, print } }` (see `src/cueFields.js`).
+- `shows.cue_fields` is JSON `{ field: { list, print } }` (see `src/cueFields.js`). A missing field means shown, except `page` (the script page), whose `print` is off unless set. The iPad treats `page` the same way.
 - `spot_cues.action` is an action name (the cue list's `ACTIONS` in `src/screens/CueListScreen.jsx`, or a custom action from `shows.custom_actions`), `''` for a spot that carries on, or `'Off'`. **Renamed:** Fade Up → `Increase` and Fade Down → `Decrease` (Mac databases and imported files are updated automatically). The iPad maps the old names too, for shows it saved before; an older iPad build shows the new names as plain text without a symbol until it's updated. `'Tracked'` may appear in older data and means the same as `''`.
 - When and Notes (`spot_cues.description`, `spot_cues.notes`) contain simple HTML (`<b>`, `<i>`, `<u>`; see `src/richText.js`).
 

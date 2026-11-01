@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- **Page number** is now a cue detail in Show Settings → Cue Settings, like the others: shown on the cue list (turn it off to hide the "pg"), and off on prints until you tick it. When it's on, spot sheets, the caller sheet and Spot Notes show each cue's page under its T· number
 - "Actor" is now "Performer" everywhere: the Characters screen, the add-character box, Print and the Characters sheet
 - When you type a new character name in a cue, the question now defaults to **Keep as Custom**; choosing Add to Characters still starts it unticked for the Characters sheet
 - Escape closes menus, pop-ups and dialogs throughout the app: Show Settings, a cue's options, the action menu, gel search results, the add scene / character boxes, Settings, What's New and more. It closes only the top-most one

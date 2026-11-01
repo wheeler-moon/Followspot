@@ -19,7 +19,6 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 - [ ] FileMaker import, next: try more FileMaker show files (older template versions, other designers' shows, 4-spot shows, encrypted ones) and add any action names or field layouts they use; bring across logos and performer photos if the files keep them inside (FMP Tools doesn't read pictures yet)
 - [ ] Example text pass: go through every field's grey example text (show title, operator, location, characters, search boxes… about 25 in the app, plus the iPad app's) and make sure Wheeler likes each one: real theatre-sounding examples, same style everywhere
 - [ ] Copy and paste a whole cue row: everything every spot does in that cue, pasted into another cue
-- [ ] Page number as a cue detail in Cue Settings like the others: shown on the cue list by default, hidden on prints by default, and able to print on every sheet
 - [ ] Custom actions: edit a custom action's name and icon after making it; a library of icons to pick from when making one (including SpotPlot's own action icons, duplicates are fine; users can still add their own); rename SpotPlot's built-in actions per show
 - [ ] Spot Notes: a button on each note that jumps to that cue in the cue list
 - [ ] Notes sidebar in the cue list: a toggle for a left sidebar showing current notes, where you can write notes during a run; stays in step with the Spot Notes page

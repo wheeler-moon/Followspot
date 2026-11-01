@@ -100,9 +100,13 @@ function colorChangeCues(orderedCues, spotCuesForSpot) {
 const COLOR_CHANGE_BG = '#FFE45C'; // yellow highlighter
 
 // Small gray T· (spot cue / tracking number) under the LQ, for operators to reference
-const trackHTML = (cue, show) => show && cue.track_number != null ? `<div class="track-num">T·${cue.track_number}</div>` : '';
+// Under the LQ: the T· number and the script page, each on its own line when switched on (narrow columns stay tidy)
+const trackHTML = (cue, show, showPage = false) =>
+  (show && cue.track_number != null ? `<div class="track-num">T·${cue.track_number}</div>` : '') +
+  (showPage && cue.page ? `<div class="track-num" style="white-space:nowrap">pg ${cue.page}</div>` : '');
 
 function buildSpotSheetHTML({ cueFields, show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, hideOff, hideTracked, rangeStart, rangeEnd, customActions, showTracks = true }) {
+  const pagePrint = cueFieldSettings(cueFields).page.print;
   const isLandscape = false;
   let logoHTML = '<div class="header-logo-placeholder">LOGO</div>';
   if (show.logo_path) {
@@ -201,7 +205,7 @@ const sceneOrderMap = {};
 
         rowsHTML += `
       <tr class="${isOff ? 'off-row' : quiet ? 'quiet-row' : ''}" style="${rowStyle}">
-        <td class="lq-cell">${cue.lq_number || '—'}${trackHTML(cue, showTracks)}</td>
+        <td class="lq-cell">${cue.lq_number || '—'}${trackHTML(cue, showTracks, pagePrint)}</td>
         ${isIgnored ? `
           <td colspan="7" style="position:relative;padding:0;">
             <table style="width:100%;opacity:0.2;">
@@ -740,7 +744,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
 
     rowsHTML += `
       <tr class="cue-row">
-        <td class="lq-cell">${cue.lq_number || '—'}${trackHTML(cue, showTracks)}</td>
+        <td class="lq-cell">${cue.lq_number || '—'}${trackHTML(cue, showTracks, printFields.page.print)}</td>
         ${spotCellsHTML}
       </tr>
     `;
@@ -1302,6 +1306,7 @@ function buildColorLoadHTML({ show, spots, colorSlotsBySpot, label }) {
 }
 
 function buildSpotNotesHTML({ show, spots, cues, scenes, spotCues, characters, label }) {
+  const pagePrint = cueFieldSettings(show.cue_fields).page.print;
   let logoBase64 = '';
   if (show.logo_path) {
     try {
@@ -1349,6 +1354,7 @@ function buildSpotNotesHTML({ show, spots, cues, scenes, spotCues, characters, l
               <div class="note-meta">
                 <span class="lq">LQ ${cue.lq_number || '—'}</span>
                 <span class="track">T·${cue.track_number}</span>
+                ${pagePrint && cue.page ? `<span class="track">pg ${cue.page}</span>` : ''}
                 ${scene ? `<span class="scene">${scene.label}</span>` : ''}
                 ${sc.action ? `<span class="action">${sc.action}</span>` : ''}
                 ${char ? `<span class="char">${char.name}</span>` : ''}

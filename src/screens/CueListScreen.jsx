@@ -590,7 +590,7 @@ function CueRow({ onDragFinished, onCellMenu, menuCell, colorChangesBySpot, cue,
             )}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', color: 'rgba(255,255,255,0.35)', fontVariantNumeric: 'tabular-nums' }}>
               <span>T·{cue.track_number}</span>
-              {editingPage ? (
+              {fieldsShown.page === false ? null : editingPage ? (
                 <input autoFocus value={pageVal} onChange={e => setPageVal(e.target.value)}
                   onBlur={savePage} onKeyDown={e => { if (e.key === 'Enter') savePage(); if (e.key === 'Escape') { setPageVal(cue.page || ''); setEditingPage(false); } }}
                   placeholder="pg" style={{ width: '34px', background: 'rgba(255,255,255,0.05)', border: '1px solid #0A84FF', borderRadius: '4px', color: '#FFFFFF', padding: '0 3px', fontSize: '10px', textAlign: 'center', outline: 'none' }} />

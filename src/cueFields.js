@@ -1,6 +1,7 @@
 // Cue fields a show can hide, separately on the cue list and on printed sheets.
 // Stored on the show as JSON in shows.cue_fields: { [key]: { list: bool, print: bool } }.
-// Missing keys default to shown, so older shows (and older show files) show everything.
+// Missing keys use each field's default: shown, except the page number on prints (off until turned on).
+// So older shows (and older show files) look as they did.
 // Hiding never deletes data.
 
 const CUE_FIELDS = [
@@ -12,14 +13,15 @@ const CUE_FIELDS = [
   { key: 'time', label: 'Time' },
   { key: 'when', label: 'When' },
   { key: 'notes', label: 'Notes' },
+  { key: 'page', label: 'Page number', defaultPrint: false },   // the cue's script page ("pg 13")
 ];
 
 function cueFieldSettings(json) {
   let saved = {};
   try { saved = (typeof json === 'string' ? JSON.parse(json) : json) || {}; } catch (e) { saved = {}; }
   const out = {};
-  for (const { key } of CUE_FIELDS) {
-    out[key] = { list: saved[key]?.list !== false, print: saved[key]?.print !== false };
+  for (const { key, defaultPrint = true } of CUE_FIELDS) {
+    out[key] = { list: saved[key]?.list !== false, print: typeof saved[key]?.print === 'boolean' ? saved[key].print : defaultPrint };
   }
   return out;
 }
