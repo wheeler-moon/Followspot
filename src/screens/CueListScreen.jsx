@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import NotesSidebar from '../components/NotesSidebar';
 import useEscape from '../useEscape';
+import { actionNameMap, displayAction } from '../actionNames';
 import Tips from '../components/Tips';
 import { TIPS } from '../tips';
 import AppHeader from '../components/AppHeader';
@@ -82,17 +83,17 @@ function ActionIcon({ action, size = 20 }) {
   }
 }
 
-function ActionPicker({ value, onChange, onClose, pos, customActions }) {
+function ActionPicker({ value, onChange, onClose, pos, customActions, actionNames }) {
   useEscape(onClose);
   return (
     <div style={{ position: 'fixed', top: pos ? pos.top : 0, left: pos ? pos.left : 0, zIndex: 99999, background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.14)', borderRadius: '10px', padding: '8px', width: '280px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', marginTop: '4px' }}>
-      {[...ACTIONS, ...(customActions || []).map(a => ({ name: a.name, short: a.name.substring(0, 4), color: a.color || 'rgba(255,255,255,0.62)', icon: a.icon || null }))].map(a => (
+      {[...ACTIONS, ...(customActions || []).map(a => ({ name: a.name, short: a.name.substring(0, 4), color: a.color || 'rgba(255,255,255,0.62)', icon: a.icon || null, builtinIcon: a.builtinIcon || null }))].map(a => (
         <div key={a.name} onClick={() => { onChange(a); onClose(); }}
           style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', padding: '6px 4px', borderRadius: '6px', cursor: 'pointer', background: value === a.name ? 'rgba(10,132,255,0.16)' : 'transparent', border: value === a.name ? '1px solid #0A84FF' : '1px solid transparent' }}
           onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
           onMouseLeave={e => e.currentTarget.style.background = value === a.name ? 'rgba(10,132,255,0.16)' : 'transparent'}>
-          {a.icon ? <img src={(() => { try { const fs = window.require('fs'); const d = fs.readFileSync(a.icon); const ext = a.icon.split('.').pop().toLowerCase(); return `data:image/${ext};base64,${d.toString('base64')}`; } catch(e) { return ''; } })()} style={{ width: 28, height: 28, objectFit: 'contain' }} /> : <ActionIcon action={a.name} size={28} />}
-          <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.62)', textAlign: 'center', lineHeight: 1.2, wordBreak: 'break-word' }}>{a.name}</span>
+          {a.builtinIcon ? <ActionIcon action={a.builtinIcon} size={28} /> : a.icon ? <img src={(() => { try { const fs = window.require('fs'); const d = fs.readFileSync(a.icon); const ext = a.icon.split('.').pop().toLowerCase(); return `data:image/${ext};base64,${d.toString('base64')}`; } catch(e) { return ''; } })()} style={{ width: 28, height: 28, objectFit: 'contain' }} /> : <ActionIcon action={a.name} size={28} />}
+          <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.62)', textAlign: 'center', lineHeight: 1.2, wordBreak: 'break-word' }}>{displayAction(a.name, actionNames)}</span>
         </div>
       ))}
     </div>
@@ -162,7 +163,7 @@ let cueClipboard = null;
 // Copy Whole Cue / Paste Whole Cue: what every spot does in one cue, by spot id (same show only)
 let wholeCueClipboard = null;
 
-function SpotCueCell({ onDragEnd, onContextMenu, spotCue, spot, cue, fieldsShown = {}, characters, colorSlots, onUpdate, onNewCustomCharacter, lqNumber, onDragStart, onDragOver, onDragLeave, onDrop, isDragTarget, isMenuTarget, colorSame, onDoubleClick, irisSizes, customActions }) {
+function SpotCueCell({ onDragEnd, onContextMenu, spotCue, spot, cue, fieldsShown = {}, characters, colorSlots, onUpdate, onNewCustomCharacter, lqNumber, onDragStart, onDragOver, onDragLeave, onDrop, isDragTarget, isMenuTarget, colorSame, onDoubleClick, irisSizes, customActions, actionNames }) {
   const [showActionPicker, setShowActionPicker] = useState(false);
   const [hoveredFrame, setHoveredFrame] = useState(null);
   const [showCustomTime, setShowCustomTime] = useState(false);
@@ -274,7 +275,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
             <ActionIcon action="Off" size={16} />
             <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.28)', fontWeight: '500' }}>Off</span>
           </div>
-{showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} pos={pickerPos} customActions={customActions} />}
+{showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} pos={pickerPos} customActions={customActions} actionNames={actionNames} />}
           <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.28)', marginTop: '6px', fontStyle: 'italic', textAlign: 'center', fontWeight: '600', pointerEvents: 'none' }}>spot inactive</div>
         </div>
       </td>
@@ -325,6 +326,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
               <>
                 {(() => {
                   const customAction = (customActions || []).find(a => a.name === spotCue.action);
+                  if (customAction?.builtinIcon) return <ActionIcon action={customAction.builtinIcon} size={20} />;
                   if (customAction?.icon) {
                     try {
                       const fs = window.require('fs');
@@ -336,13 +338,13 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
                   }
                   return <ActionIcon action={spotCue.action} size={20} />;
                 })()}
-                <span style={{ fontSize: '14px', color: actionDef ? actionDef.color : 'rgba(255,255,255,0.62)', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{spotCue.action}</span>
+                <span style={{ fontSize: '14px', color: actionDef ? actionDef.color : 'rgba(255,255,255,0.62)', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{displayAction(spotCue.action, actionNames)}</span>
               </>
             ) : (
               <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.28)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Action...</span>
             )}
           </div>
-{showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} pos={pickerPos} customActions={customActions} />}
+{showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} pos={pickerPos} customActions={customActions} actionNames={actionNames} />}
                 {showCustomChar ? (
                     <input
             autoFocus
@@ -555,7 +557,7 @@ function HeaderColorLoad({ slots, perm }) {
   );
 }
 
-function CueRow({ onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesBySpot, cue, isLastCue, fieldsShown, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onNewCustomCharacter, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal, onCueDoubleClick, irisSizes, customActions }) {
+function CueRow({ onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesBySpot, cue, isLastCue, fieldsShown, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onNewCustomCharacter, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal, onCueDoubleClick, irisSizes, customActions, actionNames }) {
   const [editingLQ, setEditingLQ] = useState(false);
   const [lqVal, setLqVal] = useState(cue.lq_number || '');
 
@@ -650,6 +652,7 @@ function CueRow({ onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesB
               colorSame={!!sc && sc.action !== 'Off' && !!(sc.no_color || sc.active_frames) && !colorChangesBySpot?.[spot.id]?.has(cue.id)}
               irisSizes={irisSizes}
               customActions={customActions}
+              actionNames={actionNames}
               onDoubleClick={(e) => {
                 // Inside a text box (When, Notes, a typed name or time), double-click selects a word as usual
                 if (e.target.closest('input, textarea, [contenteditable]')) return;
@@ -720,6 +723,7 @@ export default function CueListScreen({ show, navigate }) {
   // Which cue fields this show shows on the cue list (Show Settings > Cue Settings)
   const [listFields, setListFields] = useState({});
   const [customActions, setCustomActions] = useState([]);
+  const [actionNames, setActionNames] = useState({});   // built-in actions renamed for this show
   const [dragSource, setDragSource] = useState(null);
   // A drag that ends anywhere other than another cell (or back on its own cell) clears the highlight.
   // Drops onto another cell open the copy/swap menu, whose buttons clear it when done.
@@ -767,6 +771,7 @@ export default function CueListScreen({ show, navigate }) {
     setIrisSizes(irisSizeList(updatedShow?.iris_sizes));
     const customActionData = updatedShow?.custom_actions ? JSON.parse(updatedShow.custom_actions) : [];
     setCustomActions(customActionData);
+    setActionNames(actionNameMap(updatedShow?.action_names));
     setListFields(Object.fromEntries(Object.entries(cueFieldSettings(updatedShow?.cue_fields)).map(([k, v]) => [k, v.list])));
     if (safe.scenes && safe.scenes.length > 0 && !selectedSceneId) setSelectedSceneId(safe.scenes[0].id);
   };
@@ -1373,6 +1378,7 @@ const groupedCues = () => {
                       setShowDragModal={setShowDragModal}
                       irisSizes={irisSizes}
                       customActions={customActions}
+                      actionNames={actionNames}
                       onCueDoubleClick={(cue, spot, spotCue) => {
                       setCuePopup({ cue, spot, spotCue });
                        setPopupNote(spotCue?.spot_note || '');

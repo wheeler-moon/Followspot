@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- **Custom actions** (Show Settings → Custom Actions): click any action to edit it. Rename your own actions (cues that use one follow along), change their icon or delete them. A new icon library lets a custom action use one of SpotPlot's own symbols, or you can still choose your own image. SpotPlot's built-in actions can be renamed for one show (say "Pick Up" to "Pickup"); the new name shows on the cue list, prints, the action key and the iPad
 - Cue list: a **Notes** sidebar for taking notes during a run. Click Notes in the top bar, type the LQ, pick the spot and press Return; the note is saved as that cue's spot note (Spot Notes and prints have it). It lists notes not given yet in cue order: click one to jump to its cue, ✓ to check it off. The Notes button shows how many are still to give
 - Spot Notes: **Go to Cue** on each note opens the cue list at that cue, with the spot's box outlined for a moment
 - Reordering scenes, characters, iris sizes and spot order: while you drag, a blue line shows exactly where the item will land, instead of highlighting the row it goes next to

@@ -18,7 +18,6 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 - [ ] Update notices: Settings → Updates now shows checking / downloading / ready and re-checks every 4 hours. Still to do: a small "Downloading SpotPlot X.X.X…" notice outside Settings, and SpotPlot → Check for Updates… saying "You're up to date" instead of nothing visible. Only helps once people have 0.4.0
 - [ ] FileMaker import, next: try more FileMaker show files (older template versions, other designers' shows, 4-spot shows, encrypted ones) and add any action names or field layouts they use; bring across logos and performer photos if the files keep them inside (FMP Tools doesn't read pictures yet)
 - [ ] Example text pass: go through every field's grey example text (show title, operator, location, characters, search boxes… about 25 in the app, plus the iPad app's) and make sure Wheeler likes each one: real theatre-sounding examples, same style everywhere
-- [ ] Custom actions: edit a custom action's name and icon after making it; a library of icons to pick from when making one (including SpotPlot's own action icons, duplicates are fine; users can still add their own); rename SpotPlot's built-in actions per show
 - [ ] Beta feedback: add items here as testers report them
 - [ ] Right-click menu on scene headers (rename, add cue), same real macOS menu (`show-context-menu` in main.js). The LQ number's menu is done
 - [ ] ⌘C / ⌘V for a cue box without right-clicking (needs a way to select a box first)

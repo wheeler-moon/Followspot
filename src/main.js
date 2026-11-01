@@ -148,6 +148,7 @@ function initSchema() {
   try { db.exec('ALTER TABLE characters ADD COLUMN print_on_sheet INTEGER DEFAULT 1'); } catch(e) {}
   try { db.exec('ALTER TABLE spot_cues ADD COLUMN notes_highlight TEXT DEFAULT NULL'); } catch(e) {}
   try { db.exec('ALTER TABLE cues ADD COLUMN page TEXT DEFAULT NULL'); } catch(e) {} // script page, cue list only
+  try { db.exec('ALTER TABLE shows ADD COLUMN action_names TEXT DEFAULT NULL'); } catch(e) {} // built-in actions renamed for this show, see src/actionNames.js
   try {
     db.exec('ALTER TABLE spot_cues ADD COLUMN with_lq INTEGER DEFAULT 0');
     // One-time: link "When" text that the old w/LQ button typed in for the cue's current number,
@@ -680,7 +681,7 @@ ipcMain.on('get-app-icon', (event) => {
           form.programmer || '', form.logo_path || '', showId);
       } else {
         // Field-by-field update
-        const allowed = ['title','theatre','producer','designer','associate_ld','assistant_ld','production_electrician','programmer','logo_path','iris_sizes','custom_actions','cue_fields'];
+        const allowed = ['title','theatre','producer','designer','associate_ld','assistant_ld','production_electrician','programmer','logo_path','iris_sizes','custom_actions','cue_fields','action_names'];
         for (const [key, value] of Object.entries(fields)) {
           if (allowed.includes(key)) {
             database.prepare(`UPDATE shows SET ${key} = ? WHERE id = ?`).run(value, showId);
@@ -692,6 +693,13 @@ ipcMain.on('get-app-icon', (event) => {
       console.error('db-update-show error:', e);
       event.returnValue = { success: false }; 
     }
+  });
+  // Renaming a custom action: every cue in the show that uses it follows (one step)
+  ipcMain.on('db-rename-action', (event, { showId, from, to }) => {
+    try {
+      const r = getDb().prepare('UPDATE spot_cues SET action = ? WHERE action = ? AND cue_id IN (SELECT id FROM cues WHERE show_id = ?)').run(to, from, showId);
+      event.returnValue = { success: true, changed: r.changes };
+    } catch(e) { event.returnValue = { success: false }; }
   });
   ipcMain.on('db-delete-show', (event, showId) => {
     try {

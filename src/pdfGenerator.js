@@ -4,6 +4,7 @@ const path = require('path');
 const { app } = require('electron');
 const { safeRich, escapeText } = require('./richText');
 const { cueFieldSettings } = require('./cueFields');
+const { actionNameMap, displayAction } = require('./actionNames');
 const { gelColor } = require('./gelColors');
 
 // Style rules that hide the cue fields a show has unticked under "Show on print"
@@ -57,6 +58,7 @@ function actionIconSVG(action, size = 28) {
 }
 function getActionIconHTML(action, size, customActions) {
   const custom = (customActions || []).find(a => a.name === action);
+  if (custom?.builtinIcon) return actionIconSVG(custom.builtinIcon, size);   // one of SpotPlot's own symbols
   if (custom?.icon) {
     try {
       const fs = require('fs');
@@ -107,6 +109,7 @@ const trackHTML = (cue, show, showPage = false) =>
 
 function buildSpotSheetHTML({ cueFields, show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, hideOff, hideTracked, rangeStart, rangeEnd, customActions, showTracks = true }) {
   const pagePrint = cueFieldSettings(cueFields).page.print;
+  const actionNames = actionNameMap(show && show.action_names);
   const isLandscape = false;
   let logoHTML = '<div class="header-logo-placeholder">LOGO</div>';
   if (show.logo_path) {
@@ -211,7 +214,7 @@ const sceneOrderMap = {};
             <table style="width:100%;opacity:0.2;">
               <tr>
                 <td class="action-cell">
-                  ${sc.action && !quiet ? `<div class="action-inner">${getActionIconHTML(sc.action, 34, customActions)}<span class="action-name">${sc.action}</span></div>` : ''}
+                  ${sc.action && !quiet ? `<div class="action-inner">${getActionIconHTML(sc.action, 34, customActions)}<span class="action-name">${displayAction(sc.action, actionNames)}</span></div>` : ''}
                 </td>
                 <td class="char-cell">${char ? char.name : sc.custom_character ? sc.custom_character : ''}</td>
                 <td class="int-iris-cell">
@@ -233,7 +236,7 @@ const sceneOrderMap = {};
           ${sc.action && !quiet ? `
             <div class="action-inner">
               ${getActionIconHTML(sc.action, 34, customActions)}
-              <span class="action-name">${sc.action}</span>
+              <span class="action-name">${displayAction(sc.action, actionNames)}</span>
             </div>
           ` : '<span class="empty">—</span>'}
         </td>
@@ -636,6 +639,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
   const colorChangedBySpot = {};
   for (const spot of spots) colorChangedBySpot[spot.id] = colorChangeCues(sortedCues, spotCuesBySpot[spot.id] || []);
   const printFields = cueFieldSettings(cueFields);
+  const actionNames = actionNameMap(show && show.action_names);
 
   const spotsHeaderHTML = spots.map(spot => {
     const slots = (colorSlotsBySpot[spot.id] || []).filter(s => !s.is_permanent);
@@ -712,7 +716,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
             <div style="${isIgnored ? 'opacity:0.2;' : ''}">
               <div class="action-inner" style="margin-bottom:0;align-items:center;">
                 ${quiet ? '' : getActionIconHTML(sc.action, 30, customActions)}
-                <span class="action-name">${quiet ? '—' : (sc.action || '—')}</span>
+                <span class="action-name">${quiet ? '—' : (displayAction(sc.action, actionNames) || '—')}</span>
                 <span class="char-name" style="margin-left:4px;">${char ? char.name : sc.custom_character ? sc.custom_character : '—'}</span>
                 <div class="intensity-badge" style="margin-left:auto;">${sc.intensity ? `<span style="font-size:11pt;font-weight:400;color:#666;">@</span>${sc.intensity}` : ''}</div>
               </div>
@@ -1307,6 +1311,7 @@ function buildColorLoadHTML({ show, spots, colorSlotsBySpot, label }) {
 
 function buildSpotNotesHTML({ show, spots, cues, scenes, spotCues, characters, label }) {
   const pagePrint = cueFieldSettings(show.cue_fields).page.print;
+  const actionNames = actionNameMap(show.action_names);
   let logoBase64 = '';
   if (show.logo_path) {
     try {
@@ -1356,7 +1361,7 @@ function buildSpotNotesHTML({ show, spots, cues, scenes, spotCues, characters, l
                 <span class="track">T·${cue.track_number}</span>
                 ${pagePrint && cue.page ? `<span class="track">pg ${cue.page}</span>` : ''}
                 ${scene ? `<span class="scene">${scene.label}</span>` : ''}
-                ${sc.action ? `<span class="action">${sc.action}</span>` : ''}
+                ${sc.action ? `<span class="action">${displayAction(sc.action, actionNames)}</span>` : ''}
                 ${char ? `<span class="char">${char.name}</span>` : ''}
                 ${sc.note_checked ? `<span class="done-badge">GIVEN</span>` : ''}
               </div>
@@ -1576,7 +1581,7 @@ function buildActionKeyHTML({ show, label, customActions, usedOnly, spotCues }) 
   const card = (name, custom) => `
     <div class="key-card">
       <div class="key-icon">${getActionIconHTML(name, 40, customActions)}</div>
-      <div class="key-name">${escapeText(name)}${custom ? '<span class="key-custom">Custom</span>' : ''}</div>
+      <div class="key-name">${escapeText(displayAction(name, actionNameMap(show.action_names)))}${custom ? '<span class="key-custom">Custom</span>' : ''}</div>
     </div>`;
   const total = builtins.length + customs.length;
   return `<!DOCTYPE html>
@@ -1695,7 +1700,7 @@ function coverPageHTML({ show, label, sheetName, spots, colorSlotsBySpot, spotCu
   const sheetLine = single ? '' : `<div class="cv-sheet-name">${escapeText(sheetName)}</div>`;
   const key = keyActions.length ? `<div class="cv-key">
       <div class="cv-section">Action key</div>
-      <div class="cv-key-grid">${keyActions.map(a => `<div class="cv-key-item">${getActionIconHTML(a, 22, customActions)}<span>${escapeText(a)}</span></div>`).join('')}</div>
+      <div class="cv-key-grid">${keyActions.map(a => `<div class="cv-key-item">${getActionIconHTML(a, 22, customActions)}<span>${escapeText(displayAction(a, actionNameMap(show.action_names)))}</span></div>`).join('')}</div>
     </div>` : '';
   return `
 <style>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Tips from '../components/Tips';
 import { TIPS } from '../tips';
 import AppHeader from '../components/AppHeader';
+import { actionNameMap, displayAction } from '../actionNames';
 const { ipcRenderer } = window.require('electron');
 
 export default function SpotNotesScreen({ show, navigate }) {
@@ -31,6 +32,8 @@ export default function SpotNotesScreen({ show, navigate }) {
     sessionStorage.setItem(`cueJump_${show.id}`, JSON.stringify({ cueId: sc.cue_id, spotId: sc.spot_id }));
     navigate('cue-list', show);
   };
+
+  const [actionNames] = useState(() => actionNameMap(ipcRenderer.sendSync('db-get-show', show.id)?.action_names));
 
   const sceneMap = {};
   scenes.forEach(s => { sceneMap[s.id] = s; });
@@ -113,7 +116,7 @@ export default function SpotNotesScreen({ show, navigate }) {
                                   <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>T·{cue.track_number}</span>
                                   {scene && <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)', fontWeight: '600' }}>{scene.label}</span>}
                                 </div>
-                                {sc.action && <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginTop: '2px' }}>{sc.action}{sc.character_id && charMap[sc.character_id] ? ' · ' + charMap[sc.character_id].name : ''}</div>}
+                                {sc.action && <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginTop: '2px' }}>{displayAction(sc.action, actionNames)}{sc.character_id && charMap[sc.character_id] ? ' · ' + charMap[sc.character_id].name : ''}</div>}
                               </div>
                               <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
                                 <button onClick={() => goToCue(sc)} title="Show this cue in the cue list"
