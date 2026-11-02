@@ -211,7 +211,7 @@ export default function SettingsPanel({ onClose }) {
               ) : (
                 <>
                   <Value>{getMyName() || lic?.name || '—'}</Value>
-                  <Button onClick={() => setEditingName(getMyName() || lic?.name || '')}>Edit</Button>
+                  <Button onClick={() => setEditingName(getMyName() || lic?.name || '')}>{getMyName() || lic?.name ? 'Edit' : 'Add'}</Button>
                 </>
               )}
             </Row>

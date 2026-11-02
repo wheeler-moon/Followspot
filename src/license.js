@@ -11,6 +11,9 @@ export function getCachedLicense() {
   } catch(e) { return null; }
 }
 
+// Screens showing account details (the Home screen's name) listen for this to refresh
+export const ACCOUNT_CHANGED_EVENT = 'spotplot-account-changed';
+
 export function setCachedLicense(data) {
   try {
     localStorage.setItem(LICENSE_CACHE_KEY, JSON.stringify({
@@ -18,6 +21,7 @@ export function setCachedLicense(data) {
       cached_at: new Date().toISOString(),
     }));
   } catch(e) {}
+  window.dispatchEvent(new Event(ACCOUNT_CHANGED_EVENT));
 }
 
 export function isCacheValid(cached) {
@@ -53,6 +57,7 @@ export function setMyName(name) {
     const cached = getCachedLicense();
     if (cached) localStorage.setItem(LICENSE_CACHE_KEY, JSON.stringify({ ...cached, name: clean }));
   } catch (e) {}
+  window.dispatchEvent(new Event(ACCOUNT_CHANGED_EVENT));
   if (getCachedLicense()?.license_key) validateLicense(getCachedLicense().license_key);   // tell the server now if it's reachable
   return clean;
 }

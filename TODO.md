@@ -68,7 +68,7 @@ Plan: `docs/admin-dashboard-plan.md`.
 
 - [ ] Move license storage from one JSON file to SQLite (before Stripe)
 - [ ] Expiry dates on licenses (renews/expires on), returned to the app by `/validate`, with a 24-hour grace period after a failed payment
-- [ ] Stripe: create and renew licenses automatically from webhooks (Standard and Student, monthly and yearly)
+- [ ] Stripe: create and renew licenses automatically from webhooks (Standard and Student, monthly and yearly). Checkout must collect the buyer's **name** and the webhook saves it on the license (`name`), so the app knows it at sign-in
 - [ ] Student plan: .edu email verification
 - [ ] Admin dashboard: home (expiring soon, payments failing, by plan, revenue), search and filters, license page (extend/set expiry, change plan or device limit, revoke/reinstate, resend email, notes), history of every change, CSV export
 - [ ] Stripe → licenses: webhooks fill each license's `billing_interval`, `renews_at`, `ends_at` and `payment_failed` (the server already sends them to Settings → Account), and set `STRIPE_PORTAL_URL` on Render so Settings → Manage… opens the customer portal

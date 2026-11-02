@@ -6,7 +6,7 @@ import FileMakerImport from '../components/FileMakerImport';
 import AppHeader from '../components/AppHeader';
 import Tips from '../components/Tips';
 import { TIPS } from '../tips';
-import { getMyName, setMyName } from '../license';
+import { getMyName, ACCOUNT_CHANGED_EVENT } from '../license';
 
 const getImageSrc = (path) => {
   if (!path) return null;
@@ -70,35 +70,17 @@ const PersonIcon = () => (
   </svg>
 );
 
-// Asked once when a license has no name yet (licenses activated before names were asked for)
-function NamePrompt({ onDone }) {
-  const [name, setName] = useState('');
-  const save = () => { if (name.trim()) onDone(setMyName(name)); };
-  return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
-      <div role="dialog" aria-label="What's your name?" style={{ width: '300px', background: '#2A2A2A', borderRadius: '16px', padding: '20px', boxShadow: '0 18px 48px rgba(0,0,0,0.45)' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}><div style={{ transform: 'scale(2)', margin: '10px' }}><PersonIcon /></div></div>
-        <div style={{ fontSize: '13px', fontWeight: '700', color: '#FFFFFF', textAlign: 'center', marginBottom: '6px' }}>What’s your name?</div>
-        <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.62)', textAlign: 'center', lineHeight: '17px', marginBottom: '14px' }}>
-          It goes on your SpotPlot account and here on the Home screen. You can change it in Settings.
-        </div>
-        <input autoFocus value={name} onChange={e => setName(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') save(); }}
-          placeholder="First and last name" autoComplete="name"
-          style={{ width: '100%', boxSizing: 'border-box', height: '28px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '7px', color: '#FFFFFF', padding: '0 10px', fontSize: '13px', outline: 'none', marginBottom: '12px', fontFamily: 'inherit' }} />
-        <button onClick={save} disabled={!name.trim()}
-          style={{ width: '100%', height: '28px', borderRadius: '14px', border: 'none', background: '#0A84FF', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: name.trim() ? 'pointer' : 'default', opacity: name.trim() ? 1 : 0.5, fontFamily: 'inherit' }}>
-          Continue
-        </button>
-      </div>
-    </div>
-  );
-}
-
 export default function HomeScreen({ navigate }) {
   const [shows, setShows] = useState([]);
   const [search, setSearch] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const [myName, setMyNameState] = useState(() => getMyName());
+  // A license check can bring a name added or changed on the server
+  useEffect(() => {
+    const refresh = () => setMyNameState(getMyName());
+    window.addEventListener(ACCOUNT_CHANGED_EVENT, refresh);
+    return () => window.removeEventListener(ACCOUNT_CHANGED_EVENT, refresh);
+  }, []);
   // The first time SpotPlot opens after an update, show what's new in it
   const [appVersion] = useState(() => ipcRenderer.sendSync('get-device-info')?.appVersion || '');
   const [showWhatsNew, setShowWhatsNew] = useState(() => justUpdated(appVersion));
@@ -278,7 +260,6 @@ export default function HomeScreen({ navigate }) {
       </div>
       <Tips steps={TIPS.home} watch={shows.length} />
       {showSettings && <SettingsPanel onClose={() => { setShowSettings(false); setMyNameState(getMyName()); }} />}
-      {!myName && !showWhatsNew && <NamePrompt onDone={(n) => setMyNameState(n)} />}
       {fileMakerSummary && <FileMakerImport summary={fileMakerSummary} onCancel={() => setFileMakerSummary(null)}
         onImported={(showId) => {
           setFileMakerSummary(null);

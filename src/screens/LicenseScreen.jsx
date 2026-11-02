@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { activateLicense, validateLicense, setCachedLicense, setMyName } from '../license';
+import { activateLicense, validateLicense, setCachedLicense } from '../license';
 
 const { ipcRenderer } = window.require('electron');
 
@@ -10,26 +10,24 @@ export default function LicenseScreen({ onActivated }) {
     const result = ipcRenderer.sendSync('get-app-icon');
     if (result) setLogoSrc(result);
   }, []);
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [licenseKey, setLicenseKey] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleActivate = async () => {
-    if (!name.trim() || !email.trim() || !licenseKey.trim()) {
-      setError('Please enter your name, email and license key.');
+    if (!email.trim() || !licenseKey.trim()) {
+      setError('Please enter both your email and license key.');
       return;
     }
     setLoading(true);
     setError('');
-    const fullName = name.trim().replace(/\s+/g, ' ');
-    const result = await activateLicense(licenseKey.trim().toUpperCase(), email.trim(), fullName);
+    const result = await activateLicense(licenseKey.trim().toUpperCase(), email.trim());
     if (result && result.success) {
       const validation = await validateLicense(licenseKey.trim().toUpperCase());
       if (validation && validation.valid) {
-        setCachedLicense({ valid: true, license_key: licenseKey.trim().toUpperCase(), name: fullName, email: email.trim(), plan: result.plan, status: result.status });
-        if (validation.name !== fullName) setMyName(fullName);   // the server didn't keep it yet: send it with the next check
+        // The name comes from the license (given when it was bought); change it later in Settings
+        setCachedLicense({ valid: true, license_key: licenseKey.trim().toUpperCase(), ...(validation.name ? { name: validation.name } : {}), email: email.trim(), plan: result.plan, status: result.status });
         onActivated();
         return;
       }
@@ -47,12 +45,7 @@ export default function LicenseScreen({ onActivated }) {
         </div>
         <div style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '32px' }}>
           <div style={{ fontSize: '18px', fontWeight: '600', color: '#FFFFFF', marginBottom: '6px' }}>Activate your license</div>
-          <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', marginBottom: '24px' }}>Enter your name, email and license key to get started.</div>
-          <div style={{ marginBottom: '14px' }}>
-            <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', display: 'block', marginBottom: '6px', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Your name</label>
-            <input value={name} onChange={e => setName(e.target.value)} placeholder="First and last name" autoFocus autoComplete="name"
-              style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#FFFFFF', padding: '10px 14px', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
-          </div>
+          <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', marginBottom: '24px' }}>Enter your email and license key to get started.</div>
           <div style={{ marginBottom: '14px' }}>
             <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', display: 'block', marginBottom: '6px', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email address</label>
             <input value={email} onChange={e => setEmail(e.target.value)} placeholder="your@email.com" type="email"
