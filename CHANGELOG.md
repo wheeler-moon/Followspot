@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- A welcome the first time you activate SpotPlot on a Mac: "Welcome to SpotPlot" and your first name, then a button to create your first show
 - Cue list: add a cue at the top of a scene. Hover just below a scene's header and click **+ insert cue here** to make a new first cue for that scene (it also works under an act break with no cues yet). ⌘Z takes it back
 - Show logos always appear whole: the show's page no longer crops a logo into a rounded square, logo corners are no longer rounded off anywhere, and on printed sheets a wide logo gets room to be wide instead of shrinking into a small square
 - Print: a cover page for a show without a logo no longer leaves a big empty space. The show's title is a little larger and sits together with the spot's colors, centered on the page
