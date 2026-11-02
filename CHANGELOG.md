@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- Print: a cover page for a show without a logo no longer leaves a big empty space. The show's title is a little larger and sits together with the spot's colors, centered on the page
 - **Your name on your account**: your license now carries your name (given when you get your license), so SpotPlot knows it as soon as you sign in. Your name (with a person icon) replaces the Settings button, at the far right of the Home screen's top bar; click it to open Settings, where you can add or change it
 - **Home screen**: your shows are listed with the one you changed most recently first, and each shows when it was last modified ("Modified today at 3:42 PM", "Modified 5 days ago"). Just opening or looking through a show doesn't count. Two new buttons at the top right of your shows switch between the grid and a list (SpotPlot remembers which you like)
 - Cue list: act breaks (like "Act One") always show as their orange header, even with no cues of their own, so the list opens on the first act instead of the first scene. Spot sheets and the caller sheet print them too, in their place between scenes (a sheet for a range of cues shows only the act breaks inside that range)

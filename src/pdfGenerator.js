@@ -1792,8 +1792,16 @@ function coverPageHTML({ show, label, sheetName, spots, colorSlotsBySpot, spotCu
   .cv-team-rule { width: 2.2in; border: none; border-top: 1px solid #c8c8c8; margin: 0 auto 10px; }
   .cv-team-line { font-size: 11pt; line-height: 1.6; color: #1a1a1a; font-weight: 400; }
   .cv-team-line .cv-role { color: #8a8a8a; font-weight: 300; }
+  /* No logo: no empty logo space. The title grows a little and the title and spots sit together,
+     centered on the page (portrait), instead of the title alone at the top */
+  .cv-nologo .cv-top { justify-content: center; ${landscape ? '' : 'gap: 0.45in;'} }
+  .cv-nologo .cv-identity { ${landscape ? '' : 'flex: 0 0 auto;'} }
+  .cv-nologo .cv-title { font-size: ${landscape ? '34pt' : '46pt'}; text-underline-offset: 9px; }
+  .cv-nologo .cv-theatre { font-size: ${landscape ? '14pt' : '16pt'}; margin-top: 14px; }
+  .cv-nologo .cv-producer { font-size: 12pt; margin-top: 4px; }
+  .cv-nologo .cv-main { ${landscape ? '' : 'flex: 0 0 auto;'} }
 </style>
-<div class="cv-page">
+<div class="cv-page${logo ? '' : ' cv-nologo'}">
   <div class="cv-meta">${label ? `<span class="cv-label">${escapeText(label)}</span>` : ''}<span class="cv-date">${printDate()}</span></div>
   <div class="cv-top">
     <div class="cv-identity">${identity}</div>
