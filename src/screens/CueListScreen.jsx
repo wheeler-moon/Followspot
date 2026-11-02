@@ -87,10 +87,59 @@ function ActionIcon({ action, size = 20 }) {
   }
 }
 
-function ActionPicker({ value, onChange, onClose, pos, customActions, actionNames }) {
+// The action menu, attached to its cue's action button (anchorRef). It opens below the button if it
+// fits in the cue list, else above, else on the roomier side with its own scroll. It moves with the cue
+// while the list scrolls, closes once the button scrolls out of sight, and closes on a click anywhere else.
+const PICKER_WIDTH = 280;
+function scrollParent(el) {
+  for (let p = el?.parentElement; p; p = p.parentElement) {
+    const o = getComputedStyle(p).overflowY;
+    if (o === 'auto' || o === 'scroll') return p;
+  }
+  return null;
+}
+function ActionPicker({ value, onChange, onClose, anchorRef, customActions, actionNames }) {
   useEscape(onClose);
+  const menuRef = useRef();
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+
+  useLayoutEffect(() => {
+    const menu = menuRef.current, anchor = anchorRef.current;
+    if (!menu || !anchor) return;
+    const scroller = scrollParent(anchor);
+    const place = () => {
+      const a = anchor.getBoundingClientRect();
+      const box = scroller ? scroller.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
+      const top = Math.max(box.top, 0) + 8, bottom = Math.min(box.bottom, window.innerHeight) - 8;
+      // The button has scrolled out of the visible list: close
+      if (a.bottom < top - 8 || a.top > bottom + 8) { closeRef.current(); return; }
+      menu.style.maxHeight = '';
+      const h = menu.scrollHeight + 2;
+      const below = bottom - (a.bottom + 4), above = (a.top - 4) - top;
+      let y;
+      if (h <= below) y = a.bottom + 4;
+      else if (h <= above) y = a.top - 4 - h;
+      else if (below >= above) { y = a.bottom + 4; menu.style.maxHeight = below + 'px'; }
+      else { y = top; menu.style.maxHeight = above + 'px'; }
+      menu.style.top = y + 'px';
+      menu.style.left = Math.min(Math.max(a.left, 8), window.innerWidth - PICKER_WIDTH - 8) + 'px';
+      menu.style.visibility = 'visible';
+    };
+    place();
+    const onDown = (e) => { if (!menu.contains(e.target) && !anchor.contains(e.target)) closeRef.current(); };
+    window.addEventListener('scroll', place, true);
+    window.addEventListener('resize', place);
+    document.addEventListener('mousedown', onDown);
+    return () => {
+      window.removeEventListener('scroll', place, true);
+      window.removeEventListener('resize', place);
+      document.removeEventListener('mousedown', onDown);
+    };
+  }, []);
+
   return (
-    <div style={{ position: 'fixed', top: pos ? pos.top : 0, left: pos ? pos.left : 0, zIndex: 99999, background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.14)', borderRadius: '10px', padding: '8px', width: '280px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', marginTop: '4px' }}>
+    <div ref={menuRef} style={{ position: 'fixed', top: 0, left: 0, visibility: 'hidden', overflowY: 'auto', boxSizing: 'border-box', zIndex: 99999, background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.14)', borderRadius: '10px', padding: '8px', width: PICKER_WIDTH + 'px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px' }}>
       {[...ACTIONS, ...(customActions || []).map(a => ({ name: a.name, short: a.name.substring(0, 4), color: a.color || 'rgba(255,255,255,0.62)', icon: a.icon || null, builtinIcon: a.builtinIcon || null }))].map(a => (
         <div key={a.name} onClick={() => { onChange(a); onClose(); }}
           style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', padding: '6px 4px', borderRadius: '6px', cursor: 'pointer', background: value === a.name ? 'rgba(10,132,255,0.16)' : 'transparent', border: value === a.name ? '1px solid #0A84FF' : '1px solid transparent' }}
@@ -221,16 +270,9 @@ function SpotCueCell({ onDragEnd, onContextMenu, spotCue, spot, cue, fieldsShown
   const [addingChar, setAddingChar] = useState(false);   // a new, still-empty character box under the first
   const customCharDone = useRef(false);
   const [customTimeVal, setCustomTimeVal] = useState('');
-  const [pickerPos, setPickerPos] = useState({ top: 0, left: 0 });
   const ref = useRef();
   const actionBtnRef = useRef();
   const isOff = spotCue?.action === 'Off' || !spotCue?.action;
-
-  useEffect(() => {
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setShowActionPicker(false); };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
 
   if (!spotCue) return (
     <td
@@ -335,21 +377,12 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
         onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop(e); }}
         style={{ padding: '8px 18px', borderRight: '1px solid rgba(255,255,255,0.12)', verticalAlign: 'top', minWidth: '260px', background: isDragTarget ? 'rgba(10,132,255,0.16)' : '#191919', outline: isDragTarget || isMenuTarget ? '2px solid #0A84FF' : 'none', outlineOffset: '-2px', position: 'relative' }}>
         <div ref={ref} style={{ position: 'relative', zIndex: showActionPicker ? 99999 : 'auto' }}>
-          <div ref={actionBtnRef} data-tour="cue-action" onClick={() => {
-            if (actionBtnRef.current) {
-              const rect = actionBtnRef.current.getBoundingClientRect();
-              const pickerHeight = 380;
-              const spaceBelow = window.innerHeight - rect.bottom;
-              const top = spaceBelow < pickerHeight ? rect.top - pickerHeight - 4 : rect.bottom + 4;
-              setPickerPos({ top, left: rect.left });
-            }
-            setShowActionPicker(v => !v);
-          }}
+          <div ref={actionBtnRef} data-tour="cue-action" onClick={() => setShowActionPicker(v => !v)}
             style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '3px 7px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer' }}>
             <ActionIcon action="Off" size={16} />
             <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.28)', fontWeight: '500' }}>Off</span>
           </div>
-{showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} pos={pickerPos} customActions={customActions} actionNames={actionNames} />}
+{showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} anchorRef={actionBtnRef} customActions={customActions} actionNames={actionNames} />}
           <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.28)', marginTop: '6px', fontStyle: 'italic', textAlign: 'center', fontWeight: '600', pointerEvents: 'none' }}>spot inactive</div>
         </div>
       </td>
@@ -387,16 +420,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
         {/* One grid for action / character (+ more characters) / intensity / time, so the boxes line up:
             intensity under action, time under character and its + */}
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr) 24px', columnGap: '6px', rowGap: '6px', alignItems: 'center', marginBottom: '5px' }}>
-          <div ref={actionBtnRef} data-tour="cue-action" onClick={() => {
-            if (actionBtnRef.current) {
-              const rect = actionBtnRef.current.getBoundingClientRect();
-              const pickerHeight = 380;
-              const spaceBelow = window.innerHeight - rect.bottom;
-              const top = spaceBelow < pickerHeight ? rect.top - pickerHeight - 4 : rect.bottom + 4;
-              setPickerPos({ top, left: rect.left });
-            }
-            setShowActionPicker(v => !v);
-          }}
+          <div ref={actionBtnRef} data-tour="cue-action" onClick={() => setShowActionPicker(v => !v)}
             style={{ display: fieldsShown.action === false ? 'none' : 'flex', alignItems: 'center', gap: '6px', height: '32px', boxSizing: 'border-box', padding: '0 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer', minWidth: 0, gridColumn: showChar ? '1' : '1 / 4' }}>
             {spotCue.action ? (
               <>
@@ -420,7 +444,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
               <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.28)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Action…</span>
             )}
           </div>
-{showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} pos={pickerPos} customActions={customActions} actionNames={actionNames} />}
+{showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} anchorRef={actionBtnRef} customActions={customActions} actionNames={actionNames} />}
                 {showCustomChar ? (
                     <input
             autoFocus

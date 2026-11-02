@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- Cue list: the action menu stays attached to its cue while you scroll (and closes once the cue scrolls out of sight), opens upward when there isn't room below so it's never cut off, and closes when you click anywhere else, including the character box
 - **More than one character in a cue**: click the **+** beside a cue's character to add a second, then a third ("Pick Up Bob & Matt"). Each is picked from the show's characters or typed, and × takes one out. Spot sheets, the caller sheet, Spot Notes, the spreadsheet export and the iPad show them all as "Bob, Matt & Sue". A new cue carries them forward like the first character, and copy, paste and drag bring them along
 - Cue list: the character menus show just character names (performers are on the Characters screen), and in each spot's box intensity now lines up under the action and time under the character
 - Updates: while a new version downloads, a small notice in the bottom corner says "Downloading SpotPlot X.X.X…". Once it's ready, the notice has an **Install & Restart** button, handy if you chose Later. SpotPlot → Check for Updates… now always answers: you're up to date, an update is downloading, or it couldn't check

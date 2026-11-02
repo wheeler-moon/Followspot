@@ -21,7 +21,6 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 
 - [ ] Print header redesign (Wheeler has opinions): caller sheet header, spot sheet header, and the Color Load page. Waiting on his notes
 - [ ] Narrow windows: rethink how the app looks when the window is tight (e.g. half a Mac screen). Past a certain width it gets cramped and hard to use
-- [ ] Cue list action menu: review when it opens and when it should close, and fix where it lands (it doesn't always place itself well near the edges of the window)
 - [ ] Tracking: check what a cue picks up from the cue above when it's made Tracked from another action
 - [ ] "Track down" button: carry a spot's details from one cue down the cue list until its next change. Wheeler will explain in more detail before we build it
 - [ ] Add a cue at the top of a scene (right under the scene header)
