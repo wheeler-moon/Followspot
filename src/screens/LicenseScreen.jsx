@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { activateLicense, validateLicense, setCachedLicense } from '../license';
+import WelcomeScreen, { shouldWelcome } from '../components/WelcomeScreen';
 
 const { ipcRenderer } = window.require('electron');
 
@@ -14,6 +15,9 @@ export default function LicenseScreen({ onActivated }) {
   const [licenseKey, setLicenseKey] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  // The first activation on this Mac turns into the welcome: the icon moves from where it is (welcomeFrom)
+  const logoRef = useRef();
+  const [welcomeFrom, setWelcomeFrom] = useState(null);
 
   const handleActivate = async () => {
     if (!email.trim() || !licenseKey.trim()) {
@@ -28,6 +32,11 @@ export default function LicenseScreen({ onActivated }) {
       if (validation && validation.valid) {
         // The name comes from the license (given when it was bought); change it later in Settings
         setCachedLicense({ valid: true, license_key: licenseKey.trim().toUpperCase(), ...(validation.name ? { name: validation.name } : {}), email: email.trim(), plan: result.plan, status: result.status });
+        if (shouldWelcome() && logoRef.current) {
+          const r = logoRef.current.getBoundingClientRect();
+          setWelcomeFrom({ left: r.left, top: r.top, width: r.width, height: r.height });
+          return;
+        }
         onActivated();
         return;
       }
@@ -36,14 +45,18 @@ export default function LicenseScreen({ onActivated }) {
     setLoading(false);
   };
 
+  // Everything but the icon fades away while the welcome begins
+  const fadeAway = { transition: 'opacity 0.6s ease', opacity: welcomeFrom ? 0 : 1, pointerEvents: welcomeFrom ? 'none' : undefined };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#1E1E1E', padding: '40px' }}>
+      {welcomeFrom && <WelcomeScreen iconSrc={logoSrc} from={welcomeFrom} onDone={onActivated} />}
       <div style={{ width: '100%', maxWidth: '440px' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <img src={logoSrc} style={{ width: '120px', height: '120px', borderRadius: '24px', marginBottom: '16px' }} />
-          <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.45)' }}>Professional followspot tracking</div>
+          <img ref={logoRef} src={logoSrc} style={{ width: '120px', height: '120px', borderRadius: '24px', marginBottom: '16px', visibility: welcomeFrom ? 'hidden' : 'visible' }} />
+          <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.45)', ...fadeAway }}>Professional followspot tracking</div>
         </div>
-        <div style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '32px' }}>
+        <div style={{ ...fadeAway, background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '32px' }}>
           <div style={{ fontSize: '18px', fontWeight: '600', color: '#FFFFFF', marginBottom: '6px' }}>Activate your license</div>
           <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', marginBottom: '24px' }}>Enter your email and license key to get started.</div>
           <div style={{ marginBottom: '14px' }}>

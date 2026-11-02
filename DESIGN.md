@@ -136,7 +136,7 @@ The person's account sits at the far right of the Home top bar as a button: a 20
 Always show the whole logo: fit it inside its space (`object-fit: contain`), never crop it (`cover`) and never round its corners (round the box around it instead, with a little padding). Give a logo a fixed height and let wide logos use up to about twice that in width.
 
 ### Welcome (first activation)
-A full-window dark screen (`#111112`), shown once per Mac after the first activation: "Welcome to SpotPlot" (52px, 800), the person's first name (30px, 600, Label 2), then an Extra Large capsule button. Each fades up 10px in turn; no other decoration. Reduce Motion shows them at once.
+Shown once per Mac after the first activation, on the activation screen's own background. The activation screen's icon grows (to 168px) and moves to its landing spot over 1s while everything else fades out (0.6s). Then "Welcome to SpotPlot" (52px, 800) is revealed left to right (a 0.9s wipe), the person's first name (30px, 600, Label 2) wipes in after it, a beat, and an Extra Large capsule button fades up 10px. Nothing else on screen. Reduce Motion shows the end state at once.
 
 ### Dates and times
 Say when something changed the way Finder does, in this Mac's time zone: "Modified today at 3:42 PM", "Modified yesterday at 9:10 AM", "Modified 5 days ago" (up to 6), then the date ("Modified Oct 3", with the year if it isn't this year). In a list column, drop the word "Modified".

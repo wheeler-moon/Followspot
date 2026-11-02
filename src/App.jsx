@@ -10,7 +10,6 @@ import CharactersScreen from './screens/CharactersScreen';
 import SpotNotesScreen from './screens/SpotNotesScreen';
 import LicenseScreen from './screens/LicenseScreen';
 import ExpiredScreen from './screens/ExpiredScreen';
-import WelcomeScreen, { shouldWelcome } from './components/WelcomeScreen';
 import { getCachedLicense, isCacheValid, validateLicense, setCachedLicense } from './license';
 import { resetTips } from './components/Tips';
 import { getUndoTarget, isTextBox } from './undoTarget';
@@ -19,7 +18,6 @@ export default function App() {
   const [screen, setScreen] = useState('home');
   const [currentShow, setCurrentShow] = useState(null);
   const [licenseStatus, setLicenseStatus] = useState('checking');
-  const [welcome, setWelcome] = useState(false);   // first activation on this Mac: WelcomeScreen
 
   useEffect(() => {
     checkLicense();
@@ -125,8 +123,8 @@ export default function App() {
   }
 
   if (licenseStatus === 'unlicensed') {
-    // The very first activation on this Mac gets the welcome (existing users never see it: they don't activate again)
-    return <>{dragStrip}<LicenseScreen onActivated={() => { if (shouldWelcome()) setWelcome(true); setLicenseStatus('valid'); }} /></>;
+    // The very first activation on this Mac ends with the welcome (in LicenseScreen), whose button says where to go
+    return <>{dragStrip}<LicenseScreen onActivated={(dest) => { if (dest) setScreen(dest); setLicenseStatus('valid'); }} /></>;
   }
 
   if (licenseStatus === 'device_limit') {
@@ -149,10 +147,6 @@ export default function App() {
         setLicenseStatus('unlicensed');
       }}
     /></>;
-  }
-
-  if (welcome) {
-    return <WelcomeScreen onDone={(dest) => { setWelcome(false); navigate(dest); }} />;
   }
 
   return (
