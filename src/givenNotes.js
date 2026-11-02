@@ -43,18 +43,21 @@ function moveCheckedNotes(db, showId = null) {
 }
 
 // Checks off a note: { spotCueId } for a spot's note, { cueId } for an All Spots note
+// Returns the given note's id (for undo), or null if there was no note
 function giveNote(db, { spotCueId, cueId }) {
-  db.transaction(() => {
+  return db.transaction(() => {
     if (spotCueId) {
       const sc = db.prepare('SELECT sc.*, c.show_id FROM spot_cues sc JOIN cues c ON sc.cue_id = c.id WHERE sc.id = ?').get(spotCueId);
       if (!sc || !(sc.spot_note || '').trim()) return;
-      db.prepare('INSERT INTO given_notes (show_id, cue_id, spot_id, note) VALUES (?, ?, ?, ?)').run(sc.show_id, sc.cue_id, sc.spot_id, sc.spot_note);
+      const r = db.prepare('INSERT INTO given_notes (show_id, cue_id, spot_id, note) VALUES (?, ?, ?, ?)').run(sc.show_id, sc.cue_id, sc.spot_id, sc.spot_note);
       db.prepare("UPDATE spot_cues SET spot_note = '', note_checked = 0 WHERE id = ?").run(spotCueId);
+      return r.lastInsertRowid;
     } else {
       const c = db.prepare('SELECT * FROM cues WHERE id = ?').get(cueId);
       if (!c || !(c.all_spots_note || '').trim()) return;
-      db.prepare('INSERT INTO given_notes (show_id, cue_id, spot_id, note) VALUES (?, ?, NULL, ?)').run(c.show_id, c.id, c.all_spots_note);
+      const r = db.prepare('INSERT INTO given_notes (show_id, cue_id, spot_id, note) VALUES (?, ?, NULL, ?)').run(c.show_id, c.id, c.all_spots_note);
       db.prepare("UPDATE cues SET all_spots_note = '', all_spots_note_checked = 0 WHERE id = ?").run(cueId);
+      return r.lastInsertRowid;
     }
   })();
 }

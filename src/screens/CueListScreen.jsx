@@ -746,7 +746,7 @@ function CueRow({ onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesB
               <option value="">No scene</option>
               {scenes.map(s => <option key={s.id} value={s.id}>{s.label}{s.song ? ' · ' + s.song : ''}</option>)}
             </select>
-            <div onClick={() => { if (window.confirm('Delete this cue?')) onDelete(cue.id); }}
+            <div onClick={() => { if (window.confirm('Delete this cue? It\'s removed for every spot. ⌘Z brings it back.')) onDelete(cue.id); }}
               style={{ fontSize: '10px', fontWeight: '500', color: '#FF453A', cursor: 'pointer', marginTop: '2px', padding: '1px 6px', borderRadius: '6px', opacity: 0.45 }}
               onMouseEnter={e => { e.currentTarget.style.opacity = 1; e.currentTarget.style.background = 'rgba(255,69,58,0.14)'; }}
               onMouseLeave={e => { e.currentTarget.style.opacity = 0.45; e.currentTarget.style.background = 'transparent'; }}>
@@ -960,7 +960,21 @@ export default function CueListScreen({ show, navigate }) {
     setCuePopup(null);
   };
   useEscape(() => closeCuePopup(), !!cuePopup);
+  // ⌘Z in the cue list. Every change records how to take it back (pushUndo); everything changed by one
+  // click or menu choice (an action plus the time and intensity it fills in, a pasted cue…) is one step.
+  // Kinds: 'spot-cue' / 'cue' (a field), 'tracks' (T· numbers), 'scene' (name), 'cue-created',
+  // 'cue-deleted' (with what it held), 'note-given', 'scene-created', 'character-created', 'batch'.
   const undoStackRef = useRef([]);
+  const undoGroupRef = useRef(null);
+  const pushUndo = (entry) => {
+    const entries = entry.type === 'batch' ? entry.entries : [entry];
+    if (!entries.length) return;
+    if (undoGroupRef.current) { undoGroupRef.current.entries.push(...entries); return; }
+    const group = { type: 'batch', entries: [...entries] };
+    undoGroupRef.current = group;
+    undoStackRef.current = [...undoStackRef.current.slice(-49), group];
+    queueMicrotask(() => { undoGroupRef.current = null; });
+  };
   const [popupNote, setPopupNote] = useState('');
 
   // False until the cues have been read once, so the "No cues yet" screen never flashes while loading
@@ -1063,33 +1077,58 @@ export default function CueListScreen({ show, navigate }) {
     };
   }, []);
 
+  // Takes back the last step (newest change first). Refreshed every render so it sees the latest functions.
+  const undoRef = useRef(null);
+  undoRef.current = () => {
+    const last = undoStackRef.current[undoStackRef.current.length - 1];
+    if (!last) return;
+    undoStackRef.current = undoStackRef.current.slice(0, -1);
+    let reload = false;
+    const undoOne = (u) => {
+      if (u.type === 'spot-cue') {
+        ipcRenderer.sendSync('db-update-spot-cue', { spotCueId: u.spotCueId, field: u.field, value: u.oldValue });
+        setData(d => ({ ...d, spotCues: (d?.spotCues || []).map(sc => sc.id === u.spotCueId ? { ...sc, [u.field]: u.oldValue } : sc) }));
+      } else if (u.type === 'cue') {
+        ipcRenderer.sendSync('db-update-cue', { cueId: u.cueId, field: u.field, value: u.oldValue });
+        setData(d => ({ ...d, cues: (d?.cues || []).map(c => c.id === u.cueId ? { ...c, [u.field]: u.oldValue } : c) }));
+      } else if (u.type === 'tracks') {
+        ipcRenderer.sendSync('db-restore-tracks', { showId: show.id, tracks: u.before });
+        const old = new Map(u.before.map(t => [t.id, t.track_number]));
+        setData(d => ({ ...d, cues: (d?.cues || []).map(c => old.has(c.id) ? { ...c, track_number: old.get(c.id) } : c) }));
+      } else if (u.type === 'scene') {
+        ipcRenderer.sendSync('db-update-scene', { sceneId: u.sceneId, label: u.label, song: u.song, actBreak: u.actBreak });
+        reload = true;
+      } else if (u.type === 'cue-created') {
+        ipcRenderer.sendSync('db-delete-cue', u.cueId);
+        reload = true;
+      } else if (u.type === 'cue-deleted') {
+        ipcRenderer.sendSync('db-restore-cue', u.snapshot);
+        reload = true;
+      } else if (u.type === 'note-given') {
+        ipcRenderer.sendSync('db-restore-given-note', u.givenId);
+        reload = true;
+      } else if (u.type === 'scene-created') {
+        ipcRenderer.sendSync('db-delete-scene', u.sceneId);
+        reload = true;
+      } else if (u.type === 'character-created') {
+        ipcRenderer.sendSync('db-delete-character', u.characterId);
+        reload = true;
+      } else if (u.type === 'batch') {
+        [...u.entries].reverse().forEach(undoOne);
+      }
+    };
+    undoOne(last);
+    if (reload) load();
+  };
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+        // While typing in a box, ⌘Z undoes the typing (the Mac's own text undo)
+        const t = e.target;
+        if (t && (t.isContentEditable || t.tagName === 'TEXTAREA' || (t.tagName === 'INPUT' && !['checkbox', 'radio', 'range', 'button'].includes(t.type)))) return;
         e.preventDefault();
-        (() => {
-          if (undoStackRef.current.length === 0) return;
-          const last = undoStackRef.current[undoStackRef.current.length - 1];
-                    if (last.type === 'spot-cue') {
-            ipcRenderer.sendSync('db-update-spot-cue', { spotCueId: last.spotCueId, field: last.field, value: last.oldValue });
-            setData(d => ({ ...d, spotCues: (d?.spotCues || []).map(sc => sc.id === last.spotCueId ? { ...sc, [last.field]: last.oldValue } : sc) }));
-            } else if (last.type === 'cue') {
-            ipcRenderer.sendSync('db-update-cue', { cueId: last.cueId, field: last.field, value: last.oldValue });
-            setData(d => ({ ...d, cues: (d?.cues || []).map(c => c.id === last.cueId ? { ...c, [last.field]: last.oldValue } : c) }));
-          } else if (last.type === 'tracks') {
-            ipcRenderer.sendSync('db-restore-tracks', { showId: show.id, tracks: last.before });
-            const old = new Map(last.before.map(t => [t.id, t.track_number]));
-            setData(d => ({ ...d, cues: (d?.cues || []).map(c => old.has(c.id) ? { ...c, track_number: old.get(c.id) } : c) }));
-          } else if (last.type === 'batch') {
-            last.entries.forEach(entry => {
-              if (entry.type === 'spot-cue') {
-                ipcRenderer.sendSync('db-update-spot-cue', { spotCueId: entry.spotCueId, field: entry.field, value: entry.oldValue });
-                setData(d => ({ ...d, spotCues: (d?.spotCues || []).map(sc => sc.id === entry.spotCueId ? { ...sc, [entry.field]: entry.oldValue } : sc) }));
-              }
-            });
-          }
-                    undoStackRef.current = undoStackRef.current.slice(0, -1);
-        })();
+        undoRef.current();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -1099,12 +1138,14 @@ export default function CueListScreen({ show, navigate }) {
   const addCue = () => {
     const lastCue = (data?.cues || [])[(data?.cues || []).length - 1];
     const sceneId = selectedSceneId || (lastCue ? lastCue.scene_id : null);
-    ipcRenderer.sendSync('db-create-cue', { showId: show.id, sceneId });
+    const r = ipcRenderer.sendSync('db-create-cue', { showId: show.id, sceneId });
+    if (r?.success) pushUndo({ type: 'cue-created', cueId: r.id });
     load();
   };
 
   const insertCueAfter = (afterCueId, sceneId) => {
-    ipcRenderer.sendSync('db-create-cue', { showId: show.id, sceneId, afterCueId });
+    const r = ipcRenderer.sendSync('db-create-cue', { showId: show.id, sceneId, afterCueId });
+    if (r?.success) pushUndo({ type: 'cue-created', cueId: r.id });
     load();
   };
 
@@ -1112,7 +1153,7 @@ export default function CueListScreen({ show, navigate }) {
     const oldCue = (data?.cues || []).find(c => c.id === cueId);
     const oldValue = oldCue ? oldCue[field] : null;
     ipcRenderer.sendSync('db-update-cue', { cueId, field, value });
-      undoStackRef.current = [...undoStackRef.current.slice(-49), { type: 'cue', cueId, field, oldValue, newValue: value }];
+      pushUndo({ type: 'cue', cueId, field, oldValue, newValue: value });
     if (field === 'scene_id') {
       load();
     } else {
@@ -1126,7 +1167,7 @@ export default function CueListScreen({ show, navigate }) {
     ipcRenderer.sendSync('db-update-spot-cue', { spotCueId, field, value });
     setData(d => ({ ...d, spotCues: (d?.spotCues || []).map(sc => sc.id === spotCueId ? { ...sc, [field]: value } : sc) }));
     if (!skipUndo) {
-      undoStackRef.current = [...undoStackRef.current.slice(-49), { type: 'spot-cue', spotCueId, field, oldValue, newValue: value }];
+      pushUndo({ type: 'spot-cue', spotCueId, field, oldValue, newValue: value });
     }
   };
   const upsertSpotCue = (spotId, cueId, field, value) => {
@@ -1206,7 +1247,7 @@ export default function CueListScreen({ show, navigate }) {
       .map(field => ({ type: 'spot-cue', spotCueId: sc.id, field, oldValue: sc[field], newValue: BLANK_SPOT_CUE[field] }));
     if (!entries.length) return;
     entries.forEach(e => updateSpotCue(sc.id, e.field, e.newValue, true));
-    undoStackRef.current = [...undoStackRef.current.slice(-49), { type: 'batch', entries }];
+    pushUndo({ type: 'batch', entries });
   };
 
   // The changes that setting these fields would make (for undo)
@@ -1218,7 +1259,7 @@ export default function CueListScreen({ show, navigate }) {
     const entries = fieldEntries(row, values);
     if (!entries.length) return;
     entries.forEach(e => updateSpotCue(row.id, e.field, e.newValue, true));
-    undoStackRef.current = [...undoStackRef.current.slice(-49), { type: 'batch', entries }];
+    pushUndo({ type: 'batch', entries });
   };
   // Every spot has a row for every cue, but make one if it's somehow missing
   const ensureSpotCue = (spot, cue, sc) => {
@@ -1296,7 +1337,8 @@ export default function CueListScreen({ show, navigate }) {
   };
   // ✓ in the sidebar: the note is given, so it leaves the cue (no more yellow dot) and goes to Spot Notes → Given
   const giveNote = (n) => {
-    ipcRenderer.sendSync('db-give-note', n.allSpots ? { cueId: n.cue_id } : { spotCueId: n.id });
+    const r = ipcRenderer.sendSync('db-give-note', n.allSpots ? { cueId: n.cue_id } : { spotCueId: n.id });
+    if (r?.id) pushUndo({ type: 'note-given', givenId: r.id });
     setData(d => ({ ...d,
       cues: n.allSpots ? (d?.cues || []).map(c => c.id === n.cue_id ? { ...c, all_spots_note: '' } : c) : d.cues,
       spotCues: n.allSpots ? d.spotCues : (d?.spotCues || []).map(sc => sc.id === n.id ? { ...sc, spot_note: '' } : sc) }));
@@ -1353,7 +1395,7 @@ export default function CueListScreen({ show, navigate }) {
     }
     if (!entries.length) return;
     entries.forEach(e => updateSpotCue(e.spotCueId, e.field, e.newValue, true));
-    undoStackRef.current = [...undoStackRef.current.slice(-49), { type: 'batch', entries }];
+    pushUndo({ type: 'batch', entries });
   };
 
   // Runs the chosen menu item (refreshed every render so it sees the latest cues)
@@ -1386,26 +1428,28 @@ export default function CueListScreen({ show, navigate }) {
       setPopupNote(row.spot_note || '');
       setTimeout(() => document.getElementById('popup-note-textarea')?.focus(), 50);
     } else if (id === 'insert-above') {
-      ipcRenderer.sendSync('db-create-cue', { showId: show.id, sceneId: cue.scene_id, beforeCueId: cue.id });
+      const r = ipcRenderer.sendSync('db-create-cue', { showId: show.id, sceneId: cue.scene_id, beforeCueId: cue.id });
+      if (r?.success) pushUndo({ type: 'cue-created', cueId: r.id });
       load();
     } else if (id === 'insert-below') {
       insertCueAfter(cue.id, cue.scene_id);
     } else if (id === 'delete') {
-      if (window.confirm(`Delete ${cueName(cue)}? It's removed for every spot.`)) deleteCue(cue.id);
+      if (window.confirm(`Delete ${cueName(cue)}? It's removed for every spot. ⌘Z brings it back.`)) deleteCue(cue.id);
     } else if (id === 'clear') {
       clearSpotCue(sc);
     }
   };
 
   const deleteCue = (cueId) => {
-    ipcRenderer.sendSync('db-delete-cue', cueId);
+    const r = ipcRenderer.sendSync('db-delete-cue', cueId);
+    if (r?.snapshot) pushUndo({ type: 'cue-deleted', snapshot: r.snapshot });
     load();
   };
 
   const addScene = () => {
     if (!newSceneLabel.trim()) return;
     const result = ipcRenderer.sendSync('db-create-scene', { showId: show.id, label: newSceneLabel, song: newSceneSong });
-    if (result.success) { setSelectedSceneId(result.id); setNewSceneLabel(''); setNewSceneSong(''); setShowSceneModal(false); load(); }
+    if (result.success) { pushUndo({ type: 'scene-created', sceneId: result.id }); setSelectedSceneId(result.id); setNewSceneLabel(''); setNewSceneSong(''); setShowSceneModal(false); load(); }
   };
 
   // A new custom name was typed in a cue: ask (the Mac's own question box) whether to add it to the show's
@@ -1424,6 +1468,7 @@ export default function CueListScreen({ show, navigate }) {
   const linkNewCharacter = (spotCueId, name, link) => {
     const result = ipcRenderer.sendSync('db-create-character', { showId: show.id, name, actorName: '', printOnSheet: 0 });
     if (!result?.success) return;
+    pushUndo({ type: 'character-created', characterId: result.id });
     const chars = ipcRenderer.sendSync('db-get-characters', show.id);
     setCharacters(Array.isArray(chars) ? chars : []);
     if (link) { link(result.id); return; }
@@ -1433,7 +1478,8 @@ export default function CueListScreen({ show, navigate }) {
 
   const addCharacter = () => {
     if (!newCharName.trim()) return;
-    ipcRenderer.sendSync('db-create-character', { showId: show.id, name: newCharName, actorName: newCharActor });
+    const r = ipcRenderer.sendSync('db-create-character', { showId: show.id, name: newCharName, actorName: newCharActor });
+    if (r?.success) pushUndo({ type: 'character-created', characterId: r.id });
     setNewCharName(''); setNewCharActor(''); setShowCharModal(false);
     const chars = ipcRenderer.sendSync('db-get-characters', show.id);
     setCharacters(Array.isArray(chars) ? chars : []);
@@ -1453,7 +1499,7 @@ export default function CueListScreen({ show, navigate }) {
     const result = ipcRenderer.sendSync('db-renumber-tracks', { showId: show.id, cueIds: ordered.map(c => c.id) });
     if (!result?.success) { alert('Could not renumber: ' + (result?.error || 'unknown error')); return; }
     // One ⌘Z puts every cue's old T· number back
-    undoStackRef.current = [...undoStackRef.current.slice(-49), { type: 'tracks', before }];
+    pushUndo({ type: 'tracks', before });
     load();
   };
 
@@ -1465,6 +1511,7 @@ export default function CueListScreen({ show, navigate }) {
     const scene = (data?.scenes || []).find(sc => sc.id === sceneId);
     if (!scene || !label.trim() || (label.trim() === scene.label && song.trim() === (scene.song || ''))) return;
     ipcRenderer.sendSync('db-update-scene', { sceneId: scene.id, label: label.trim(), song: song.trim(), actBreak: !!scene.act_break });
+    pushUndo({ type: 'scene', sceneId: scene.id, label: scene.label, song: scene.song || '', actBreak: !!scene.act_break });
     setData(d => ({ ...d, scenes: (d?.scenes || []).map(sc => sc.id === scene.id ? { ...sc, label: label.trim(), song: song.trim() } : sc) }));
   };
 
@@ -1761,7 +1808,7 @@ const groupedCues = () => {
                     if (dragTarget.spotCue) {
                       fields.forEach(f => swapUndoEntries.push({ type: 'spot-cue', spotCueId: dragTarget.spotCue.id, field: f, oldValue: tgtData[f] || '', newValue: srcData[f] || '' }));
                     }
-                    undoStackRef.current = [...undoStackRef.current.slice(-49), { type: 'batch', entries: swapUndoEntries }];
+                    pushUndo({ type: 'batch', entries: swapUndoEntries });
 
                     if (dragSource.spotCue) {
                       fields.forEach(f => updateSpotCue(dragSource.spotCue.id, f, tgtData[f] !== undefined ? tgtData[f] : '', true));

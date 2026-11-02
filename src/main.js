@@ -1093,7 +1093,7 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
     } catch(e) { event.returnValue = []; }
   });
   ipcMain.on('db-give-note', (event, which) => {
-    try { givenNotes.giveNote(getDb(), which); event.returnValue = { success: true }; }
+    try { event.returnValue = { success: true, id: givenNotes.giveNote(getDb(), which) }; }
     catch(e) { console.error('give note:', e); event.returnValue = { success: false }; }
   });
   ipcMain.on('db-restore-given-note', (event, id) => {
@@ -1175,11 +1175,33 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
     if (item) item.enabled = !!isOpen;
   });
 
+  // Deletes a cue and what every spot does in it; returns them so ⌘Z can put the cue back (db-restore-cue)
   ipcMain.on('db-delete-cue', (event, cueId) => {
     try {
-      getDb().prepare('DELETE FROM cues WHERE id = ?').run(cueId);
-      event.returnValue = { success: true };
+      const database = getDb();
+      const cue = database.prepare('SELECT * FROM cues WHERE id = ?').get(cueId);
+      const spotCues = database.prepare('SELECT * FROM spot_cues WHERE cue_id = ?').all(cueId);
+      database.transaction(() => {
+        database.prepare('DELETE FROM spot_cues WHERE cue_id = ?').run(cueId);
+        database.prepare('DELETE FROM cues WHERE id = ?').run(cueId);
+      })();
+      event.returnValue = { success: true, snapshot: cue ? { cue, spotCues } : null };
     } catch(e) { event.returnValue = { success: false }; }
+  });
+  // Undo of a delete: the cue and its spot rows come back exactly as they were, with the same ids
+  ipcMain.on('db-restore-cue', (event, { cue, spotCues }) => {
+    try {
+      const database = getDb();
+      const insert = (table, row) => {
+        const cols = database.prepare(`PRAGMA table_info(${table})`).all().map(c => c.name).filter(c => c in row);
+        database.prepare(`INSERT OR REPLACE INTO ${table} (${cols.join(', ')}) VALUES (${cols.map(() => '?').join(', ')})`).run(...cols.map(c => row[c]));
+      };
+      database.transaction(() => {
+        insert('cues', cue);
+        for (const sc of spotCues || []) insert('spot_cues', sc);
+      })();
+      event.returnValue = { success: true };
+    } catch(e) { console.error('restore cue:', e); event.returnValue = { success: false }; }
   });
 }
 
