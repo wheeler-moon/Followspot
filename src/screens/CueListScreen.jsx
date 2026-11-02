@@ -1173,6 +1173,23 @@ export default function CueListScreen({ show, navigate }) {
     load();
   };
 
+  // The strip under a scene header: a new first cue for that scene. In an act break with no cues yet, it
+  // goes where the act break is (after the last cue before it), so it picks up what each spot was doing.
+  const insertCueAtSceneTop = (group) => {
+    let place = {};
+    if (group.cues.length) place = { beforeCueId: group.cues[0].id };
+    else {
+      const groups = groupedCues();
+      const i = groups.findIndex(g => g.sceneId === group.sceneId);
+      const before = groups.slice(0, i).flatMap(g => g.cues), after = groups.slice(i + 1).flatMap(g => g.cues);
+      if (before.length) place = { afterCueId: before[before.length - 1].id };
+      else if (after.length) place = { beforeCueId: after[0].id };
+    }
+    const r = ipcRenderer.sendSync('db-create-cue', { showId: show.id, sceneId: group.sceneId, ...place });
+    if (r?.success) pushUndo({ type: 'cue-created', cueId: r.id });
+    load();
+  };
+
   const insertCueAfter = (afterCueId, sceneId) => {
     const r = ipcRenderer.sendSync('db-create-cue', { showId: show.id, sceneId, afterCueId });
     if (r?.success) pushUndo({ type: 'cue-created', cueId: r.id });
@@ -1683,6 +1700,7 @@ const groupedCues = () => {
                       )}
                     </td>
                   </tr>
+                  <InsertButton onInsert={() => insertCueAtSceneTop(group)} />
                   {group.cues.map((cue) => (
                     <CueRow key={cue.id} cue={cue} fieldsShown={listFields}
                       isLastCue={cue.id === lastCueId}
