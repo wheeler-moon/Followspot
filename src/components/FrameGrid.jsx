@@ -23,7 +23,7 @@ export default function FrameGrid({ frames, cardBackground, onGelChange, onRemov
           )}
           <GelFramePicker gelNumber={f.gel_number} gelName={f.gel_name}
             onChange={gel => onGelChange(f, gel)}
-            placeholder="Search gel..." />
+            placeholder="Gel number or name" />
         </div>
       ))}
       {frames.length < MAX_FRAMES && (

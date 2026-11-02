@@ -60,7 +60,7 @@ export default function NotesSidebar({ spots, cues, spotCues, onAddNote, onCheck
             {spots.map(s => <option key={s.id} value={s.id}>Spot {s.spot_number}{s.operator_name ? ` · ${s.operator_name}` : ''}</option>)}
           </select>
         </div>
-        <textarea ref={textRef} value={text} onChange={e => setText(e.target.value)} placeholder="Note for the operator…"
+        <textarea ref={textRef} value={text} onChange={e => setText(e.target.value)} placeholder="Note for the operator"
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); add(); } }}
           style={{ ...field, width: '100%', height: '64px', padding: '6px 8px', resize: 'vertical', lineHeight: '17px' }} />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '6px', gap: '8px' }}>

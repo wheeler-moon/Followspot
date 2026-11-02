@@ -54,13 +54,13 @@ function SpotSetup({ spot, spotNumber, onChange, onRemove, otherSpots, onCopyCol
           <label style={labelStyle}>Operator name</label>
           <input style={inputStyle} value={spot.operator_name}
             onChange={e => onChange({ ...spot, operator_name: e.target.value })}
-            placeholder="e.g. Lindsay" />
+            placeholder="Operator's name" />
         </div>
         <div>
           <label style={labelStyle}>Location</label>
           <input style={inputStyle} value={spot.location}
             onChange={e => onChange({ ...spot, location: e.target.value })}
-            placeholder="e.g. FOH Left Booth" />
+            placeholder="Position, e.g. FOH Left" />
         </div>
       </div>
       <div style={{ marginBottom: '16px' }}>
@@ -69,7 +69,7 @@ function SpotSetup({ spot, spotNumber, onChange, onRemove, otherSpots, onCopyCol
           <div>
             <input style={inputStyle} value={spot.fixture_other || ''}
               onChange={e => onChange({ ...spot, fixture_other: e.target.value })}
-              placeholder="Enter fixture type..."
+              placeholder="Fixture name"
               autoFocus
             />
             <div onClick={() => onChange({ ...spot, fixture_type: '', fixture_other: '' })}
@@ -108,7 +108,7 @@ function SpotSetup({ spot, spotNumber, onChange, onRemove, otherSpots, onCopyCol
         <div style={{ fontSize: '10px', color: '#C8A26B', marginBottom: '6px', fontWeight: '600' }}>Permanent frame</div>
         <GelFramePicker key={copyCount} gelNumber={spot.perm_gel_number} gelName={spot.perm_gel_name}
           onChange={gelData => onChange({ ...spot, perm_gel_number: gelData.gel_number, perm_gel_name: gelData.gel_name })}
-          placeholder="Search gel..." />
+          placeholder="Gel number or name" />
       </div>
       )}
     </div>
@@ -190,17 +190,17 @@ export default function NewShowScreen({ navigate }) {
               <div style={{ gridColumn: '1 / -1' }}>
                 <label style={labelStyle}>Show title *</label>
                 <input style={{ ...inputStyle, fontSize: '15px' }} value={form.title}
-                  onChange={e => updateForm('title', e.target.value)} placeholder="e.g. Hamilton" />
+                  onChange={e => updateForm('title', e.target.value)} placeholder="Show title" />
               </div>
               <div>
                 <label style={labelStyle}>Theatre</label>
                 <input style={inputStyle} value={form.theatre}
-                  onChange={e => updateForm('theatre', e.target.value)} placeholder="e.g. Richard Rodgers Theatre" />
+                  onChange={e => updateForm('theatre', e.target.value)} placeholder="Theatre or venue" />
               </div>
               <div>
                 <label style={labelStyle}>Producer</label>
                 <input style={inputStyle} value={form.producer}
-                  onChange={e => updateForm('producer', e.target.value)} />
+                  onChange={e => updateForm('producer', e.target.value)} placeholder="Producer or company" />
               </div>
             </div>
           </div>
@@ -218,7 +218,7 @@ export default function NewShowScreen({ navigate }) {
                 <div key={field}>
                   <label style={labelStyle}>{label}</label>
                   <input style={inputStyle} value={form[field]}
-                    onChange={e => updateForm(field, e.target.value)} placeholder={label} />
+                    onChange={e => updateForm(field, e.target.value)} placeholder="Name" />
                 </div>
               ))}
             </div>

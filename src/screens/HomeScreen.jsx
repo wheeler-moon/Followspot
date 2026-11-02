@@ -95,7 +95,7 @@ export default function HomeScreen({ navigate }) {
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder="Search shows..."
+          placeholder="Search shows"
           style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: '#FFFFFF', padding: '6px 12px', fontSize: '13px', outline: 'none', width: '200px' }}
         />
         <button data-tour="import-show" onClick={() => ipcRenderer.send('show-context-menu', [

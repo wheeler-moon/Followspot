@@ -166,7 +166,7 @@ export default function PrintScreen({ show, navigate }) {
           {selected && (
             <>
               <div style={sectionLabel}>Label</div>
-              <input data-tour="print-label" value={label} onChange={e => setLabel(e.target.value)} placeholder='e.g. "2-24 Dress Run"' style={fieldStyle} />
+              <input data-tour="print-label" value={label} onChange={e => setLabel(e.target.value)} placeholder="e.g. 2-24 Dress Run" style={fieldStyle} />
               <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)', margin: '4px 0 20px' }}>Appears in the page header</div>
 
               {selected.kind === 'spot' && (

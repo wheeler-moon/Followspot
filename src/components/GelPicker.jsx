@@ -43,7 +43,7 @@ export function GelPicker({ value, onChange, placeholder }) {
     <div ref={ref} style={{ position: 'relative', flex: 1, minWidth: 0 }}>
       <input style={inputStyle}
         value={query}
-        placeholder={placeholder || 'Search gel...'}
+        placeholder={placeholder || 'Gel number or name'}
         onChange={e => { search(e.target.value); onChange({ gel_number: e.target.value.trim(), gel_name: '' }); }}
         onBlur={() => {
           const typed = query.trim();
@@ -100,7 +100,7 @@ export function GelFramePicker({ gelNumber, gelName, onChange, placeholder }) {
           {i > 0 && <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', width: '10px', textAlign: 'center' }}>+</span>}
           <GelPicker value={[g.gel_number, g.gel_name].filter(Boolean).join(' ')}
             onChange={gel => update(gels.map((x, j) => j === i ? gel : x))}
-            placeholder={i ? 'Add gel...' : placeholder} />
+            placeholder={i ? 'Add another gel' : placeholder} />
           {i > 0 && (
             <button onClick={() => update(gels.filter((_, j) => j !== i))} title="Remove this gel"
               style={{ ...link, color: 'rgba(255,255,255,0.45)', fontSize: '14px', lineHeight: 1, padding: '0 2px' }}>×</button>

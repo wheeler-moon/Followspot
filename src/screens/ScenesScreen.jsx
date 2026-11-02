@@ -106,14 +106,14 @@ export default function ScenesScreen({ show, navigate }) {
                 <input ref={labelInputRef} style={{ ...inputStyle, width: '100%' }} value={newLabel}
                   onChange={e => setNewLabel(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addScene()}
-                  placeholder="e.g. Scene 1 - The Road" />
+                  placeholder="Scene name, e.g. Act 1, Scene 1" />
               </div>
               <div>
                 <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Song (optional)</div>
                 <input style={{ ...inputStyle, width: '100%' }} value={newSong}
                   onChange={e => setNewSong(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addScene()}
-                  placeholder="e.g. Time Is My Enemy" />
+                  placeholder="Song or title (optional)" />
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

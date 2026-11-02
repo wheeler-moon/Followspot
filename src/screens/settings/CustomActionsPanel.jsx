@@ -146,7 +146,7 @@ function EditAction({ target, actionNames, takenNames, onSaveBuiltin, onSaveCust
           <div style={{ fontSize: '13px', fontWeight: '700', color: C.label1 }}>{builtin ? target.name : 'Custom action'}</div>
         </div>
         <div style={{ fontSize: '11px', color: C.label2, marginBottom: '4px' }}>{builtin ? 'Name in this show' : 'Name'}</div>
-        <input autoFocus value={name} placeholder={builtin ? target.name : 'e.g. Tracking Iris'} onChange={e => { setName(e.target.value); setError(null); }}
+        <input autoFocus value={name} placeholder={builtin ? target.name : 'Action name'} onChange={e => { setName(e.target.value); setError(null); }}
           onKeyDown={e => { if (e.key === 'Enter') save(); }} style={{ ...inputStyle, width: '100%' }} />
         <div style={{ fontSize: '11px', color: error ? C.red : C.label3, margin: '6px 0 12px', lineHeight: '14px' }}>
           {error || (builtin ? 'Shown in this show’s cue list, action menu, prints and on iPads. The symbol stays. Leave empty for the standard name.' : 'Cues that use this action follow the new name.')}
@@ -252,7 +252,7 @@ export default function CustomActionsPanel({ show }) {
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '10px' }}>
           <CustomIcon action={newIcon} size={28} />
           <input style={{ ...inputStyle, flex: 1 }} value={newName} onChange={e => { setNewName(e.target.value); setAddError(null); }}
-            onKeyDown={e => e.key === 'Enter' && addAction()} placeholder="e.g. Tracking Iris" />
+            onKeyDown={e => e.key === 'Enter' && addAction()} placeholder="Action name" />
           <button onClick={addAction} style={button('primary')}>Add</button>
         </div>
         {addError && <div style={{ fontSize: '11px', color: C.red, marginBottom: '8px' }}>{addError}</div>}

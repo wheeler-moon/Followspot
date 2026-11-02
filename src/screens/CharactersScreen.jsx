@@ -139,19 +139,19 @@ export default function CharactersScreen({ show, navigate }) {
               <div>
                 <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Character name *</div>
                   <input ref={nameInputRef} style={inputStyle} value={newName} onChange={e => setNewName(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && addCharacter()} placeholder="e.g. MARIO" />
+                  onKeyDown={e => e.key === 'Enter' && addCharacter()} placeholder="Character name" />
               </div>
               <div>
                 <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Performer</div>
                 <input style={inputStyle} value={newActor} onChange={e => setNewActor(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && addCharacter()} placeholder="e.g. John Smith" />
+                  onKeyDown={e => e.key === 'Enter' && addCharacter()} placeholder="Performer's name" />
               </div>
             </div>
 <div style={{ marginBottom: '12px' }}>
               <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Costume notes</div>
               <input style={inputStyle} value={newNotes} onChange={e => setNewNotes(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addCharacter()}
-                placeholder="e.g. Red jacket, black hat" />
+                placeholder="e.g. red jacket, black hat" />
             </div>
             <div style={{ marginBottom: '14px' }}>
               <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '6px' }}>Photo (optional)</div>
@@ -227,7 +227,7 @@ export default function CharactersScreen({ show, navigate }) {
                       </div>
                       <div style={{ marginBottom: '10px' }}>
                         <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Costume notes</div>
-                        <input style={inputStyle} value={editNotes} onChange={e => setEditNotes(e.target.value)} placeholder="e.g. Red jacket, black hat" />
+                        <input style={inputStyle} value={editNotes} onChange={e => setEditNotes(e.target.value)} placeholder="e.g. red jacket, black hat" />
                       </div>
                       <div style={{ marginBottom: '14px' }}>
                         <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '6px' }}>Photo (optional)</div>

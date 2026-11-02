@@ -60,13 +60,13 @@ function SpotCard({ spot, spotNumbers, colorSlots, onUpdateSpot, onUpdateGel, on
           <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Operator name</div>
           <input style={inputStyle} defaultValue={spot.operator_name || ''}
             onBlur={e => onUpdateSpot(spot.id, 'operator_name', e.target.value)}
-            placeholder="e.g. Lindsay" />
+            placeholder="Operator's name" />
         </div>
         <div>
           <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Location</div>
           <input style={inputStyle} defaultValue={spot.location || ''}
             onBlur={e => onUpdateSpot(spot.id, 'location', e.target.value)}
-            placeholder="e.g. FOH Left Booth" />
+            placeholder="Position, e.g. FOH Left" />
         </div>
         <div style={{ gridColumn: '1 / -1' }}>
           <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Fixture type</div>
@@ -74,7 +74,7 @@ function SpotCard({ spot, spotNumbers, colorSlots, onUpdateSpot, onUpdateGel, on
             <div>
               <input key={spot.fixture_type || ''} style={inputStyle} defaultValue={spot.fixture_type || ''}
                 onBlur={e => onUpdateSpot(spot.id, 'fixture_type', e.target.value)}
-                placeholder="Enter fixture type..." />
+                placeholder="Fixture name" />
               <div onClick={() => { onUpdateSpot(spot.id, 'fixture_type', ''); setShowCustomFixture(false); }}
                 style={{ fontSize: '11px', color: '#409CFF', cursor: 'pointer', marginTop: '4px' }}>
                 Choose from list instead
@@ -125,7 +125,7 @@ function SpotCard({ spot, spotNumbers, colorSlots, onUpdateSpot, onUpdateGel, on
           <div style={{ fontSize: '10px', color: '#C8A26B', marginBottom: '6px', fontWeight: '600' }}>Permanent frame</div>
           <GelFramePicker key={copyCount} gelNumber={permSlot.gel_number} gelName={permSlot.gel_name}
             onChange={gel => onUpdateGel(spot.id, permSlot.id, gel)}
-            placeholder="Search gel..." />
+            placeholder="Gel number or name" />
         </div>
       )}
     </div>

@@ -118,7 +118,7 @@ export default function IrisSizesPanel({ show }) {
       <div style={{ fontSize: '13px', fontWeight: '600', color: 'rgba(255,255,255,0.55)', margin: '0 0 6px 14px' }}>Add a size</div>
       <div data-tour="iris-add" style={{ background: '#2A2A2A', borderRadius: '10px', padding: '12px 14px', display: 'flex', gap: '10px', alignItems: 'center' }}>
         <input style={{ ...field, width: '72px' }} value={newLabel} onChange={e => setNewLabel(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && addSize()} placeholder="Ks" />
+          onKeyDown={e => e.key === 'Enter' && addSize()} placeholder="e.g. Ks" />
         <input style={{ ...field, flex: 1 }} value={newValue} onChange={e => setNewValue(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && addSize()} placeholder="Full name, e.g. Knees" />
         <button onClick={addSize}

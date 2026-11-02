@@ -66,7 +66,7 @@ export default function CueDefaultsPanel({ show }) {
           <div style={{ flex: 1 }}>
             <div style={label}>Time</div>
             {customTime !== null ? (
-              <input autoFocus value={customTime} onChange={e => setCustomTime(e.target.value)} placeholder="e.g. 2.5"
+              <input autoFocus value={customTime} onChange={e => setCustomTime(e.target.value)} placeholder="Seconds, e.g. 2.5"
                 onBlur={saveCustomTime} onKeyDown={e => { if (e.key === 'Enter') saveCustomTime(); if (e.key === 'Escape') setCustomTime(null); }}
                 style={{ ...selectStyle, width: '100%', boxSizing: 'border-box', color: '#FFFFFF', border: '1px solid #0A84FF' }} />
             ) : (
@@ -74,7 +74,7 @@ export default function CueDefaultsPanel({ show }) {
                 style={{ ...selectStyle, width: '100%', color: d.fade_time ? '#FFFFFF' : 'rgba(255,255,255,0.35)' }}>
                 <option value="">No default</option>
                 {d.fade_time && !TIMES.includes(d.fade_time) && <option value={d.fade_time}>{d.fade_time}s</option>}
-                {TIMES.map(t => <option key={t} value={t}>{t === 'Custom' ? 'Custom...' : t + 's'}</option>)}
+                {TIMES.map(t => <option key={t} value={t}>{t === 'Custom' ? 'Custom…' : t + 's'}</option>)}
               </select>
             )}
           </div>

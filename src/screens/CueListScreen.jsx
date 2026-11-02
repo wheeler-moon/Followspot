@@ -345,7 +345,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
                 <span style={{ fontSize: '14px', color: actionDef ? actionDef.color : 'rgba(255,255,255,0.62)', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{displayAction(spotCue.action, actionNames)}</span>
               </>
             ) : (
-              <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.28)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Action...</span>
+              <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.28)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Action…</span>
             )}
           </div>
 {showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} pos={pickerPos} customActions={customActions} actionNames={actionNames} />}
@@ -355,7 +355,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
             defaultValue={spotCue.custom_character || ''}
             onBlur={e => commitCustomChar(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') commitCustomChar(e.target.value); }}
-            placeholder="Type character name..."
+            placeholder="Character name"
             style={{ ...selectStyle, display: fieldsShown.character === false ? 'none' : undefined, flex: '1 1 0', minWidth: 0, height: '32px', fontSize: '14px', fontWeight: '600', borderRadius: '6px', padding: '0 8px', color: '#FFFFFF' }}
           />
         ) : (
@@ -369,7 +369,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
               onUpdate(spotCue.id, 'custom_character', null);
             }
           }} style={{ ...selectStyle, display: fieldsShown.character === false ? 'none' : undefined, flex: '1 1 0', minWidth: 0, height: '32px', fontSize: '14px', fontWeight: '600', borderRadius: '6px', padding: '0 8px', color: (spotCue.character_id || spotCue.custom_character) ? '#FFFFFF' : 'rgba(255,255,255,0.28)' }}>
-            <option value="">{spotCue.custom_character || 'Character...'}</option>
+            <option value="">{spotCue.custom_character || 'Character…'}</option>
             {characters.map(c => <option key={c.id} value={c.id}>{c.name}{c.actor_name ? ' (' + c.actor_name + ')' : ''}</option>)}
             <option value="custom">+ Type custom name...</option>
           </select>
@@ -379,7 +379,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
         <div style={{ display: 'flex', gap: '4px', marginBottom: '5px' }}>
           <select value={spotCue.intensity || ''} onChange={e => onUpdate(spotCue.id, 'intensity', e.target.value)}
             style={{ ...selectStyle, display: fieldsShown.intensity === false ? 'none' : undefined, flex: 1, color: spotCue.intensity ? '#FFFFFF' : 'rgba(255,255,255,0.28)' }}>
-            <option value="">Int...</option>
+            <option value="">Int…</option>
             {INTENSITIES.map(i => <option key={i} value={i}>{i}</option>)}
           </select>
           <div style={{ flex: 1, display: fieldsShown.time === false ? 'none' : undefined }}>
@@ -388,14 +388,14 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
                 onBlur={() => { onUpdate(spotCue.id, 'fade_time', customTimeVal); setShowCustomTime(false); }}
                 onKeyDown={e => { if (e.key === 'Enter') { onUpdate(spotCue.id, 'fade_time', customTimeVal); setShowCustomTime(false); } if (e.key === 'Escape') setShowCustomTime(false); }}
                 style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid #0A84FF', borderRadius: '6px', color: '#FFFFFF', padding: '3px 4px', fontSize: '11px', outline: 'none' }}
-                placeholder="e.g. 2.5" />
+                placeholder="Seconds, e.g. 2.5" />
             ) : (
               <select value={spotCue.fade_time || ''} onChange={e => { if (e.target.value === 'Custom') { setShowCustomTime(true); setCustomTimeVal(TIMES.includes(spotCue.fade_time) ? '' : (spotCue.fade_time || '')); } else onUpdate(spotCue.id, 'fade_time', e.target.value); }}
                 style={{ ...selectStyle, color: spotCue.fade_time ? '#FFFFFF' : 'rgba(255,255,255,0.28)' }}>
-                <option value="">Time...</option>
+                <option value="">Time…</option>
                 {/* A typed custom time isn't in the list, so add it as its own choice to show it */}
                 {spotCue.fade_time && !TIMES.includes(spotCue.fade_time) && <option value={spotCue.fade_time}>{spotCue.fade_time}s</option>}
-                {TIMES.map(t => <option key={t} value={t}>{t === 'Custom' ? 'Custom...' : t + 's'}</option>)}
+                {TIMES.map(t => <option key={t} value={t}>{t === 'Custom' ? 'Custom…' : t + 's'}</option>)}
               </select>
             )}
           </div>
@@ -463,7 +463,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
           )}
           <RichLine value={spotCue.description}
             onSave={html => onUpdate(spotCue.id, 'description', html)}
-            placeholder={withLQ ? '' : 'When...'}
+            placeholder={withLQ ? '' : 'When…'}
             style={{ flex: 1, minWidth: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.62)', padding: '2px 0', fontSize: '12px' }} />
           </div>
           <div data-tour="cue-wlq" onClick={toggleWLQ} role="switch" aria-checked={withLQ}
@@ -478,7 +478,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
 
         <RichLine value={spotCue.notes}
           onSave={html => onUpdate(spotCue.id, 'notes', html)}
-          placeholder="Notes..."
+          placeholder="Notes…"
           style={{ display: fieldsShown.notes === false ? 'none' : undefined, borderBottom: '1px solid rgba(255,255,255,0.06)', borderRadius: '6px', color: 'rgba(255,255,255,0.62)', padding: '2px 0', fontSize: '12px', ...lineHighlightStyle(spotCue.notes_highlight) }} />
       </div>
     </td>
@@ -1596,7 +1596,7 @@ const groupedCues = () => {
                     updateSpotCue(cuePopup.spotCue.id, 'spot_note', e.target.value);
                   }
                 }}
-                placeholder="Type a note for this spot operator..."
+                placeholder="Note for the operator"
                 style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#FFFFFF', padding: '10px 12px', fontSize: '13px', outline: 'none', resize: 'vertical', minHeight: '80px', boxSizing: 'border-box', fontFamily: 'inherit' }}
               />
               <button onClick={() => {
@@ -1729,14 +1729,14 @@ const groupedCues = () => {
               <input autoFocus value={newSceneLabel} onChange={e => setNewSceneLabel(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addScene()}
                 style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: '#FFFFFF', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
-                placeholder="e.g. Scene 1 - The Road" />
+                placeholder="Scene name, e.g. Act 1, Scene 1" />
             </div>
             <div style={{ marginBottom: '16px' }}>
               <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.62)', display: 'block', marginBottom: '4px' }}>Song (optional)</label>
               <input value={newSceneSong} onChange={e => setNewSceneSong(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addScene()}
                 style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: '#FFFFFF', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
-                placeholder="e.g. Time Is My Enemy" />
+                placeholder="Song or title (optional)" />
             </div>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <button onClick={() => setShowSceneModal(false)} style={{ padding: '7px 14px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
@@ -1755,14 +1755,14 @@ const groupedCues = () => {
               <input autoFocus value={newCharName} onChange={e => setNewCharName(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addCharacter()}
                 style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: '#FFFFFF', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
-                placeholder="e.g. MARIO" />
+                placeholder="Character name" />
             </div>
             <div style={{ marginBottom: '16px' }}>
               <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.62)', display: 'block', marginBottom: '4px' }}>Performer (optional)</label>
               <input value={newCharActor} onChange={e => setNewCharActor(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addCharacter()}
                 style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: '#FFFFFF', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
-                placeholder="e.g. John Smith" />
+                placeholder="Performer's name" />
             </div>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <button onClick={() => setShowCharModal(false)} style={{ padding: '7px 14px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
