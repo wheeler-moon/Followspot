@@ -960,13 +960,17 @@ export default function CueListScreen({ show, navigate }) {
     setCuePopup(null);
   };
   useEscape(() => closeCuePopup(), !!cuePopup);
-  // ⌘Z in the cue list. Every change records how to take it back (pushUndo); everything changed by one
-  // click or menu choice (an action plus the time and intensity it fills in, a pasted cue…) is one step.
-  // Kinds: 'spot-cue' / 'cue' (a field), 'tracks' (T· numbers), 'scene' (name), 'cue-created',
-  // 'cue-deleted' (with what it held), 'note-given', 'scene-created', 'character-created', 'batch'.
+  // ⌘Z / ⇧⌘Z in the cue list. Every change records how to take it back (pushUndo); everything changed by
+  // one click or menu choice (an action plus the time and intensity it fills in, a pasted cue…) is one step.
+  // Kinds: 'spot-cue' / 'cue' (a field: puts back oldValue), 'tracks' (T· numbers), 'scene' (name),
+  // 'cue-created' / 'cue-deleted' (with what it held), 'note-given' / 'note-restored',
+  // 'scene-created' / 'scene-deleted', 'character-created' / 'character-deleted', 'batch'.
+  // Undoing a step records its opposite on the redo stack, and redoing records it back.
   const undoStackRef = useRef([]);
+  const redoStackRef = useRef([]);
   const undoGroupRef = useRef(null);
   const pushUndo = (entry) => {
+    redoStackRef.current = [];   // a new change ends the redo trail
     const entries = entry.type === 'batch' ? entry.entries : [entry];
     if (!entries.length) return;
     if (undoGroupRef.current) { undoGroupRef.current.entries.push(...entries); return; }
@@ -1077,58 +1081,89 @@ export default function CueListScreen({ show, navigate }) {
     };
   }, []);
 
-  // Takes back the last step (newest change first). Refreshed every render so it sees the latest functions.
-  const undoRef = useRef(null);
-  undoRef.current = () => {
-    const last = undoStackRef.current[undoStackRef.current.length - 1];
+  // Applies one recorded step and returns its opposite (for the other stack). Refreshed every render so
+  // it sees the latest data and functions.
+  const stepRef = useRef(null);
+  stepRef.current = (from, to) => {
+    const last = from.current[from.current.length - 1];
     if (!last) return;
-    undoStackRef.current = undoStackRef.current.slice(0, -1);
+    from.current = from.current.slice(0, -1);
     let reload = false;
-    const undoOne = (u) => {
+    const applyOne = (u) => {
+      if (!['spot-cue', 'cue', 'tracks', 'batch'].includes(u.type)) reload = true;   // cues, scenes or characters come and go
       if (u.type === 'spot-cue') {
         ipcRenderer.sendSync('db-update-spot-cue', { spotCueId: u.spotCueId, field: u.field, value: u.oldValue });
         setData(d => ({ ...d, spotCues: (d?.spotCues || []).map(sc => sc.id === u.spotCueId ? { ...sc, [u.field]: u.oldValue } : sc) }));
-      } else if (u.type === 'cue') {
+        return { ...u, oldValue: u.newValue, newValue: u.oldValue };
+      }
+      if (u.type === 'cue') {
         ipcRenderer.sendSync('db-update-cue', { cueId: u.cueId, field: u.field, value: u.oldValue });
         setData(d => ({ ...d, cues: (d?.cues || []).map(c => c.id === u.cueId ? { ...c, [u.field]: u.oldValue } : c) }));
-      } else if (u.type === 'tracks') {
+        return { ...u, oldValue: u.newValue, newValue: u.oldValue };
+      }
+      if (u.type === 'tracks') {
+        const now = (dataRef.current?.cues || []).map(c => ({ id: c.id, track_number: c.track_number }));
         ipcRenderer.sendSync('db-restore-tracks', { showId: show.id, tracks: u.before });
         const old = new Map(u.before.map(t => [t.id, t.track_number]));
         setData(d => ({ ...d, cues: (d?.cues || []).map(c => old.has(c.id) ? { ...c, track_number: old.get(c.id) } : c) }));
-      } else if (u.type === 'scene') {
-        ipcRenderer.sendSync('db-update-scene', { sceneId: u.sceneId, label: u.label, song: u.song, actBreak: u.actBreak });
-        reload = true;
-      } else if (u.type === 'cue-created') {
-        ipcRenderer.sendSync('db-delete-cue', u.cueId);
-        reload = true;
-      } else if (u.type === 'cue-deleted') {
-        ipcRenderer.sendSync('db-restore-cue', u.snapshot);
-        reload = true;
-      } else if (u.type === 'note-given') {
-        ipcRenderer.sendSync('db-restore-given-note', u.givenId);
-        reload = true;
-      } else if (u.type === 'scene-created') {
-        ipcRenderer.sendSync('db-delete-scene', u.sceneId);
-        reload = true;
-      } else if (u.type === 'character-created') {
-        ipcRenderer.sendSync('db-delete-character', u.characterId);
-        reload = true;
-      } else if (u.type === 'batch') {
-        [...u.entries].reverse().forEach(undoOne);
+        return { type: 'tracks', before: now };
       }
+      if (u.type === 'scene') {
+        const sc = (dataRef.current?.scenes || []).find(x => x.id === u.sceneId);
+        ipcRenderer.sendSync('db-update-scene', { sceneId: u.sceneId, label: u.label, song: u.song, actBreak: u.actBreak });
+        return sc ? { type: 'scene', sceneId: sc.id, label: sc.label, song: sc.song || '', actBreak: !!sc.act_break } : null;
+      }
+      if (u.type === 'cue-created') {
+        const r = ipcRenderer.sendSync('db-delete-cue', u.cueId);
+        return r?.snapshot ? { type: 'cue-deleted', snapshot: r.snapshot } : null;
+      }
+      if (u.type === 'cue-deleted') {
+        ipcRenderer.sendSync('db-restore-cue', u.snapshot);
+        return { type: 'cue-created', cueId: u.snapshot.cue.id };
+      }
+      if (u.type === 'note-given') {
+        const r = ipcRenderer.sendSync('db-restore-given-note', u.givenId);
+        return r?.restored ? { type: 'note-restored', ...r.restored } : null;
+      }
+      if (u.type === 'note-restored') {
+        const r = ipcRenderer.sendSync('db-give-note', u.spotCueId ? { spotCueId: u.spotCueId } : { cueId: u.cueId });
+        return r?.id ? { type: 'note-given', givenId: r.id } : null;
+      }
+      if (u.type === 'scene-created') {
+        const row = (dataRef.current?.scenes || []).find(x => x.id === u.sceneId);
+        ipcRenderer.sendSync('db-delete-scene', u.sceneId);
+        return row ? { type: 'scene-deleted', row } : null;
+      }
+      if (u.type === 'scene-deleted') {
+        ipcRenderer.sendSync('db-restore-row', { table: 'scenes', row: u.row });
+        return { type: 'scene-created', sceneId: u.row.id };
+      }
+      if (u.type === 'character-created') {
+        const row = (ipcRenderer.sendSync('db-get-characters', show.id) || []).find(c => c.id === u.characterId);
+        ipcRenderer.sendSync('db-delete-character', u.characterId);
+        return row ? { type: 'character-deleted', row } : null;
+      }
+      if (u.type === 'character-deleted') {
+        ipcRenderer.sendSync('db-restore-row', { table: 'characters', row: u.row });
+        return { type: 'character-created', characterId: u.row.id };
+      }
+      if (u.type === 'batch') return { type: 'batch', entries: [...u.entries].reverse().map(applyOne).filter(Boolean) };
+      return null;
     };
-    undoOne(last);
+    const opposite = applyOne(last);
+    if (opposite) to.current = [...to.current.slice(-49), opposite];
     if (reload) load();
   };
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
-        // While typing in a box, ⌘Z undoes the typing (the Mac's own text undo)
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
+        // While typing in a box, ⌘Z / ⇧⌘Z undo and redo the typing (the Mac's own text undo)
         const t = e.target;
         if (t && (t.isContentEditable || t.tagName === 'TEXTAREA' || (t.tagName === 'INPUT' && !['checkbox', 'radio', 'range', 'button'].includes(t.type)))) return;
         e.preventDefault();
-        undoRef.current();
+        if (e.shiftKey) stepRef.current(redoStackRef, undoStackRef);
+        else stepRef.current(undoStackRef, redoStackRef);
       }
     };
     window.addEventListener('keydown', handleKeyDown);

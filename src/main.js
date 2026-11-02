@@ -1097,7 +1097,7 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
     catch(e) { console.error('give note:', e); event.returnValue = { success: false }; }
   });
   ipcMain.on('db-restore-given-note', (event, id) => {
-    try { givenNotes.restoreNote(getDb(), id); event.returnValue = { success: true }; }
+    try { event.returnValue = { success: true, restored: givenNotes.restoreNote(getDb(), id) }; }
     catch(e) { event.returnValue = { success: false }; }
   });
   ipcMain.on('db-delete-given-note', (event, id) => {
@@ -1188,20 +1188,29 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
       event.returnValue = { success: true, snapshot: cue ? { cue, spotCues } : null };
     } catch(e) { event.returnValue = { success: false }; }
   });
-  // Undo of a delete: the cue and its spot rows come back exactly as they were, with the same ids
+  // Undo/redo: puts rows back exactly as they were, with the same ids
+  const restoreRow = (database, table, row) => {
+    const cols = database.prepare(`PRAGMA table_info(${table})`).all().map(c => c.name).filter(c => c in row);
+    database.prepare(`INSERT OR REPLACE INTO ${table} (${cols.join(', ')}) VALUES (${cols.map(() => '?').join(', ')})`).run(...cols.map(c => row[c]));
+  };
+  // A deleted cue and what every spot did in it
   ipcMain.on('db-restore-cue', (event, { cue, spotCues }) => {
     try {
       const database = getDb();
-      const insert = (table, row) => {
-        const cols = database.prepare(`PRAGMA table_info(${table})`).all().map(c => c.name).filter(c => c in row);
-        database.prepare(`INSERT OR REPLACE INTO ${table} (${cols.join(', ')}) VALUES (${cols.map(() => '?').join(', ')})`).run(...cols.map(c => row[c]));
-      };
       database.transaction(() => {
-        insert('cues', cue);
-        for (const sc of spotCues || []) insert('spot_cues', sc);
+        restoreRow(database, 'cues', cue);
+        for (const sc of spotCues || []) restoreRow(database, 'spot_cues', sc);
       })();
       event.returnValue = { success: true };
     } catch(e) { console.error('restore cue:', e); event.returnValue = { success: false }; }
+  });
+  // A scene or character taken away by undo, put back by redo
+  ipcMain.on('db-restore-row', (event, { table, row }) => {
+    try {
+      if (!['scenes', 'characters'].includes(table)) throw new Error('table not allowed: ' + table);
+      restoreRow(getDb(), table, row);
+      event.returnValue = { success: true };
+    } catch(e) { console.error('restore row:', e); event.returnValue = { success: false }; }
   });
 }
 

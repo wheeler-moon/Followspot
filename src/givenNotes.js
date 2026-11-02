@@ -62,21 +62,24 @@ function giveNote(db, { spotCueId, cueId }) {
   })();
 }
 
-// Puts a given note back on its cue (under any note written there since) and out of the tray
+// Puts a given note back on its cue (under any note written there since) and out of the tray.
+// Returns where it went, { cueId, spotCueId } (spotCueId null for an All Spots note), for redo.
 function restoreNote(db, id) {
-  db.transaction(() => {
+  return db.transaction(() => {
     const g = db.prepare('SELECT * FROM given_notes WHERE id = ?').get(id);
-    if (!g) return;
+    if (!g) return null;
+    let spotCueId = null;
     const join = (now) => ((now || '').trim() ? `${now.trim()}\n${g.note}` : g.note);
     if (g.spot_id === null) {
       const c = db.prepare('SELECT all_spots_note FROM cues WHERE id = ?').get(g.cue_id);
       if (c) db.prepare('UPDATE cues SET all_spots_note = ? WHERE id = ?').run(join(c.all_spots_note), g.cue_id);
     } else {
       const sc = db.prepare('SELECT id, spot_note FROM spot_cues WHERE cue_id = ? AND spot_id = ?').get(g.cue_id, g.spot_id);
-      if (sc) db.prepare('UPDATE spot_cues SET spot_note = ? WHERE id = ?').run(join(sc.spot_note), sc.id);
-      else db.prepare("INSERT INTO spot_cues (cue_id, spot_id, action, spot_note) VALUES (?, ?, 'Off', ?)").run(g.cue_id, g.spot_id, g.note);
+      if (sc) { db.prepare('UPDATE spot_cues SET spot_note = ? WHERE id = ?').run(join(sc.spot_note), sc.id); spotCueId = sc.id; }
+      else spotCueId = db.prepare("INSERT INTO spot_cues (cue_id, spot_id, action, spot_note) VALUES (?, ?, 'Off', ?)").run(g.cue_id, g.spot_id, g.note).lastInsertRowid;
     }
     db.prepare('DELETE FROM given_notes WHERE id = ?').run(id);
+    return { cueId: g.cue_id, spotCueId };
   })();
 }
 

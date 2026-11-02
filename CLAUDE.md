@@ -51,9 +51,9 @@ There are no tests and no linter (`npm run lint` is a no-op). To verify a change
 
 Main → renderer messages come from the menu bar: `menu-new-show`, `menu-export-show`, `menu-import-show`, `menu-add-cue` (Cmd+=). Screens subscribe with `ipcRenderer.on` and must remove the listener on unmount. `setupIPC()` must only run once, because running it twice caused double cue inserts.
 
-### Undo in the cue list
+### Undo and redo in the cue list
 
-Every change a person can make in the cue list must be undoable with ⌘Z, unless the app warns that it can't be. Changes go through `updateSpotCue` / `updateCue` (which record themselves) or call `pushUndo(...)` with how to take them back (kinds listed at `undoStackRef` in `CueListScreen.jsx`). Everything recorded during one click or menu choice is grouped into one ⌘Z step automatically. While typing in a text box, ⌘Z is left to the Mac's own text undo.
+Every change a person can make in the cue list must be undoable with ⌘Z (and redoable with ⇧⌘Z), unless the app warns that it can't be. Changes go through `updateSpotCue` / `updateCue` (which record themselves) or call `pushUndo(...)` with how to take them back (kinds listed at `undoStackRef` in `CueListScreen.jsx`). Everything recorded during one click or menu choice is grouped into one ⌘Z step automatically. A new kind of step needs its opposite in `stepRef` so redo works. While typing in a text box, ⌘Z is left to the Mac's own text undo.
 
 ### Data model
 
