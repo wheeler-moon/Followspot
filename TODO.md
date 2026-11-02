@@ -88,4 +88,4 @@ Plan: `docs/admin-dashboard-plan.md`.
 
 ## Future
 - [ ] SpotPlot Live Sync over the cloud (beyond the local-network iPad app)
-- [ ] EOS Control tab in Show Settings (console features on the desktop)
+- [ ] Console Connection tab in Show Settings (Eos console features on the desktop; was called EOS Control)

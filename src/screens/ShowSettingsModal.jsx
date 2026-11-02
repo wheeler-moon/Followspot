@@ -21,7 +21,7 @@ const SECTIONS = [
   { id: 'cue-defaults', label: 'Cue Defaults' },
   { id: 'iris-sizes', label: 'Iris Sizes' },
   { id: 'custom-actions', label: 'Custom Actions' },
-  { id: 'eos-control', label: 'EOS Control' },
+  { id: 'eos-control', label: 'Console Connection' },
   { id: 'ipad-sync', label: 'iPad Sync' },
 ];
 
