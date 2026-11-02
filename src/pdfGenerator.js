@@ -111,6 +111,32 @@ const trackHTML = (cue, show, showPage = false) =>
   (show && cue.track_number != null ? `<div class="track-num">T·${cue.track_number}</div>` : '') +
   (showPage && cue.page ? `<div class="track-num" style="white-space:nowrap">pg ${cue.page}</div>` : '');
 
+// Act breaks print as a header even with no cues of their own on a sheet ("Act One" at the top), in their
+// place in the scene order, like the cue list. Call the result before each cue's scene header to get the
+// act breaks that come before that cue's scene, and once more at the end with null for any left after.
+// With a cue range (edges false), only act breaks between the first and last printed cue are shown.
+function emptyActBreaks(scenes, printedCues, { edges = true } = {}) {
+  const order = new Map(scenes.map((s, i) => [s.id, i]));
+  const pos = (c) => order.get(c.scene_id) ?? Infinity;
+  const used = new Set(printedCues.map(c => c.scene_id));
+  let pending = scenes.filter(s => s.act_break && !used.has(s.id));
+  if (!edges && printedCues.length) {
+    const lo = pos(printedCues[0]), hi = pos(printedCues[printedCues.length - 1]);
+    pending = pending.filter(s => order.get(s.id) > lo && order.get(s.id) < hi);
+  }
+  return (cue) => {
+    const limit = cue ? pos(cue) : Infinity;
+    const before = pending.filter(s => order.get(s.id) < limit || !cue);
+    pending = pending.filter(s => !before.includes(s));
+    return before;
+  };
+}
+const sceneRowHTML = (scene, colspan) => `
+          <tr class="scene-row">
+            <td colspan="${colspan}">${scene.label}${scene.song ? ' · ' + scene.song : ''}</td>
+          </tr>
+        `;
+
 function buildSpotSheetHTML({ cueFields, show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, hideOff, hideTracked, rangeStart, rangeEnd, customActions, showTracks = true }) {
   const pagePrint = cueFieldSettings(cueFields).page.print;
   const actionNames = actionNameMap(show && show.action_names);
@@ -181,6 +207,8 @@ const sceneOrderMap = {};
 
   let rowsHTML = '';
   let currentSceneId = 'NONE';
+  const isRange = (rangeStart !== null && rangeStart !== undefined) || (rangeEnd !== null && rangeEnd !== undefined);
+  const actBreaksBefore = emptyActBreaks(scenes, sortedCues, { edges: !isRange });
 
   for (const cue of sortedCues) {
     const sc = spotCues.find(sc => sc.cue_id === cue.id && sc.spot_id === spot.id);
@@ -188,14 +216,9 @@ const sceneOrderMap = {};
 
     if (cue.scene_id !== currentSceneId) {
       currentSceneId = cue.scene_id;
+      for (const act of actBreaksBefore(cue)) rowsHTML += sceneRowHTML(act, 9);
       const scene = sceneMap[cue.scene_id];
-      if (scene) {
-        rowsHTML += `
-          <tr class="scene-row">
-            <td colspan="9">${scene.label}${scene.song ? ' · ' + scene.song : ''}</td>
-          </tr>
-        `;
-      }
+      if (scene) rowsHTML += sceneRowHTML(scene, 9);
     }
 
     const charText = escapeText(characterLabel(sc, charMap));
@@ -257,6 +280,7 @@ const sceneOrderMap = {};
       </tr>
     `;
   }
+  for (const act of actBreaksBefore(null)) rowsHTML += sceneRowHTML(act, 9);
 
   return `<!DOCTYPE html>
 <html>
@@ -674,18 +698,14 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
 
   let rowsHTML = '';
   let currentSceneId = 'NONE';
+  const actBreaksBefore = emptyActBreaks(scenes, sortedCues);
 
   for (const cue of sortedCues) {
     if (cue.scene_id !== currentSceneId) {
       currentSceneId = cue.scene_id;
+      for (const act of actBreaksBefore(cue)) rowsHTML += sceneRowHTML(act, colSpan + 1);
       const scene = sceneMap[cue.scene_id];
-      if (scene) {
-        rowsHTML += `
-          <tr class="scene-row">
-            <td colspan="${colSpan + 1}">${scene.label}${scene.song ? ' · ' + scene.song : ''}</td>
-          </tr>
-        `;
-      }
+      if (scene) rowsHTML += sceneRowHTML(scene, colSpan + 1);
     }
 
     let spotCellsHTML = '';
@@ -757,6 +777,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
       </tr>
     `;
   }
+  for (const act of actBreaksBefore(null)) rowsHTML += sceneRowHTML(act, colSpan + 1);
 
   const spotColHeaders = spots.map(spot => `
     <th class="spot-col-header" style="width:calc((100% - 48px) / ${spots.length})">SPOT ${spot.spot_number} · ${spot.operator_name || 'TBD'}</th>
