@@ -168,12 +168,6 @@ export default function HomeScreen({ navigate }) {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <AppHeader title="SpotPlot">
         <div style={{ flex: 1 }} />
-        {shows.length > 0 && <ViewSwitch view={view} onChange={changeView} />}
-        <button onClick={() => setShowSettings(true)} title="Account and Settings"
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', maxWidth: '220px', padding: '6px 12px 6px 8px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '8px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>
-          <PersonIcon />
-          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{myName || 'Settings'}</span>
-        </button>
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -187,8 +181,20 @@ export default function HomeScreen({ navigate }) {
           ↓ Import ▾
         </button>
         <button data-tour="new-show" onClick={() => navigate('new-show')} style={{ padding: '8px 18px', background: '#0A84FF', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>+ New Show</button>
+        {/* The person's account, at the far right */}
+        <button onClick={() => setShowSettings(true)} title="Account and Settings"
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', maxWidth: '220px', padding: '6px 12px 6px 8px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '8px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit', flexShrink: 1, minWidth: 0 }}>
+          <PersonIcon />
+          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{myName || 'Settings'}</span>
+        </button>
       </AppHeader>
-      <div style={{ flex: 1, padding: '32px 24px', overflowY: 'auto' }}>
+      <div style={{ flex: 1, padding: '16px 24px 32px', overflowY: 'auto' }}>
+        {/* Grid / list, at the top right of the shows */}
+        {shows.length > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+            <ViewSwitch view={view} onChange={changeView} />
+          </div>
+        )}
         {shows.length === 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60%', gap: '12px' }}>
             <div style={{ fontSize: '40px' }}>✦</div>
