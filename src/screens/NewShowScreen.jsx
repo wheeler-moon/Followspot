@@ -167,7 +167,7 @@ export default function NewShowScreen({ navigate }) {
                             <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '4px' }}>
                 <div style={{ width: '80px', height: '80px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
                   {form.logo_path ? (
-                    <img src={imageSrc(form.logo_path)} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    <img src={imageSrc(form.logo_path)} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '6px', boxSizing: 'border-box' }} />
                   ) : (
                     <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.28)', textAlign: 'center', padding: '8px' }}>No logo</span>
                   )}

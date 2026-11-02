@@ -83,7 +83,7 @@ export default function ShowInfoPanel({ show, onShowUpdate, onClose }) {
         <div onClick={() => { const r = ipcRenderer.sendSync('dialog-open-image'); if (r) update('logo_path', r); }}
           style={{ width: '80px', height: '80px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', border: '2px dashed rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', cursor: 'pointer', flexShrink: 0 }}>
           {form.logo_path && getImageSrc(form.logo_path) ? (
-            <img src={getImageSrc(form.logo_path)} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            <img src={getImageSrc(form.logo_path)} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '6px', boxSizing: 'border-box' }} />
           ) : (
             <div style={{ textAlign: 'center', fontSize: '10px', color: 'rgba(255,255,255,0.28)' }}>Click to add logo</div>
           )}

@@ -223,7 +223,7 @@ export default function HomeScreen({ navigate }) {
                     onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                     <div style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {logo && <img src={logo} style={{ maxWidth: '32px', maxHeight: '32px', objectFit: 'contain', borderRadius: '4px' }} />}
+                      {logo && <img src={logo} style={{ maxWidth: '32px', maxHeight: '32px', objectFit: 'contain' }} />}
                     </div>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: '14px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{show.title}</div>
@@ -245,7 +245,7 @@ export default function HomeScreen({ navigate }) {
                 onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'}>
                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
                   {show.logo_path && getImageSrc(show.logo_path) && (
-                    <img src={getImageSrc(show.logo_path)} style={{ height: '36px', maxWidth: '60px', objectFit: 'contain', borderRadius: '6px' }} />
+                    <img src={getImageSrc(show.logo_path)} style={{ height: '36px', width: 'auto', maxWidth: '96px', objectFit: 'contain', flexShrink: 0 }} />
                   )}
                   <div style={{ fontSize: '16px', fontWeight: '600' }}>{show.title}</div>
                 </div>

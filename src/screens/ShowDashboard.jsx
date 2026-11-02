@@ -200,7 +200,7 @@ const startEdit = () => {
                       }}
                       style={{ width: '80px', height: '80px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', border: '2px dashed rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', cursor: 'pointer', flexShrink: 0 }}>
                       {editForm.logo_path ? (
-                        <img src={getImageSrc(editForm.logo_path)} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                        <img src={getImageSrc(editForm.logo_path)} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '6px', boxSizing: 'border-box' }} />
                       ) : (
                         <div style={{ textAlign: 'center', padding: '8px' }}>
                           <div style={{ fontSize: '20px', color: 'rgba(255,255,255,0.28)' }}>+</div>
@@ -220,7 +220,7 @@ const startEdit = () => {
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
                 {show.logo_path && getImageSrc(show.logo_path) && (
-                  <img src={getImageSrc(show.logo_path)} style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '14px', flexShrink: 0, boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }} />
+                  <img src={getImageSrc(show.logo_path)} style={{ height: '64px', width: 'auto', maxWidth: '160px', objectFit: 'contain', flexShrink: 0 }} />
                 )}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: '26px', fontWeight: '700', color: '#FFFFFF', lineHeight: 1.15 }}>{show.title}</div>

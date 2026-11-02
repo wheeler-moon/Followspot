@@ -148,7 +148,7 @@ function buildSpotSheetHTML({ cueFields, show, spot, colorSlots, cues, spotCues,
       const ext = show.logo_path.split('.').pop().toLowerCase();
       const mimeType = ext === 'png' ? 'image/png' : ext === 'svg' ? 'image/svg+xml' : 'image/jpeg';
       const base64 = logoData.toString('base64');
-      logoHTML = `<img src="data:${mimeType};base64,${base64}" style="width:64px;height:64px;object-fit:contain;border-radius:8px;flex-shrink:0;align-self:flex-start;" />`;
+      logoHTML = `<img src="data:${mimeType};base64,${base64}" style="height:64px;width:auto;max-width:128px;object-fit:contain;flex-shrink:0;align-self:flex-start;" />`;
     } catch(e) {
       console.error('Could not load logo:', e);
     }
@@ -812,10 +812,10 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
   }
 
   .header-logo {
-    width: 52px;
     height: 52px;
+    width: auto;
+    max-width: 104px;
     object-fit: contain;
-    border-radius: 6px;
     flex-shrink: 0;
     align-self: flex-start;
   }
@@ -1246,7 +1246,7 @@ function buildColorLoadHTML({ show, spots, colorSlotsBySpot, label }) {
     padding-bottom: 12px;
     border-bottom: 2.5px solid #1a1a1a;
   }
-  .${logoBase64 ? `<img style="width:56px;height:56px;object-fit:contain;border-radius:8px;flex-shrink:0;" src="${logoBase64}" />` : `<div style="width:56px;height:56px;background:#f0f0f0;border-radius:8px;flex-shrink:0;"></div>`}
+  .logo-placeholder {
     width: 60px; height: 60px; background: #f0f0f0;
     border-radius: 8px; display: flex; align-items: center;
     justify-content: center; font-size: 8pt; color: #999; flex-shrink: 0;
@@ -1316,7 +1316,7 @@ function buildColorLoadHTML({ show, spots, colorSlotsBySpot, label }) {
 </head>
 <body>
 <div class="header">
-    ${logoBase64 ? `<img style="width:56px;height:56px;object-fit:contain;border-radius:8px;flex-shrink:0;" src="${logoBase64}" />` : ''}
+    ${logoBase64 ? `<img style="height:56px;width:auto;max-width:112px;object-fit:contain;flex-shrink:0;" src="${logoBase64}" />` : ''}
     <div class="header-left">
       <div class="show-title">${show.title}</div>
       <div class="header-team">${[show.designer ? 'LD: ' + show.designer : '', show.associate_ld ? 'Assoc: ' + show.associate_ld : '', show.assistant_ld ? 'Asst: ' + show.assistant_ld : ''].filter(Boolean).join(' · ')}</div>
@@ -1453,7 +1453,7 @@ function buildSpotNotesHTML({ show, spots, cues, scenes, spotCues, characters, l
 <body>
   <div class="header">
     <div style="display:flex;align-items:flex-start;gap:12px;flex:1;">
-      ${logoBase64 ? `<img style="width:52px;height:52px;object-fit:contain;border-radius:6px;flex-shrink:0;" src="${logoBase64}" />` : ''}
+      ${logoBase64 ? `<img style="height:52px;width:auto;max-width:104px;object-fit:contain;flex-shrink:0;" src="${logoBase64}" />` : ''}
       <div>
         <div class="show-title">${show.title}</div>
       <div style="font-size:8.5pt;color:#555;margin-top:3px;">${[show.designer ? 'LD: ' + show.designer : '', show.associate_ld ? 'Assoc: ' + show.associate_ld : '', show.assistant_ld ? 'Asst: ' + show.assistant_ld : ''].filter(Boolean).join(' · ')}</div>
@@ -1544,7 +1544,7 @@ function buildCharactersHTML({ show, characters, label, showCostumeNotes }) {
 </head>
 <body>
   <div class="header">
-    ${logo ? `<img style="width:56px;height:56px;object-fit:contain;border-radius:8px;flex-shrink:0;" src="${logo}" />` : ''}
+    ${logo ? `<img style="height:56px;width:auto;max-width:112px;object-fit:contain;flex-shrink:0;" src="${logo}" />` : ''}
     <div class="header-left">
       <div class="show-title">${escapeText(show.title)}</div>
       <div class="header-team">${[show.designer ? 'LD: ' + show.designer : '', show.associate_ld ? 'Assoc: ' + show.associate_ld : '', show.assistant_ld ? 'Asst: ' + show.assistant_ld : ''].filter(Boolean).map(escapeText).join(' · ')}</div>
@@ -1609,7 +1609,7 @@ function simpleHeaderHTML(show, label, kindName, sub) {
   const team = [show.designer ? 'LD: ' + show.designer : '', show.associate_ld ? 'Assoc: ' + show.associate_ld : '', show.assistant_ld ? 'Asst: ' + show.assistant_ld : ''].filter(Boolean).map(escapeText).join(' · ');
   return `
   <div class="header">
-    ${logo ? `<img style="width:56px;height:56px;object-fit:contain;border-radius:8px;flex-shrink:0;" src="${logo}" />` : ''}
+    ${logo ? `<img style="height:56px;width:auto;max-width:112px;object-fit:contain;flex-shrink:0;" src="${logo}" />` : ''}
     <div class="header-left">
       <div class="show-title">${escapeText(show.title)}</div>
       ${team ? `<div class="header-team">${team}</div>` : ''}

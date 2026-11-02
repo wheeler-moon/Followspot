@@ -132,6 +132,9 @@ A **view switch** (Home screen grid / list) sits at the top right of the content
 ### Account button (Home screen)
 The person's account sits at the far right of the Home top bar as a button: a 20px head-and-shoulders icon (white on a `rgba(255,255,255,0.16)` circle) followed by their name, on the usual `rgba(255,255,255,0.10)` button fill. It opens the Settings sidebar. Long names end in "…".
 
+### Show logos
+Always show the whole logo: fit it inside its space (`object-fit: contain`), never crop it (`cover`) and never round its corners (round the box around it instead, with a little padding). Give a logo a fixed height and let wide logos use up to about twice that in width.
+
 ### Dates and times
 Say when something changed the way Finder does, in this Mac's time zone: "Modified today at 3:42 PM", "Modified yesterday at 9:10 AM", "Modified 5 days ago" (up to 6), then the date ("Modified Oct 3", with the year if it isn't this year). In a list column, drop the word "Modified".
 
