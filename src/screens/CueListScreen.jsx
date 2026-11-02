@@ -168,7 +168,7 @@ const charBoxStyle = { ...selectStyle, flex: '1 1 0', minWidth: 0, height: '32px
 // A second or third character in a spot cue ("Pick Up Bob & Matt"): a character box like the first,
 // under it, with × to take it out. value is a character id, a typed name, or null while just added.
 // onChange gets the new value; onNewName(name) runs after a typed name that isn't a character yet.
-function ExtraCharacterBox({ value, characters, onChange, onRemove, onNewName }) {
+function ExtraCharacterBox({ value, characters, onChange, onRemove, onNewName, column }) {
   const [typing, setTyping] = useState(false);
   const done = useRef(false);
   const commit = (text) => {
@@ -189,18 +189,18 @@ function ExtraCharacterBox({ value, characters, onChange, onRemove, onNewName })
         <input autoFocus defaultValue={typed} placeholder="Character name"
           onBlur={e => commit(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') commit(e.target.value); if (e.key === 'Escape') { done.current = true; setTyping(false); } }}
-          style={{ ...charBoxStyle, color: '#FFFFFF' }} />
+          style={{ ...charBoxStyle, gridColumn: column, color: '#FFFFFF' }} />
       ) : (
         <select value={typeof value === 'number' ? value : ''} onChange={e => {
           if (e.target.value === 'custom') { done.current = false; setTyping(true); }
           else if (e.target.value) onChange(parseInt(e.target.value));
-        }} style={{ ...charBoxStyle, color: value ? '#FFFFFF' : 'rgba(255,255,255,0.28)' }}>
+        }} style={{ ...charBoxStyle, gridColumn: column, color: value ? '#FFFFFF' : 'rgba(255,255,255,0.28)' }}>
           <option value="">{typed || 'Character…'}</option>
-          {characters.map(c => <option key={c.id} value={c.id}>{c.name}{c.actor_name ? ' (' + c.actor_name + ')' : ''}</option>)}
+          {characters.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           <option value="custom">+ Type custom name...</option>
         </select>
       )}
-      <button onClick={onRemove} title="Remove this character" aria-label="Remove this character" style={{ ...charButtonStyle, color: 'rgba(255,255,255,0.45)' }}>×</button>
+      <button onClick={onRemove} title="Remove this character" aria-label="Remove this character" style={{ ...charButtonStyle, gridColumn: '3', color: 'rgba(255,255,255,0.45)' }}>×</button>
     </>
   );
 }
@@ -292,6 +292,10 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
     if (name && name !== (spotCue.custom_character || '').trim()) onNewCustomCharacter(spotCue.id, name);
   };
 
+  // Which top boxes show (Show Settings → Cue Settings) and where the character box sits in the grid
+  const showAction = fieldsShown.action !== false;
+  const showChar = fieldsShown.character !== false;
+  const charColumn = showAction ? '2' : '1 / 3';
   // Second and third characters (src/characterNames.js)
   const extras = extraCharacters(spotCue.extra_characters);
   const setExtras = (list) => onUpdate(spotCue.id, 'extra_characters', extraCharactersJSON(list));
@@ -380,7 +384,9 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
       )}
       {isDragTarget && <div style={{ position: 'absolute', inset: 0, background: 'rgba(10,132,255,0.3)', pointerEvents: 'none', zIndex: 5 }} />}
       <div ref={ref} style={{ position: 'relative', zIndex: showActionPicker ? 9999 : 'auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+        {/* One grid for action / character (+ more characters) / intensity / time, so the boxes line up:
+            intensity under action, time under character and its + */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr) 24px', columnGap: '6px', rowGap: '6px', alignItems: 'center', marginBottom: '5px' }}>
           <div ref={actionBtnRef} data-tour="cue-action" onClick={() => {
             if (actionBtnRef.current) {
               const rect = actionBtnRef.current.getBoundingClientRect();
@@ -391,7 +397,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
             }
             setShowActionPicker(v => !v);
           }}
-            style={{ display: fieldsShown.action === false ? 'none' : 'flex', alignItems: 'center', gap: '6px', height: '32px', boxSizing: 'border-box', padding: '0 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer', flex: '1 1 0', minWidth: 0 }}>
+            style={{ display: fieldsShown.action === false ? 'none' : 'flex', alignItems: 'center', gap: '6px', height: '32px', boxSizing: 'border-box', padding: '0 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer', minWidth: 0, gridColumn: showChar ? '1' : '1 / 4' }}>
             {spotCue.action ? (
               <>
                 {(() => {
@@ -422,7 +428,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
             onBlur={e => commitCustomChar(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') commitCustomChar(e.target.value); }}
             placeholder="Character name"
-            style={{ ...selectStyle, display: fieldsShown.character === false ? 'none' : undefined, flex: '1 1 0', minWidth: 0, height: '32px', fontSize: '14px', fontWeight: '600', borderRadius: '6px', padding: '0 8px', color: '#FFFFFF' }}
+            style={{ ...charBoxStyle, display: showChar ? undefined : 'none', gridColumn: charColumn, color: '#FFFFFF' }}
           />
         ) : (
           <select value={spotCue.character_id || ''} onChange={e => {
@@ -439,21 +445,20 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
               onUpdate(spotCue.id, 'character_id', e.target.value ? parseInt(e.target.value) : null);
               onUpdate(spotCue.id, 'custom_character', null);
             }
-          }} style={{ ...selectStyle, display: fieldsShown.character === false ? 'none' : undefined, flex: '1 1 0', minWidth: 0, height: '32px', fontSize: '14px', fontWeight: '600', borderRadius: '6px', padding: '0 8px', color: (spotCue.character_id || spotCue.custom_character) ? '#FFFFFF' : 'rgba(255,255,255,0.28)' }}>
+          }} style={{ ...charBoxStyle, display: showChar ? undefined : 'none', gridColumn: charColumn, color: (spotCue.character_id || spotCue.custom_character) ? '#FFFFFF' : 'rgba(255,255,255,0.28)' }}>
             <option value="">{spotCue.custom_character || 'Character…'}</option>
-            {characters.map(c => <option key={c.id} value={c.id}>{c.name}{c.actor_name ? ' (' + c.actor_name + ')' : ''}</option>)}
+            {characters.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             <option value="custom">+ Type custom name...</option>
           </select>
         )}
-        {fieldsShown.character !== false && (
+        {showChar && (
           <button onClick={() => setAddingChar(true)} title="Add another character" aria-label="Add another character"
-            style={{ ...charButtonStyle, visibility: canAddChar ? 'visible' : 'hidden' }}>+</button>
+            style={{ ...charButtonStyle, gridColumn: '3', visibility: canAddChar ? 'visible' : 'hidden' }}>+</button>
         )}
-        </div>
-        {fieldsShown.character !== false && extraBoxes.map((value, i) => (
-          <div key={i < extras.length ? 'x' + i : 'new'} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-            <div style={{ flex: '1 1 0', minWidth: 0, textAlign: 'right', fontSize: '13px', fontWeight: '600', color: 'rgba(255,255,255,0.40)' }}>&amp;</div>
-            <ExtraCharacterBox value={value} characters={characters}
+        {showChar && extraBoxes.map((value, i) => (
+          <React.Fragment key={i < extras.length ? 'x' + i : 'new'}>
+            {showAction && <div style={{ gridColumn: '1', textAlign: 'right', fontSize: '13px', fontWeight: '600', color: 'rgba(255,255,255,0.40)' }}>&amp;</div>}
+            <ExtraCharacterBox value={value} characters={characters} column={charColumn}
               onChange={v => changeExtra(i, v)}
               onRemove={() => removeExtra(i)}
               onNewName={name => onNewCustomCharacter(spotCue.id, name, (id) => {
@@ -462,21 +467,20 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
                 list[i] = id;
                 setExtras(list);
               })} />
-          </div>
+          </React.Fragment>
         ))}
 
-        <div style={{ display: 'flex', gap: '4px', marginBottom: '5px' }}>
           <select value={spotCue.intensity || ''} onChange={e => onUpdate(spotCue.id, 'intensity', e.target.value)}
-            style={{ ...selectStyle, display: fieldsShown.intensity === false ? 'none' : undefined, flex: 1, color: spotCue.intensity ? '#FFFFFF' : 'rgba(255,255,255,0.28)' }}>
+            style={{ ...selectStyle, display: fieldsShown.intensity === false ? 'none' : undefined, gridColumn: fieldsShown.time === false ? '1 / 4' : '1', color: spotCue.intensity ? '#FFFFFF' : 'rgba(255,255,255,0.28)' }}>
             <option value="">Int…</option>
             {INTENSITIES.map(i => <option key={i} value={i}>{i}</option>)}
           </select>
-          <div style={{ flex: 1, display: fieldsShown.time === false ? 'none' : undefined }}>
+          <div style={{ gridColumn: fieldsShown.intensity === false ? '1 / 4' : '2 / 4', minWidth: 0, display: fieldsShown.time === false ? 'none' : undefined }}>
             {showCustomTime ? (
               <input autoFocus value={customTimeVal} onChange={e => setCustomTimeVal(e.target.value)}
                 onBlur={() => { onUpdate(spotCue.id, 'fade_time', customTimeVal); setShowCustomTime(false); }}
                 onKeyDown={e => { if (e.key === 'Enter') { onUpdate(spotCue.id, 'fade_time', customTimeVal); setShowCustomTime(false); } if (e.key === 'Escape') setShowCustomTime(false); }}
-                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid #0A84FF', borderRadius: '6px', color: '#FFFFFF', padding: '3px 4px', fontSize: '11px', outline: 'none' }}
+                style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.05)', border: '1px solid #0A84FF', borderRadius: '6px', color: '#FFFFFF', padding: '3px 4px', fontSize: '11px', outline: 'none' }}
                 placeholder="Seconds, e.g. 2.5" />
             ) : (
               <select value={spotCue.fade_time || ''} onChange={e => { if (e.target.value === 'Custom') { setShowCustomTime(true); setCustomTimeVal(TIMES.includes(spotCue.fade_time) ? '' : (spotCue.fade_time || '')); } else onUpdate(spotCue.id, 'fade_time', e.target.value); }}
