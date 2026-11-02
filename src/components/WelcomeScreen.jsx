@@ -14,17 +14,19 @@ export function shouldWelcome() {
 const ICON = 168;   // the icon's size once it has landed
 const css = `
   .welcome { position: fixed; inset: 0; z-index: 3000; }
-  .welcome-icon { position: fixed; border-radius: 22.5%; transition: left 1s cubic-bezier(0.2, 0.8, 0.2, 1), top 1s cubic-bezier(0.2, 0.8, 0.2, 1),
-    width 1s cubic-bezier(0.2, 0.8, 0.2, 1), height 1s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  /* Timing (a first impression, so unhurried): icon lands 0–1.6s · title wipes 1.8–3.2s · a beat ·
+     name wipes 3.9–5.0s · a beat · button fades up 5.9–6.8s */
+  .welcome-icon { position: fixed; border-radius: 22.5%; transition: left 1.6s cubic-bezier(0.2, 0.8, 0.2, 1), top 1.6s cubic-bezier(0.2, 0.8, 0.2, 1),
+    width 1.6s cubic-bezier(0.2, 0.8, 0.2, 1), height 1.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
   .welcome-text { position: fixed; left: 0; right: 0; top: calc(50% - 30px); display: flex; flex-direction: column; align-items: center; text-align: center; }
   /* Revealed left to right: the text is there, uncovered by a moving edge */
-  .welcome-wipe { clip-path: inset(0 100% 0 0); animation: welcome-wipe 0.9s cubic-bezier(0.6, 0, 0.2, 1) forwards; }
+  .welcome-wipe { clip-path: inset(0 100% 0 0); animation: welcome-wipe 1.4s cubic-bezier(0.55, 0, 0.25, 1) forwards; }
   @keyframes welcome-wipe { to { clip-path: inset(0 0 0 0); } }
-  .welcome-title { font-size: 52px; font-weight: 800; letter-spacing: -1.2px; line-height: 1.15; color: #FFFFFF; animation-delay: 1.05s; }
-  .welcome-name { font-size: 30px; font-weight: 600; line-height: 1.25; color: rgba(255,255,255,0.78); margin-top: 8px; animation-duration: 0.7s; animation-delay: 1.85s; }
+  .welcome-title { font-size: 52px; font-weight: 800; letter-spacing: -1.2px; line-height: 1.15; color: #FFFFFF; animation-delay: 1.8s; }
+  .welcome-name { font-size: 30px; font-weight: 600; line-height: 1.25; color: rgba(255,255,255,0.78); margin-top: 8px; animation-duration: 1.1s; animation-delay: 3.9s; }
   .welcome-button { margin-top: 40px; height: 36px; padding: 0 22px; border-radius: 18px; border: none; background: #0A84FF; color: #FFFFFF;
     font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit;
-    opacity: 0; animation: welcome-rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) 3.1s forwards; }
+    opacity: 0; animation: welcome-rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) 5.9s forwards; }
   @keyframes welcome-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
   .welcome-button:hover { background: #409CFF; }
   .welcome-button:focus-visible { outline: 3px solid rgba(10,132,255,0.5); outline-offset: 3px; }
@@ -51,7 +53,7 @@ export default function WelcomeScreen({ iconSrc, from, onDone }) {
   }, []);
   // Return presses the button once it's there
   useEffect(() => {
-    const t = setTimeout(() => buttonRef.current?.focus(), 3200);
+    const t = setTimeout(() => buttonRef.current?.focus(), 6000);
     return () => clearTimeout(t);
   }, []);
 

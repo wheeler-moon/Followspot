@@ -46,7 +46,7 @@ export default function LicenseScreen({ onActivated }) {
   };
 
   // Everything but the icon fades away while the welcome begins
-  const fadeAway = { transition: 'opacity 0.6s ease', opacity: welcomeFrom ? 0 : 1, pointerEvents: welcomeFrom ? 'none' : undefined };
+  const fadeAway = { transition: 'opacity 0.9s ease', opacity: welcomeFrom ? 0 : 1, pointerEvents: welcomeFrom ? 'none' : undefined };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#1E1E1E', padding: '40px' }}>
