@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import useEscape from '../useEscape';
 import { getCachedLicense, setCachedLicense, validateLicense, deactivateLicense, getMyName, setMyName } from '../license';
 import WhatsNew from './WhatsNew';
+import { WELCOMED_KEY } from './WelcomeScreen';
 const { ipcRenderer, shell } = window.require('electron');
 
 // Home → Settings: Account, General (updates), Help & Feedback, About.
@@ -163,7 +164,7 @@ export default function SettingsPanel({ onClose }) {
     ipcRenderer.on('updates-status', onStatus);
     return () => ipcRenderer.removeListener('updates-status', onStatus);
   }, []);
-  // Escape closes the top-most: the deactivate box, then the panel (What's New handles its own)
+  // Escape closes the top-most: the sign-out box, then the panel (What's New handles its own)
   useEscape(onClose);
   useEscape(() => { if (!deactivating) setConfirmDeactivate(false); }, confirmDeactivate);
   useEscape(() => setEditingName(null), editingName !== null);
@@ -185,6 +186,7 @@ export default function SettingsPanel({ onClose }) {
       return;
     }
     localStorage.removeItem('spotplot_license');
+    localStorage.removeItem(WELCOMED_KEY);   // signing in again is a fresh start, welcome and all
     window.location.reload();
   };
 
@@ -225,8 +227,8 @@ export default function SettingsPanel({ onClose }) {
             <Row label="Subscription" hint={lic?.manage_url ? 'Change plan, update your card or cancel' : 'Available when subscriptions start'}>
               <Button onClick={() => shell.openExternal(lic.manage_url)} disabled={!lic?.manage_url}>Manage…</Button>
             </Row>
-            <Row label="This Mac" hint="Take this Mac off your license to use SpotPlot on another one">
-              <Button kind="danger" onClick={() => { setDeactivateError(null); setConfirmDeactivate(true); }} disabled={!lic?.license_key}>Deactivate…</Button>
+            <Row label="This Mac" hint="Sign out here to use your license on another Mac">
+              <Button kind="danger" onClick={() => { setDeactivateError(null); setConfirmDeactivate(true); }} disabled={!lic?.license_key}>Sign Out…</Button>
             </Row>
           </Group>
 
@@ -263,9 +265,9 @@ export default function SettingsPanel({ onClose }) {
       {confirmDeactivate && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1001 }}>
           <div style={{ width: '260px', background: '#2A2A2A', borderRadius: '16px', padding: '16px', boxShadow: '0 18px 48px rgba(0,0,0,0.45)', textAlign: 'center' }}>
-            <div style={{ fontSize: '13px', fontWeight: '700', color: C.label1, marginBottom: '6px' }}>Deactivate this Mac?</div>
+            <div style={{ fontSize: '13px', fontWeight: '700', color: C.label1, marginBottom: '6px' }}>Sign out of SpotPlot?</div>
             <div style={{ fontSize: '13px', color: C.label1, lineHeight: '16px', marginBottom: '12px' }}>
-              This Mac comes off your license, so you can use SpotPlot on another Mac. Your shows stay here. To use SpotPlot on this Mac again, enter your license key.
+              This Mac comes off your license, so you can use SpotPlot on another Mac. Your shows stay here. To use SpotPlot on this Mac again, sign in with your email and license key.
             </div>
             {deactivateError && <div style={{ fontSize: '11px', color: C.red, marginBottom: '10px', lineHeight: '14px' }}>{deactivateError}</div>}
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -273,7 +275,7 @@ export default function SettingsPanel({ onClose }) {
                 style={{ flex: 1, height: '28px', borderRadius: '14px', border: 'none', background: 'rgba(255,255,255,0.08)', color: C.label1, fontSize: '13px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
               <button onClick={deactivate} disabled={deactivating}
                 style={{ flex: 1, height: '28px', borderRadius: '14px', border: 'none', background: C.red, color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer', opacity: deactivating ? 0.5 : 1, fontFamily: 'inherit' }}>
-                {deactivating ? 'Deactivating…' : 'Deactivate'}
+                {deactivating ? 'Signing Out…' : 'Sign Out'}
               </button>
             </div>
           </div>

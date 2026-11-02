@@ -94,7 +94,7 @@ export async function activateLicense(licenseKey, email, name) {
     return null;
   }
 }
-// Settings → Deactivate This Mac: takes this Mac off the license on the server, so its slot is
+// Settings → Sign Out: takes this Mac off the license on the server, so its slot is
 // free for another Mac. Returns true only when the server confirmed it.
 export async function deactivateLicense(licenseKey) {
   try {

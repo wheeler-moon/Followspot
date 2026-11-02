@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- **Sign In / Sign Out**: the first screen now says Sign in to SpotPlot, and Settings → Deactivate is now **Sign Out** (it still frees this Mac's place on your license so you can use another Mac). Signing in again after signing out shows the welcome again
 - A welcome the first time you activate SpotPlot on a Mac: the SpotPlot icon grows and rises as the sign-in fades away, "Welcome to SpotPlot" and your first name are revealed, then a button to create your first show
 - Cue list: add a cue at the top of a scene. Hover just below a scene's header and click **+ insert cue here** to make a new first cue for that scene (it also works under an act break with no cues yet). ⌘Z takes it back
 - Show logos always appear whole: the show's page no longer crops a logo into a rounded square, logo corners are no longer rounded off anywhere, and on printed sheets a wide logo gets room to be wide instead of shrinking into a small square

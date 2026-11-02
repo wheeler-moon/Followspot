@@ -57,7 +57,7 @@ export default function LicenseScreen({ onActivated }) {
           <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.45)', ...fadeAway }}>Professional followspot tracking</div>
         </div>
         <div style={{ ...fadeAway, background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '32px' }}>
-          <div style={{ fontSize: '18px', fontWeight: '600', color: '#FFFFFF', marginBottom: '6px' }}>Activate your license</div>
+          <div style={{ fontSize: '18px', fontWeight: '600', color: '#FFFFFF', marginBottom: '6px' }}>Sign in to SpotPlot</div>
           <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', marginBottom: '24px' }}>Enter your email and license key to get started.</div>
           <div style={{ marginBottom: '14px' }}>
             <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', display: 'block', marginBottom: '6px', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email address</label>
@@ -75,7 +75,7 @@ export default function LicenseScreen({ onActivated }) {
           )}
           <button onClick={handleActivate} disabled={loading}
             style={{ width: '100%', padding: '12px', background: '#0A84FF', border: 'none', borderRadius: '8px', color: '#FFFFFF', fontSize: '14px', fontWeight: '600', cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.7 : 1 }}>
-            {loading ? 'Activating...' : 'Activate SpotPlot'}
+            {loading ? 'Signing In…' : 'Sign In'}
           </button>
         </div>
       </div>
