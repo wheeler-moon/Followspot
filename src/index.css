@@ -9,3 +9,7 @@ body {
 * {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple Color Emoji', sans-serif;
 }
+/* Update notice (src/components/UpdateNotice.jsx): spinner while an update downloads */
+.update-spinner { animation: update-spin 0.9s linear infinite; }
+@keyframes update-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .update-spinner { animation-duration: 2.4s; } }

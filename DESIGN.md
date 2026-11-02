@@ -153,6 +153,9 @@ While an item is dragged, a 2px accent (`#0A84FF`) line shows exactly where it w
 ### Small questions
 A yes/no question SpotPlot asks mid-task (e.g. adding a typed character) uses the Mac's own alert, so it looks like every other Mac app. The safe answer is the default (blue, Return). Don't tie Escape to the default button: macOS then shows it grey instead of blue. An optional "Remember my choice for this show" checkbox goes in the alert; anything remembered can be reset from the menu bar.
 
+### Corner notice
+A short status that matters on every screen (an update downloading or ready): bottom-right, 16px from the edges, `#2A2A2A`, 12px radius, soft shadow, 13px text, an optional small accent button and a × to hide it. A spinner while something is in progress, a green dot when it's done. Don't use it for anything that needs an answer; that's a Mac alert.
+
 ### Bottom tray
 A list of finished items that stays out of the way (Spot Notes → Given): a 36px bar along the bottom (`#232323`, hairline above) with a title, count and Show ▴ / Hide ▾; open, it shows compact rows up to about a third of the window, scrolling on its own. Whether it's open is remembered.
 

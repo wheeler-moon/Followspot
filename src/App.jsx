@@ -1,3 +1,4 @@
+import UpdateNotice from './components/UpdateNotice';
 import React, { useState, useEffect } from 'react';
 import HomeScreen from './screens/HomeScreen';
 import NewShowScreen from './screens/NewShowScreen';
@@ -143,6 +144,7 @@ export default function App() {
       {screen === 'scenes' && <ScenesScreen show={currentShow} navigate={navigate} />}
       {screen === 'characters' && <CharactersScreen show={currentShow} navigate={navigate} />}
       {screen === 'spot-notes' && <SpotNotesScreen show={currentShow} navigate={navigate} />}
+      <UpdateNotice />
     </div>
   );
 }

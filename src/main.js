@@ -1247,7 +1247,7 @@ app.whenReady().then(async () => {
       submenu: [
         { label: 'About SpotPlot', role: 'about' },
         { type: 'separator' },
-        { label: 'Check for Updates…', click: () => updates.check() },
+        { label: 'Check for Updates…', click: () => updates.check({ fromMenu: true }) },
         { type: 'separator' },
         { label: 'Hide SpotPlot', role: 'hide' },
         { label: 'Hide Others', role: 'hideOthers' },

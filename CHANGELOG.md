@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- Updates: while a new version downloads, a small notice in the bottom corner says "Downloading SpotPlot X.X.X…". Once it's ready, the notice has an **Install & Restart** button, handy if you chose Later. SpotPlot → Check for Updates… now always answers: you're up to date, an update is downloading, or it couldn't check
 - The grey hints in empty boxes now use one plain style throughout: they say what goes in the box ("Show title", "Operator's name", "Gel number or name"), with an example only where it helps ("Seconds, e.g. 2.5")
 - **Cue Defaults** (Show Settings → Cue Defaults): set a default time, intensity, iris size and color, laid out like a spot in the cue list. When you pick an action, they fill in whatever's still empty. Time fills in for every action; intensity, iris and color only when the spot is coming out of Off, so anything already up keeps tracking. An action's own settings still win (a Bump stays at 0 seconds, a Pick Up at Full)
 - **Spot Notes** is easier to read: each card shows the LQ, then the scene in small capitals, then what the spot is doing, then the note, with the buttons along the bottom. **✓ Given** now moves a note off its cue (the cue list's yellow dot goes away) into a **Given** tray at the bottom of the screen, newest first, where **Restore** puts it back. Checking a note off in the cue list's Notes sidebar does the same. Notes you'd already checked off move to Given automatically
