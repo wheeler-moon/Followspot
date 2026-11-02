@@ -12,6 +12,7 @@ import LicenseScreen from './screens/LicenseScreen';
 import ExpiredScreen from './screens/ExpiredScreen';
 import { getCachedLicense, isCacheValid, validateLicense, setCachedLicense } from './license';
 import { resetTips } from './components/Tips';
+import { getUndoTarget, isTextBox } from './undoTarget';
 
 export default function App() {
   const [screen, setScreen] = useState('home');
@@ -83,6 +84,19 @@ export default function App() {
     const { ipcRenderer } = window.require('electron');
     ipcRenderer.on('menu-show-tips', resetTips);
     return () => ipcRenderer.removeListener('menu-show-tips', resetTips);
+  }, []);
+
+  // Edit → Undo / Redo (⌘Z / ⇧⌘Z): typing in a box undoes the typing; otherwise the screen's own undo
+  // (the cue list), if it has one (src/undoTarget.js)
+  useEffect(() => {
+    const { ipcRenderer } = window.require('electron');
+    const onUndo = (e, what) => {
+      const target = getUndoTarget();
+      if (target && !isTextBox(document.activeElement)) target(what);
+      else ipcRenderer.send('native-edit', what);
+    };
+    ipcRenderer.on('menu-undo', onUndo);
+    return () => ipcRenderer.removeListener('menu-undo', onUndo);
   }, []);
 
   // View → Ask About New Characters Again: forget this show's remembered "Add to Characters?" answer

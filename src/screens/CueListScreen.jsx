@@ -11,6 +11,7 @@ import { cueFieldSettings } from '../cueFields';
 import { irisSizeList } from '../irisSizes';
 import { gelColor } from '../gelColors';
 import { MAX_CHARACTERS, extraCharacters, extraCharactersJSON } from '../characterNames';
+import { setUndoTarget } from '../undoTarget';
 const { ipcRenderer } = window.require('electron');
 // A gel's swatch color: the maker's color, white for a gel typed by hand, dark for an empty frame
 function getGelColor(gelNum) {
@@ -1155,19 +1156,13 @@ export default function CueListScreen({ show, navigate }) {
     if (reload) load();
   };
 
+  // Edit → Undo / Redo and ⌘Z / ⇧⌘Z (App.jsx sends them here unless you're typing in a box)
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
-        // While typing in a box, ⌘Z / ⇧⌘Z undo and redo the typing (the Mac's own text undo)
-        const t = e.target;
-        if (t && (t.isContentEditable || t.tagName === 'TEXTAREA' || (t.tagName === 'INPUT' && !['checkbox', 'radio', 'range', 'button'].includes(t.type)))) return;
-        e.preventDefault();
-        if (e.shiftKey) stepRef.current(redoStackRef, undoStackRef);
-        else stepRef.current(undoStackRef, redoStackRef);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    setUndoTarget((what) => {
+      if (what === 'redo') stepRef.current(redoStackRef, undoStackRef);
+      else stepRef.current(undoStackRef, redoStackRef);
+    });
+    return () => setUndoTarget(null);
   }, []);
 
   const addCue = () => {

@@ -1188,6 +1188,10 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
       event.returnValue = { success: true, snapshot: cue ? { cue, spotCues } : null };
     } catch(e) { event.returnValue = { success: false }; }
   });
+  // Edit → Undo / Redo while typing in a box: the browser's own text undo
+  ipcMain.on('native-edit', (event, what) => {
+    if (what === 'redo') event.sender.redo(); else event.sender.undo();
+  });
   // Undo/redo: puts rows back exactly as they were, with the same ids
   const restoreRow = (database, table, row) => {
     const cols = database.prepare(`PRAGMA table_info(${table})`).all().map(c => c.name).filter(c => c in row);
@@ -1310,8 +1314,9 @@ app.whenReady().then(async () => {
     {
       label: 'Edit',
       submenu: [
-        { label: 'Undo', accelerator: 'CmdOrCtrl+Z', role: 'undo' },
-        { label: 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', role: 'redo' },
+        // The window decides: the cue list's own undo, or text undo while typing (src/undoTarget.js)
+        { label: 'Undo', accelerator: 'CmdOrCtrl+Z', click: () => { mainWindow?.webContents.send('menu-undo', 'undo'); } },
+        { label: 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', click: () => { mainWindow?.webContents.send('menu-undo', 'redo'); } },
         { type: 'separator' },
         { label: 'Cut', role: 'cut' },
         { label: 'Copy', role: 'copy' },
