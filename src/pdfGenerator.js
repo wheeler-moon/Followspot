@@ -6,6 +6,7 @@ const { safeRich, escapeText } = require('./richText');
 const { cueFieldSettings } = require('./cueFields');
 const { actionNameMap, displayAction } = require('./actionNames');
 const { gelColor } = require('./gelColors');
+const { characterLabel } = require('./characterNames');
 
 // Style rules that hide the cue fields a show has unticked under "Show on print"
 function hiddenFieldCSS(cueFields, selectors) {
@@ -197,7 +198,7 @@ const sceneOrderMap = {};
       }
     }
 
-    const char = charMap[sc.character_id];
+    const charText = escapeText(characterLabel(sc, charMap));
     const activeFrames = framesText(sc.active_frames);
     const isOff = sc.action === 'Off';
     const quiet = isQuiet(sc);
@@ -219,7 +220,7 @@ const sceneOrderMap = {};
                 <td class="action-cell">
                   ${sc.action && !quiet ? `<div class="action-inner">${getActionIconHTML(sc.action, 34, customActions)}<span class="action-name">${displayAction(sc.action, actionNames)}</span></div>` : ''}
                 </td>
-                <td class="char-cell">${char ? char.name : sc.custom_character ? sc.custom_character : ''}</td>
+                <td class="char-cell">${charText}</td>
                 <td class="int-iris-cell">
                   <div class="int-val" style="font-size:11pt;font-weight:700;">${sc.intensity || ''}</div>
                   <div class="iris-val" style="font-size:10pt;">${sc.frame_size || ''}</div>
@@ -243,7 +244,7 @@ const sceneOrderMap = {};
             </div>
           ` : '<span class="empty">—</span>'}
         </td>
-        <td class="char-cell">${char ? char.name : sc.custom_character ? sc.custom_character : '—'}</td>
+        <td class="char-cell">${charText || '—'}</td>
         <td class="int-iris-cell">
           <div class="int-val" style="font-size:11pt;font-weight:700;color:#1a1a1a;">${sc.intensity || '—'}</div>
           <div class="iris-val" style="font-size:10pt;color:#333;">${sc.frame_size || '—'}</div>
@@ -692,7 +693,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
       const spotCues = spotCuesBySpot[spot.id] || [];
       const sc = spotCues.find(sc => sc.cue_id === cue.id);
       const isOff = !sc || sc.action === 'Off';
-      const char = sc ? charMap[sc.character_id] : null;
+      const charText = sc ? escapeText(characterLabel(sc, charMap)) : '';
       const activeFrames = sc ? framesText(sc.active_frames) : '';
 
       if (isOff) {
@@ -720,7 +721,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
               <div class="action-inner" style="margin-bottom:0;align-items:center;">
                 ${quiet ? '' : getActionIconHTML(sc.action, 30, customActions)}
                 <span class="action-name">${quiet ? '—' : (displayAction(sc.action, actionNames) || '—')}</span>
-                <span class="char-name" style="margin-left:4px;">${char ? char.name : sc.custom_character ? sc.custom_character : '—'}</span>
+                <span class="char-name" style="margin-left:4px;">${charText || '—'}</span>
                 <div class="intensity-badge" style="margin-left:auto;">${sc.intensity ? `<span style="font-size:11pt;font-weight:400;color:#666;">@</span>${sc.intensity}` : ''}</div>
               </div>
               ${(() => {
@@ -1380,7 +1381,7 @@ function buildSpotNotesHTML({ show, spots, cues, scenes, spotCues, characters, l
         <div class="spot-header">SPOT ${spot.spot_number} · ${spot.operator_name || 'TBD'}</div>
         ${notes.map(({ sc, cue }) => {
           const scene = sceneMap[cue.scene_id];
-          const char = charMap[sc.character_id];
+          const charText = escapeText(characterLabel(sc, charMap));
           return `
             <div class="note-card ${sc.note_checked ? 'checked' : ''}">
               <div class="note-meta">
@@ -1389,7 +1390,7 @@ function buildSpotNotesHTML({ show, spots, cues, scenes, spotCues, characters, l
                 ${pagePrint && cue.page ? `<span class="track">pg ${cue.page}</span>` : ''}
                 ${scene ? `<span class="scene">${scene.label}</span>` : ''}
                 ${sc.action ? `<span class="action">${displayAction(sc.action, actionNames)}</span>` : ''}
-                ${char ? `<span class="char">${char.name}</span>` : ''}
+                ${charText ? `<span class="char">${charText}</span>` : ''}
                 ${sc.note_checked ? `<span class="done-badge">GIVEN</span>` : ''}
               </div>
               <div class="note-text">${sc.spot_note}</div>

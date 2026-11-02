@@ -3,6 +3,7 @@ import Tips from '../components/Tips';
 import { TIPS } from '../tips';
 import AppHeader from '../components/AppHeader';
 import { actionNameMap, displayAction } from '../actionNames';
+import { characterLabel } from '../characterNames';
 const { ipcRenderer } = window.require('electron');
 
 // Spot Notes: the notes still to give, a column per spot (plus All Spots when there are any), in cue
@@ -141,7 +142,7 @@ export default function SpotNotesScreen({ show, navigate }) {
                     {col.notes.map(n => {
                       const { sc, cue } = n;
                       const scene = sceneMap[cue.scene_id];
-                      const char = sc && (charMap[sc.character_id]?.name || sc.custom_character);
+                      const char = sc && characterLabel(sc, charMap);
                       const action = sc?.action && sc.action !== 'Tracked' ? displayAction(sc.action, actionNames) : '';
                       const isEditing = editingId === n.id;
                       return (

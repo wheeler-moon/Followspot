@@ -6,6 +6,7 @@ const ipadSync = require('./ipadSync');
 const { initUpdates } = require('./updates');
 const fileMaker = require('./fileMakerImport');
 const givenNotes = require('./givenNotes');
+const { extraCharacters, extraCharactersJSON } = require('./characterNames');
 const { buildSpotSheetHTML, buildCallerSheetHTML, buildColorLoadHTML, buildSpotNotesHTML, buildCharactersHTML, buildActionKeyHTML, buildSceneListHTML, coverPageHTML, withCoverPage, renderPDF, renderPDFBuffer, countPages, closeBrowser, PAGE_MARGINS } = require('./pdfGenerator');
 
 if (require('electron-squirrel-startup')) app.quit();
@@ -140,6 +141,7 @@ function initSchema() {
   try { db.exec('ALTER TABLE spot_cues ADD COLUMN no_color INTEGER DEFAULT 0'); } catch(e) {}
   try { db.exec('ALTER TABLE spot_cues ADD COLUMN note_checked INTEGER DEFAULT 0'); } catch(e) {}
   try { db.exec('ALTER TABLE spot_cues ADD COLUMN custom_character TEXT DEFAULT NULL'); } catch(e) {}
+  try { db.exec('ALTER TABLE spot_cues ADD COLUMN extra_characters TEXT DEFAULT NULL'); } catch(e) {} // more characters in one cue, see src/characterNames.js
   try { db.exec("UPDATE gels SET gel_name = REPLACE(gel_name, 'Billinton', 'Billington') WHERE gel_name LIKE '%Billinton%'"); } catch(e) {}
   try { db.exec("ALTER TABLE shows ADD COLUMN iris_sizes TEXT DEFAULT NULL"); } catch(e) {}
   try { db.exec('ALTER TABLE spots ADD COLUMN display_order INTEGER DEFAULT NULL'); } catch(e) {}
@@ -749,6 +751,11 @@ ipcMain.on('get-app-icon', (event) => {
   ipcMain.on('db-delete-character', (event, characterId) => {
     try {
       getDb().prepare('UPDATE spot_cues SET character_id = NULL WHERE character_id = ?').run(characterId);
+      // Take it out of any cue that has it as a second or third character
+      for (const sc of getDb().prepare("SELECT id, extra_characters FROM spot_cues WHERE extra_characters IS NOT NULL AND extra_characters != ''").all()) {
+        const list = extraCharacters(sc.extra_characters);
+        if (list.includes(Number(characterId))) getDb().prepare('UPDATE spot_cues SET extra_characters = ? WHERE id = ?').run(extraCharactersJSON(list.filter(x => x !== Number(characterId))), sc.id);
+      }
       getDb().prepare('DELETE FROM characters WHERE id = ?').run(characterId);
       event.returnValue = { success: true };
     } catch(e) { event.returnValue = { success: false }; }
@@ -1039,12 +1046,13 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
         const wasOff = prevAction === 'Off';
         const startsOff = endsInOff || wasOff;
 
-                database.prepare('INSERT INTO spot_cues (cue_id, spot_id, action, character_id, custom_character, intensity, fade_time, active_frames, description, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(
+                database.prepare('INSERT INTO spot_cues (cue_id, spot_id, action, character_id, custom_character, extra_characters, intensity, fade_time, active_frames, description, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(
           newCueId,
           spot.id,
           startsOff ? 'Off' : '',
           startsOff ? null : (prevSpotCue ? prevSpotCue.character_id : null),
           startsOff ? null : (prevSpotCue ? prevSpotCue.custom_character : null),
+          startsOff ? null : (prevSpotCue ? prevSpotCue.extra_characters : null),
           '',
           '',
           startsOff ? '' : (prevSpotCue ? prevSpotCue.active_frames : ''),

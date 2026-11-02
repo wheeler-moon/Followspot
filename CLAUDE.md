@@ -61,6 +61,7 @@ The SQLite file lives at `app.getPath('userData')/followspot.db`, with the schem
 - `given_notes`: spot notes that have been checked off (Spot Notes → Given tray), moved off their cue; `spot_id` null = All Spots. Logic in `src/givenNotes.js`, exported/imported in `showFile.js`.
 - `gels`: gel catalog, seeded by `seedGels()`.
 - `shows.iris_sizes` and `shows.custom_actions` are **JSON strings**. Parse them before use.
+- `spot_cues.extra_characters`: a cue's second and third characters as a JSON list (number = character id, text = typed name); the first stays in `character_id` / `custom_character`. Helpers in `src/characterNames.js`. Its ids are remapped on import in `showFile.js`, like `character_id`.
 
 **Migrations**: new columns are added as `try { db.exec('ALTER TABLE … ADD COLUMN …') } catch(e) {}` lines at the end of `initSchema()`, which fail silently if the column already exists. Follow this pattern and never edit the `CREATE TABLE` statements alone, because existing users' databases won't pick those up. `db-update-show` only writes columns in its `allowed` whitelist, so add new show fields there too.
 

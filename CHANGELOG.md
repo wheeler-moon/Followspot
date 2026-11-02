@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- **More than one character in a cue**: click the **+** beside a cue's character to add a second, then a third ("Pick Up Bob & Matt"). Each is picked from the show's characters or typed, and × takes one out. Spot sheets, the caller sheet, Spot Notes, the spreadsheet export and the iPad show them all as "Bob, Matt & Sue". A new cue carries them forward like the first character, and copy, paste and drag bring them along
 - Updates: while a new version downloads, a small notice in the bottom corner says "Downloading SpotPlot X.X.X…". Once it's ready, the notice has an **Install & Restart** button, handy if you chose Later. SpotPlot → Check for Updates… now always answers: you're up to date, an update is downloading, or it couldn't check
 - The grey hints in empty boxes now use one plain style throughout: they say what goes in the box ("Show title", "Operator's name", "Gel number or name"), with an example only where it helps ("Seconds, e.g. 2.5")
 - **Cue Defaults** (Show Settings → Cue Defaults): set a default time, intensity, iris size and color, laid out like a spot in the cue list. When you pick an action, they fill in whatever's still empty. Time fills in for every action; intensity, iris and color only when the spot is coming out of Off, so anything already up keeps tracking. An action's own settings still win (a Bump stays at 0 seconds, a Pick Up at Full)
@@ -32,6 +33,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 Saved for the iPad app's first release (kept out of the Mac's What's New).
 
+- A cue with more than one character shows them all ("Bob, Matt & Sue"), wrapping onto more lines instead of cutting off
 - Jump to Scene (the list button in the top bar) scrolls straight to any scene, like the Mac's Jump to
 - Action Words and Action Symbols are separate switches in the ⋯ menu, for operators who want only symbols or only words
 - A color that's the same as the cue before shows in grey; changes stay highlighted in yellow

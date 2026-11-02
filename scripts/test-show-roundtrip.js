@@ -12,6 +12,7 @@ const path = require('path');
 const Database = require('better-sqlite3');
 const { exportShow, importShow } = require('../src/showFile');
 const givenNotes = require('../src/givenNotes');
+const { extraCharacters } = require('../src/characterNames');
 
 const source = process.argv[2] || path.join(os.homedir(), 'Library/Application Support/SpotPlot/followspot.db');
 const work = fs.mkdtempSync(path.join(os.tmpdir(), 'spotplot-roundtrip-'));
@@ -25,9 +26,18 @@ db.exec("UPDATE spot_cues SET action = 'Increase' WHERE action = 'Fade Up'");
 db.exec("UPDATE spot_cues SET action = 'Decrease' WHERE action = 'Fade Down'");
 givenNotes.ensureTable(db);
 givenNotes.moveCheckedNotes(db);
+try { db.exec('ALTER TABLE spot_cues ADD COLUMN extra_characters TEXT DEFAULT NULL'); } catch (e) {}
+// So more-than-one-character cues are always tested: in each show, give the first cell that has a
+// character a second one (another of the show's characters) and a typed third name. Copy only.
+for (const { id } of db.prepare('SELECT id FROM shows').all()) {
+  const chars = db.prepare('SELECT id FROM characters WHERE show_id = ? ORDER BY id').all(id);
+  const sc = db.prepare('SELECT sc.id, sc.character_id FROM spot_cues sc JOIN cues c ON c.id = sc.cue_id WHERE c.show_id = ? AND sc.character_id IS NOT NULL ORDER BY sc.id LIMIT 1').get(id);
+  const other = chars.find(c => sc && c.id !== sc.character_id);
+  if (sc && other) db.prepare('UPDATE spot_cues SET extra_characters = ? WHERE id = ?').run(JSON.stringify([other.id, 'Typed Name']), sc.id);
+}
 
 // Links between rows are compared by position instead of id
-const SKIP = new Set(['id', 'show_id', 'spot_id', 'cue_id', 'scene_id', 'character_id', 'created_at', 'updated_at']);
+const SKIP = new Set(['id', 'show_id', 'spot_id', 'cue_id', 'scene_id', 'character_id', 'extra_characters', 'created_at', 'updated_at']);
 const same = (a, b) => (a ?? null) === (b ?? null);
 const sameImage = (a, b) => {
   if (!a && !b) return null;
@@ -55,6 +65,8 @@ const sortCells = d => [...d.spotCues].sort((a, b) => cellKey(d)(a).localeCompar
 const slotKey = d => { const s = indexOf(d.spots); return x => `${s[x.spot_id]}/${x.is_permanent ? 'P' : String(x.slot_number).padStart(3)}`; };
 const sortSlots = d => [...d.colorSlots].sort((a, b) => slotKey(d)(a).localeCompare(slotKey(d)(b)));
 const links = (d, rows, fk, target) => rows.map(r => r[fk] == null ? null : indexOf(d[target])[r[fk]]);
+// Second/third characters: ids become positions in the show's characters, typed names stay
+const extraLinks = d => sortCells(d).map(r => extraCharacters(r.extra_characters).map(x => typeof x === 'number' ? indexOf(d.characters)[x] ?? 'missing' : x));
 
 let failures = 0;
 for (const { id, title } of db.prepare('SELECT id, title FROM shows ORDER BY id').all()) {
@@ -83,6 +95,7 @@ for (const { id, title } of db.prepare('SELECT id, title FROM shows ORDER BY id'
     ['cue→scene', links(exported, exported.cues, 'scene_id', 'scenes'), links(back, back.cues, 'scene_id', 'scenes')],
     ['gel→spot', links(exported, sortSlots(exported), 'spot_id', 'spots'), links(back, sortSlots(back), 'spot_id', 'spots')],
     ['cell→character', links(exported, sortCells(exported), 'character_id', 'characters'), links(back, sortCells(back), 'character_id', 'characters')],
+    ['cell→extra characters', extraLinks(exported), extraLinks(back)],
     ['givenNote→cue', links(exported, exported.givenNotes, 'cue_id', 'cues'), links(back, back.givenNotes, 'cue_id', 'cues')],
     ['givenNote→spot', links(exported, exported.givenNotes, 'spot_id', 'spots'), links(back, back.givenNotes, 'spot_id', 'spots')],
   ]) if (JSON.stringify(a) !== JSON.stringify(b)) problems.push(`links ${name} differ`);

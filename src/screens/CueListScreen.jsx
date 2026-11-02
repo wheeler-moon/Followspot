@@ -10,6 +10,7 @@ import RichLine from '../components/RichLine';
 import { cueFieldSettings } from '../cueFields';
 import { irisSizeList } from '../irisSizes';
 import { gelColor } from '../gelColors';
+import { MAX_CHARACTERS, extraCharacters, extraCharactersJSON } from '../characterNames';
 const { ipcRenderer } = window.require('electron');
 // A gel's swatch color: the maker's color, white for a gel typed by hand, dark for an empty frame
 function getGelColor(gelNum) {
@@ -158,9 +159,55 @@ function IrisStrip({ sizes, selected, onPick }) {
   );
 }
 
+// A small square button beside a character box: + adds another character, × removes this one
+const charButtonStyle = { width: '24px', height: '32px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+  background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '6px', color: 'rgba(255,255,255,0.62)', fontSize: '16px', lineHeight: 1,
+  cursor: 'pointer', padding: 0, fontFamily: 'inherit' };
+const charBoxStyle = { ...selectStyle, flex: '1 1 0', minWidth: 0, height: '32px', fontSize: '14px', fontWeight: '600', borderRadius: '6px', padding: '0 8px' };
+
+// A second or third character in a spot cue ("Pick Up Bob & Matt"): a character box like the first,
+// under it, with × to take it out. value is a character id, a typed name, or null while just added.
+// onChange gets the new value; onNewName(name) runs after a typed name that isn't a character yet.
+function ExtraCharacterBox({ value, characters, onChange, onRemove, onNewName }) {
+  const [typing, setTyping] = useState(false);
+  const done = useRef(false);
+  const commit = (text) => {
+    if (done.current) return;
+    done.current = true;
+    setTyping(false);
+    const name = text.trim();
+    if (!name) return;
+    const existing = characters.find(c => (c.name || '').trim().toLowerCase() === name.toLowerCase());
+    if (existing) { onChange(existing.id); return; }
+    onChange(name);
+    if (name !== value) onNewName(name);
+  };
+  const typed = typeof value === 'string' ? value : '';
+  return (
+    <>
+      {typing ? (
+        <input autoFocus defaultValue={typed} placeholder="Character name"
+          onBlur={e => commit(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') commit(e.target.value); if (e.key === 'Escape') { done.current = true; setTyping(false); } }}
+          style={{ ...charBoxStyle, color: '#FFFFFF' }} />
+      ) : (
+        <select value={typeof value === 'number' ? value : ''} onChange={e => {
+          if (e.target.value === 'custom') { done.current = false; setTyping(true); }
+          else if (e.target.value) onChange(parseInt(e.target.value));
+        }} style={{ ...charBoxStyle, color: value ? '#FFFFFF' : 'rgba(255,255,255,0.28)' }}>
+          <option value="">{typed || 'Character…'}</option>
+          {characters.map(c => <option key={c.id} value={c.id}>{c.name}{c.actor_name ? ' (' + c.actor_name + ')' : ''}</option>)}
+          <option value="custom">+ Type custom name...</option>
+        </select>
+      )}
+      <button onClick={onRemove} title="Remove this character" aria-label="Remove this character" style={{ ...charButtonStyle, color: 'rgba(255,255,255,0.45)' }}>×</button>
+    </>
+  );
+}
+
 // Right-click Copy Cue / Paste Cue: what a spot does in a cue. Kept while the app is open,
 // for pasting within the same show (characters belong to a show)
-const COPY_FIELDS = ['action', 'character_id', 'custom_character', 'frame_size', 'intensity', 'fade_time', 'active_frames',
+const COPY_FIELDS = ['action', 'character_id', 'custom_character', 'extra_characters', 'frame_size', 'intensity', 'fade_time', 'active_frames',
   'description', 'with_lq', 'notes', 'no_color', 'highlight', 'when_highlight', 'notes_highlight'];
 let cueClipboard = null;
 // Copy Whole Cue / Paste Whole Cue: what every spot does in one cue, by spot id (same show only)
@@ -171,6 +218,7 @@ function SpotCueCell({ onDragEnd, onContextMenu, spotCue, spot, cue, fieldsShown
   const [hoveredFrame, setHoveredFrame] = useState(null);
   const [showCustomTime, setShowCustomTime] = useState(false);
   const [showCustomChar, setShowCustomChar] = useState(!!spotCue?.custom_character);
+  const [addingChar, setAddingChar] = useState(false);   // a new, still-empty character box under the first
   const customCharDone = useRef(false);
   const [customTimeVal, setCustomTimeVal] = useState('');
   const [pickerPos, setPickerPos] = useState({ top: 0, left: 0 });
@@ -242,6 +290,24 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
     }
     onUpdate(spotCue.id, 'custom_character', value);
     if (name && name !== (spotCue.custom_character || '').trim()) onNewCustomCharacter(spotCue.id, name);
+  };
+
+  // Second and third characters (src/characterNames.js)
+  const extras = extraCharacters(spotCue.extra_characters);
+  const setExtras = (list) => onUpdate(spotCue.id, 'extra_characters', extraCharactersJSON(list));
+  const hasFirstChar = !!(spotCue.character_id || spotCue.custom_character);
+  const canAddChar = hasFirstChar && extras.length + (addingChar ? 1 : 0) < MAX_CHARACTERS - 1;
+  const extraBoxes = [...extras, ...(addingChar ? [null] : [])];
+  const changeExtra = (i, value) => {
+    const next = [...extras];
+    if (i < extras.length) next[i] = value; else next.push(value);
+    if (i >= extras.length) setAddingChar(false);
+    setExtras(next);
+    return next;
+  };
+  const removeExtra = (i) => {
+    if (i >= extras.length) { setAddingChar(false); return; }
+    setExtras(extras.filter((_, j) => j !== i));
   };
 
   const toggleFrame = (frame) => {
@@ -364,6 +430,11 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
               customCharDone.current = false;
               onUpdate(spotCue.id, 'character_id', null);
               setShowCustomChar(true);
+            } else if (!e.target.value && extras.length) {
+              // Clearing the first character moves the second one up
+              onUpdate(spotCue.id, 'character_id', typeof extras[0] === 'number' ? extras[0] : null);
+              onUpdate(spotCue.id, 'custom_character', typeof extras[0] === 'string' ? extras[0] : null);
+              setExtras(extras.slice(1));
             } else {
               onUpdate(spotCue.id, 'character_id', e.target.value ? parseInt(e.target.value) : null);
               onUpdate(spotCue.id, 'custom_character', null);
@@ -374,7 +445,25 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
             <option value="custom">+ Type custom name...</option>
           </select>
         )}
+        {fieldsShown.character !== false && (
+          <button onClick={() => setAddingChar(true)} title="Add another character" aria-label="Add another character"
+            style={{ ...charButtonStyle, visibility: canAddChar ? 'visible' : 'hidden' }}>+</button>
+        )}
         </div>
+        {fieldsShown.character !== false && extraBoxes.map((value, i) => (
+          <div key={i < extras.length ? 'x' + i : 'new'} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+            <div style={{ flex: '1 1 0', minWidth: 0, textAlign: 'right', fontSize: '13px', fontWeight: '600', color: 'rgba(255,255,255,0.40)' }}>&amp;</div>
+            <ExtraCharacterBox value={value} characters={characters}
+              onChange={v => changeExtra(i, v)}
+              onRemove={() => removeExtra(i)}
+              onNewName={name => onNewCustomCharacter(spotCue.id, name, (id) => {
+                // The typed name was just saved in place i; link it to the new character instead
+                const list = [...extras];
+                list[i] = id;
+                setExtras(list);
+              })} />
+          </div>
+        ))}
 
         <div style={{ display: 'flex', gap: '4px', marginBottom: '5px' }}>
           <select value={spotCue.intensity || ''} onChange={e => onUpdate(spotCue.id, 'intensity', e.target.value)}
@@ -1066,7 +1155,7 @@ export default function CueListScreen({ show, navigate }) {
 
   // Clear cue: puts everything this spot does in this cue back to blank. One ⌘Z brings it all back.
   const BLANK_SPOT_CUE = {
-    action: '', character_id: null, custom_character: null, frame_size: '', intensity: '', fade_time: '',
+    action: '', character_id: null, custom_character: null, extra_characters: null, frame_size: '', intensity: '', fade_time: '',
     location: '', active_frames: '', description: '', notes: '', ignore: 0, ignored: 0, highlight: null,
     spot_note: null, no_color: 0, note_checked: 0, when_highlight: null, notes_highlight: null, with_lq: 0,
   };
@@ -1243,7 +1332,7 @@ export default function CueListScreen({ show, navigate }) {
     } else if (id === 'paste' || id === 'paste-no-char') {
       if (!cueClipboard || cueClipboard.showId !== show.id) return;
       const values = { ...cueClipboard.values };
-      if (id === 'paste-no-char') { delete values.character_id; delete values.custom_character; }
+      if (id === 'paste-no-char') { delete values.character_id; delete values.custom_character; delete values.extra_characters; }
       // Keep only frames this spot has (spots can have fewer frames)
       const frames = new Set((colorSlotsBySpot[spot.id] || []).map(s => 'F' + s.slot_number));
       values.active_frames = (values.active_frames || '').split(',').filter(f => frames.has(f)).join(',');
@@ -1285,19 +1374,21 @@ export default function CueListScreen({ show, navigate }) {
   // characters (starts unticked for printing on the Characters sheet) and link the cue to it. "Remember my
   // choice for this show" saves the answer on the show and stops asking; View → Ask About New Characters
   // Again clears it.
-  const addCustomCharacterToShow = (spotCueId, name) => {
+  // link(id): where the new character goes (a second or third character box); the first box by default
+  const addCustomCharacterToShow = (spotCueId, name, link) => {
     const choice = ipcRenderer.sendSync('db-get-show', show.id)?.new_character_choice;
     if (choice === 'custom') return;
-    if (choice === 'add') { linkNewCharacter(spotCueId, name); return; }
+    if (choice === 'add') { linkNewCharacter(spotCueId, name, link); return; }
     const answer = ipcRenderer.sendSync('dialog-add-character', name) || {};
     if (answer.remember) ipcRenderer.sendSync('db-update-show', { showId: show.id, new_character_choice: answer.add ? 'add' : 'custom' });
-    if (answer.add) linkNewCharacter(spotCueId, name);
+    if (answer.add) linkNewCharacter(spotCueId, name, link);
   };
-  const linkNewCharacter = (spotCueId, name) => {
+  const linkNewCharacter = (spotCueId, name, link) => {
     const result = ipcRenderer.sendSync('db-create-character', { showId: show.id, name, actorName: '', printOnSheet: 0 });
     if (!result?.success) return;
     const chars = ipcRenderer.sendSync('db-get-characters', show.id);
     setCharacters(Array.isArray(chars) ? chars : []);
+    if (link) { link(result.id); return; }
     updateSpotCue(spotCueId, 'character_id', result.id);
     updateSpotCue(spotCueId, 'custom_character', null);
   };
@@ -1623,7 +1714,7 @@ const groupedCues = () => {
                   <button onClick={async () => {
                     const srcData = { ...dragSource.spotCue };
                     const tgtData = dragTarget.spotCue ? { ...dragTarget.spotCue } : {};
-                    const fields = ['action','character_id','custom_character','frame_size','intensity','fade_time','active_frames','description','with_lq','notes','no_color'];
+                    const fields = ['action','character_id','custom_character','extra_characters','frame_size','intensity','fade_time','active_frames','description','with_lq','notes','no_color'];
 
                     const swapUndoEntries = [];
                     if (dragSource.spotCue) {
@@ -1673,7 +1764,7 @@ const groupedCues = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <button onClick={() => {
                     const srcData = { ...dragSource.spotCue };
-                    const fields = ['action','character_id','frame_size','intensity','fade_time','active_frames','description','with_lq','notes'];
+                    const fields = ['action','character_id','custom_character','extra_characters','frame_size','intensity','fade_time','active_frames','description','with_lq','notes'];
                     if (dragTarget.spotCue) {
                       fields.forEach(f => updateSpotCue(dragTarget.spotCue.id, f, srcData[f] || ''));
                     } else {

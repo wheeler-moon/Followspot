@@ -5,6 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 const { moveCheckedNotes } = require('./givenNotes');
+const { extraCharacters, extraCharactersJSON } = require('./characterNames');
 
 const FORMAT_VERSION = '2.0';
 // Actions renamed since older files were made (older SpotPlot called them Fade Up / Fade Down)
@@ -101,7 +102,9 @@ function importShow(db, data, { imagesDir }) {
     }
     for (const sc of data.spotCues || []) {
       if (!cueMap[sc.cue_id] || !spotMap[sc.spot_id]) continue;
-      insert('spot_cues', { ...sc, action: RENAMED_ACTIONS[sc.action] || sc.action, cue_id: cueMap[sc.cue_id], spot_id: spotMap[sc.spot_id], character_id: charMap[sc.character_id] || null });
+      insert('spot_cues', { ...sc, action: RENAMED_ACTIONS[sc.action] || sc.action, cue_id: cueMap[sc.cue_id], spot_id: spotMap[sc.spot_id], character_id: charMap[sc.character_id] || null,
+        // Second and third characters: ids in a JSON list (typed names stay as they are)
+        extra_characters: extraCharactersJSON(extraCharacters(sc.extra_characters).map(x => (typeof x === 'number' ? charMap[x] : x)).filter(Boolean)) });
     }
     // Given (checked-off) spot notes; spot_id is null for an All Spots note
     for (const g of data.givenNotes || []) {

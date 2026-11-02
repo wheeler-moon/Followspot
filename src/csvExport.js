@@ -14,6 +14,7 @@
 // Files are UTF-8 with a byte-order mark and Windows line endings, which Excel opens correctly.
 
 const { actionNameMap, displayAction } = require('./actionNames');
+const { characterLabel, joinNames, extraCharacters } = require('./characterNames');
 
 // One CSV cell. Quoted when needed; a cell that starts like a formula gets a leading ' so a
 // spreadsheet shows it as text instead of running it.
@@ -56,14 +57,14 @@ function buildShowCSVs(db, showId) {
   // What one spot does in one cue, as words
   const describe = (sc, spot, cue) => {
     if (!sc) return { action: '', character: '', performer: '', intensity: '', iris: '', frames: '', gels: '', time: '', when: '', notes: '' };
-    const char = charById.get(sc.character_id);
     const frames = (sc.active_frames || '').split(',').map(f => f.trim()).filter(Boolean)
       .sort((a, b) => (parseInt(a.slice(1)) || 0) - (parseInt(b.slice(1)) || 0));
     const frameSlots = frames.map(f => (slots[spot.id] || []).find(sl => !sl.is_permanent && `F${sl.slot_number}` === f));
     return {
       action: sc.action && sc.action !== 'Tracked' ? displayAction(sc.action, actionNames) : '',
-      character: char ? char.name : (sc.custom_character || ''),
-      performer: char ? (char.actor_name || '') : '',
+      character: characterLabel(sc, charById),
+      performer: joinNames([sc.character_id, ...extraCharacters(sc.extra_characters)]
+        .map(x => (typeof x === 'number' ? charById.get(x)?.actor_name || '' : '')).filter(Boolean)),
       intensity: sc.intensity || '',
       iris: sc.frame_size || '',
       frames: sc.no_color ? 'NC' : frames.join('+'),
