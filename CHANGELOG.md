@@ -39,6 +39,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 Saved for the iPad app's first release (kept out of the Mac's What's New).
 
+- Act breaks (like "Act One") always show as their orange header in the spot and caller lists, even with no cues of their own, in their place between scenes (as on the Mac)
 - A cue with more than one character shows them all ("Bob, Matt & Sue"), wrapping onto more lines instead of cutting off
 - Jump to Scene (the list button in the top bar) scrolls straight to any scene, like the Mac's Jump to
 - Action Words and Action Symbols are separate switches in the ⋯ menu, for operators who want only symbols or only words
