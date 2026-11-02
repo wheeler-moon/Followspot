@@ -15,7 +15,7 @@ const ICON = 168;   // the icon's size once it has landed
 const css = `
   .welcome { position: fixed; inset: 0; z-index: 3000; }
   /* Timing (a first impression, so unhurried): icon lands 0–1.6s · title wipes 1.8–3.2s · a beat ·
-     name wipes 3.9–5.0s · a beat · button fades up 5.9–6.8s */
+     name wipes 3.9–5.0s · a beat · button fades in, in place, 5.9–7.7s */
   .welcome-icon { position: fixed; border-radius: 22.5%; transition: left 1.6s cubic-bezier(0.2, 0.8, 0.2, 1), top 1.6s cubic-bezier(0.2, 0.8, 0.2, 1),
     width 1.6s cubic-bezier(0.2, 0.8, 0.2, 1), height 1.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
   .welcome-text { position: fixed; left: 0; right: 0; top: calc(50% - 30px); display: flex; flex-direction: column; align-items: center; text-align: center; }
@@ -26,8 +26,8 @@ const css = `
   .welcome-name { font-size: 30px; font-weight: 600; line-height: 1.25; color: rgba(255,255,255,0.78); margin-top: 8px; animation-duration: 1.1s; animation-delay: 3.9s; }
   .welcome-button { margin-top: 40px; height: 36px; padding: 0 22px; border-radius: 18px; border: none; background: #0A84FF; color: #FFFFFF;
     font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit;
-    opacity: 0; animation: welcome-rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) 5.9s forwards; }
-  @keyframes welcome-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+    opacity: 0; animation: welcome-reveal 1.8s ease-in-out 5.9s forwards; }
+  @keyframes welcome-reveal { from { opacity: 0; } to { opacity: 1; } }
   .welcome-button:hover { background: #409CFF; }
   .welcome-button:focus-visible { outline: 3px solid rgba(10,132,255,0.5); outline-offset: 3px; }
   @media (prefers-reduced-motion: reduce) {
@@ -71,7 +71,7 @@ export default function WelcomeScreen({ iconSrc, from, onDone }) {
       <style>{css}</style>
       <img ref={iconRef} className="welcome-icon" src={iconSrc} alt="" style={at} />
       <div className="welcome-text">
-        <div className="welcome-wipe welcome-title">Welcome to SpotPlot</div>
+        <div className="welcome-wipe welcome-title">Welcome to SpotPlot{first ? ',' : ''}</div>
         {first && <div className="welcome-wipe welcome-name">{first}</div>}
         <button ref={buttonRef} className="welcome-button" onClick={finish}>
           {hasShows ? 'Go to My Shows' : 'Create Your First Show'}
