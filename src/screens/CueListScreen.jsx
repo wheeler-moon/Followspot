@@ -87,9 +87,10 @@ function ActionIcon({ action, size = 20 }) {
   }
 }
 
-// The action menu, attached to its cue's action button (anchorRef). It opens below the button if it
-// fits in the cue list, else above, else on the roomier side with its own scroll. It moves with the cue
-// while the list scrolls, closes once the button scrolls out of sight, and closes on a click anywhere else.
+// The action menu, attached to its cue's action button (anchorRef). It sits inside the cue's box
+// (position absolute), so it scrolls with the list smoothly on its own. When it opens it goes below the
+// button if it fits in the visible cue list, else above, else on the roomier side with its own scroll.
+// It closes once the button scrolls out of sight, and on a click anywhere else.
 const PICKER_WIDTH = 280;
 function scrollParent(el) {
   for (let p = el?.parentElement; p; p = p.parentElement) {
@@ -108,12 +109,13 @@ function ActionPicker({ value, onChange, onClose, anchorRef, customActions, acti
     const menu = menuRef.current, anchor = anchorRef.current;
     if (!menu || !anchor) return;
     const scroller = scrollParent(anchor);
+    const visible = () => {
+      const box = scroller ? scroller.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
+      return { top: Math.max(box.top, 0) + 8, bottom: Math.min(box.bottom, window.innerHeight) - 8 };
+    };
     const place = () => {
       const a = anchor.getBoundingClientRect();
-      const box = scroller ? scroller.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
-      const top = Math.max(box.top, 0) + 8, bottom = Math.min(box.bottom, window.innerHeight) - 8;
-      // The button has scrolled out of the visible list: close
-      if (a.bottom < top - 8 || a.top > bottom + 8) { closeRef.current(); return; }
+      const { top, bottom } = visible();
       menu.style.maxHeight = '';
       const h = menu.scrollHeight + 2;
       const below = bottom - (a.bottom + 4), above = (a.top - 4) - top;
@@ -122,24 +124,32 @@ function ActionPicker({ value, onChange, onClose, anchorRef, customActions, acti
       else if (h <= above) y = a.top - 4 - h;
       else if (below >= above) { y = a.bottom + 4; menu.style.maxHeight = below + 'px'; }
       else { y = top; menu.style.maxHeight = above + 'px'; }
-      menu.style.top = y + 'px';
-      menu.style.left = Math.min(Math.max(a.left, 8), window.innerWidth - PICKER_WIDTH - 8) + 'px';
+      // Window spots → spots inside the box the menu belongs to
+      const p = (menu.offsetParent || document.body).getBoundingClientRect();
+      menu.style.top = (y - p.top) + 'px';
+      menu.style.left = (Math.min(Math.max(a.left, 8), window.innerWidth - PICKER_WIDTH - 8) - p.left) + 'px';
       menu.style.visibility = 'visible';
     };
     place();
+    // Scrolling moves the menu by itself; only check whether its button has gone out of sight
+    const onScroll = () => {
+      const a = anchor.getBoundingClientRect();
+      const { top, bottom } = visible();
+      if (a.bottom < top - 8 || a.top > bottom + 8) closeRef.current();
+    };
     const onDown = (e) => { if (!menu.contains(e.target) && !anchor.contains(e.target)) closeRef.current(); };
-    window.addEventListener('scroll', place, true);
+    window.addEventListener('scroll', onScroll, true);
     window.addEventListener('resize', place);
     document.addEventListener('mousedown', onDown);
     return () => {
-      window.removeEventListener('scroll', place, true);
+      window.removeEventListener('scroll', onScroll, true);
       window.removeEventListener('resize', place);
       document.removeEventListener('mousedown', onDown);
     };
   }, []);
 
   return (
-    <div ref={menuRef} style={{ position: 'fixed', top: 0, left: 0, visibility: 'hidden', overflowY: 'auto', boxSizing: 'border-box', zIndex: 99999, background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.14)', borderRadius: '10px', padding: '8px', width: PICKER_WIDTH + 'px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px' }}>
+    <div ref={menuRef} style={{ position: 'absolute', top: 0, left: 0, visibility: 'hidden', overflowY: 'auto', boxSizing: 'border-box', zIndex: 99999, background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.14)', borderRadius: '10px', padding: '8px', width: PICKER_WIDTH + 'px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px' }}>
       {[...ACTIONS, ...(customActions || []).map(a => ({ name: a.name, short: a.name.substring(0, 4), color: a.color || 'rgba(255,255,255,0.62)', icon: a.icon || null, builtinIcon: a.builtinIcon || null }))].map(a => (
         <div key={a.name} onClick={() => { onChange(a); onClose(); }}
           style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', padding: '6px 4px', borderRadius: '6px', cursor: 'pointer', background: value === a.name ? 'rgba(10,132,255,0.16)' : 'transparent', border: value === a.name ? '1px solid #0A84FF' : '1px solid transparent' }}
