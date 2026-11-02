@@ -1556,8 +1556,10 @@ const groupedCues = () => {
 
     for (const sceneId of sceneOrder) {
       const sceneCues = sorted.filter(c => c.scene_id === sceneId);
-      if (sceneCues.length === 0) continue;
       const scene = scenes.find(s => s.id === sceneId);
+      // A scene with no cues is left out, but an act break always shows: it's a header ("Act One") that
+      // usually has no cues of its own, and the list should open on it
+      if (sceneCues.length === 0 && !scene?.act_break) continue;
       groups.push({
         sceneId,
         sceneLabel: scene ? scene.label : 'Unknown',
@@ -1575,6 +1577,9 @@ const groupedCues = () => {
 
     return groups;
   };
+
+  // The bottom cue of the list (no insert button after it)
+  const lastCueId = (() => { const all = groupedCues().flatMap(g => g.cues); return all.length ? all[all.length - 1].id : null; })();
 
       return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#1E1E1E' }}>
@@ -1656,7 +1661,7 @@ const groupedCues = () => {
               </tr>
             </thead>
             <tbody>
-              {groupedCues().map((group, groupIndex, groups) => (
+              {groupedCues().map((group) => (
                 <React.Fragment key={group.sceneId || 'unassigned'}>
                   <tr data-scene-id={group.sceneId} data-scene-key={group.sceneId || 'unassigned'}>
                     <td colSpan={(data?.spots || []).length + 1} style={{ position: 'sticky', top: Math.floor(theadHeight) - 1, zIndex: 6, padding: '7px 14px', textAlign: 'center', background: group.actBreak ? '#3E301B' : '#203A2A',
@@ -1678,9 +1683,9 @@ const groupedCues = () => {
                       )}
                     </td>
                   </tr>
-                  {group.cues.map((cue, cueIndex) => (
+                  {group.cues.map((cue) => (
                     <CueRow key={cue.id} cue={cue} fieldsShown={listFields}
-                      isLastCue={groupIndex === groups.length - 1 && cueIndex === group.cues.length - 1}
+                      isLastCue={cue.id === lastCueId}
                       spots={data?.spots || []}
                       spotCues={data?.spotCues || []} characters={characters}
                       colorSlotsBySpot={colorSlotsBySpot} scenes={data?.scenes || []} colorChangesBySpot={colorChangesBySpot}
