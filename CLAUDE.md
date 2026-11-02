@@ -64,6 +64,7 @@ The SQLite file lives at `app.getPath('userData')/followspot.db`, with the schem
 - `spot_cues`: one row per (cue, spot), holding what that spot does in that cue (action, character, frame size, intensity, fade, highlight, notes, …). Adding a spot to a show with existing cues creates "Off" `spot_cues` rows for every cue, and new cues get rows for every spot.
 - `given_notes`: spot notes that have been checked off (Spot Notes → Given tray), moved off their cue; `spot_id` null = All Spots. Logic in `src/givenNotes.js`, exported/imported in `showFile.js`.
 - `gels`: gel catalog, seeded by `seedGels()`.
+- `shows.updated_at` is the show's "last modified" (Home screen order and "Modified …"). SQLite triggers (`touchShowTriggers` in `main.js`) stamp it on any insert, change or delete in the show's rows, so new tables that belong to a show need a trigger there too. Don't write to a show's rows just from viewing it, or it will look modified.
 - `shows.iris_sizes` and `shows.custom_actions` are **JSON strings**. Parse them before use.
 - `spot_cues.extra_characters`: a cue's second and third characters as a JSON list (number = character id, text = typed name); the first stays in `character_id` / `custom_character`. Helpers in `src/characterNames.js`. Its ids are remapped on import in `showFile.js`, like `character_id`.
 

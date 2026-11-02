@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- **Home screen**: your shows are listed with the one you changed most recently first, and each shows when it was last modified ("Modified today at 3:42 PM", "Modified 5 days ago"). Just opening or looking through a show doesn't count. Two new buttons beside Settings switch between the grid and a list (SpotPlot remembers which you like)
 - Cue list: act breaks (like "Act One") always show as their orange header, even with no cues of their own, so the list opens on the first act instead of the first scene. Spot sheets and the caller sheet print them too, in their place between scenes (a sheet for a range of cues shows only the act breaks inside that range)
 - Cue list: **⌘Z undoes everything, and ⇧⌘Z redoes** (Edit → Undo and Redo in the menu bar do the same). Picking an action now undoes in one step (with the time and intensity it filled in), and these can be undone too: adding, inserting and deleting cues (a deleted cue comes back with everything every spot had), checking off a note in the Notes sidebar, renaming a scene from its header, and adding a scene or character. **⇧⌘Z redoes** what you undid. While you're typing in a box, ⌘Z and ⇧⌘Z undo and redo your typing
 - Cue list: the action menu stays attached to its cue while you scroll (and closes once the cue scrolls out of sight), opens upward when there isn't room below so it's never cut off, and closes when you click anywhere else, including the character box

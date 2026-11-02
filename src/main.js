@@ -206,6 +206,30 @@ function initSchema() {
   // Checked-off spot notes live in given_notes (src/givenNotes.js); older checked notes move there
   givenNotes.ensureTable(db);
   givenNotes.moveCheckedNotes(db);
+  touchShowTriggers(db);
+}
+
+// shows.updated_at is "last modified" (Home screen: newest first, "Modified today at 3:42 PM"). The
+// database keeps it current itself: any insert, change or delete in a show's rows stamps the show, so
+// every edit counts without each save remembering to. Kept off on purpose: just opening or viewing a show.
+function touchShowTriggers(db) {
+  const owner = {
+    spots: 'X.show_id', scenes: 'X.show_id', characters: 'X.show_id', cues: 'X.show_id', given_notes: 'X.show_id',
+    color_slots: '(SELECT show_id FROM spots WHERE id = X.spot_id)',
+    spot_cues: '(SELECT show_id FROM cues WHERE id = X.cue_id)',
+  };
+  const touch = (showId) => `UPDATE shows SET updated_at = CURRENT_TIMESTAMP WHERE id = ${showId};`;
+  for (const [table, expr] of Object.entries(owner)) {
+    for (const [event, row] of [['INSERT', 'NEW'], ['UPDATE', 'NEW'], ['DELETE', 'OLD']]) {
+      const name = `touch_show_${table}_${event.toLowerCase()}`;
+      db.exec(`DROP TRIGGER IF EXISTS ${name}`);
+      db.exec(`CREATE TRIGGER ${name} AFTER ${event} ON ${table} BEGIN ${touch(expr.replace(/X\./g, row + '.'))} END`);
+    }
+  }
+  // The show's own details (title, logo, settings…), unless the change was only the stamp itself
+  db.exec('DROP TRIGGER IF EXISTS touch_show_shows_update');
+  db.exec(`CREATE TRIGGER touch_show_shows_update AFTER UPDATE ON shows WHEN NEW.updated_at IS OLD.updated_at
+    BEGIN ${touch('NEW.id')} END`);
 }
 
 // The gel catalog comes from src/gels.json: [maker, number, name, color] for every gel the makers
@@ -533,7 +557,8 @@ function setupIPC() {
   });
   ipcMain.on('db-get-shows', (event) => {
     try {
-      const shows = getDb().prepare('SELECT * FROM shows ORDER BY created_at DESC').all();
+      // Most recently changed first (updated_at: see touchShowTriggers)
+      const shows = getDb().prepare('SELECT * FROM shows ORDER BY COALESCE(updated_at, created_at) DESC, id DESC').all();
       event.returnValue = shows;
     } catch(e) { event.returnValue = []; }
   });

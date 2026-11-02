@@ -127,6 +127,11 @@ Use a switch for any setting that is simply on or off, like the w/LQ toggle.
 ### Segmented controls
 Use one to pick between 2–5 options, like highlight: None / Yellow / Red. Regular height is 24px with radius 6, and the selected segment is a lighter fill (`rgba(255,255,255,0.14)`) or the accent.
 
+A **view switch** (Home screen grid / list) is an icon-only segmented control like Finder's: 30 × 24 segments with 14px glyphs on a `rgba(255,255,255,0.06)` track, each with a tooltip ("Grid", "List"). The choice is remembered on this Mac.
+
+### Dates and times
+Say when something changed the way Finder does, in this Mac's time zone: "Modified today at 3:42 PM", "Modified yesterday at 9:10 AM", "Modified 5 days ago" (up to 6), then the date ("Modified Oct 3", with the year if it isn't this year). In a list column, drop the word "Modified".
+
 ### Removable items in a grid (color frames)
 Each item shows a small remove button on hover only: a 16px circle at its top-right, red `×` on a red tint (`rgba(255,69,58,0.16)`). The add tile takes the next grid spot instead of a new row: dashed 1px `rgba(255,255,255,0.2)` border, radius 8, accent-blue "+ Add …" label. Hide it when the grid is full.
 
