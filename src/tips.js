@@ -9,7 +9,7 @@ export const TIPS = {
     { id: 'home-import', target: 'import-show', title: 'Open a shared show',
       body: 'Got a .spotplot file from your team? Import it here, or double-click the file in Finder. Have shows in a FileMaker followspot database? Import brings those in too.' },
     { id: 'home-card', target: 'show-card', title: 'Your shows',
-      body: 'Click a show to open it. The one you changed most recently is first; the buttons beside Settings switch between grid and list.' },
+      body: 'Click a show to open it. The one you changed most recently is first; the buttons beside your name switch between grid and list.' },
   ],
   newShow: [
     { id: 'new-spot', target: 'spot-setup', title: 'Load each spot\'s colors',

@@ -6,6 +6,7 @@ import FileMakerImport from '../components/FileMakerImport';
 import AppHeader from '../components/AppHeader';
 import Tips from '../components/Tips';
 import { TIPS } from '../tips';
+import { getMyName, setMyName } from '../license';
 
 const getImageSrc = (path) => {
   if (!path) return null;
@@ -60,10 +61,44 @@ function ViewSwitch({ view, onChange }) {
   );
 }
 
+// The person's account: a head-and-shoulders icon and their name, opening the Settings sidebar
+const PersonIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+    <circle cx="10" cy="10" r="10" fill="rgba(255,255,255,0.16)" />
+    <circle cx="10" cy="7.6" r="3.2" fill="rgba(255,255,255,0.85)" />
+    <path d="M3.9 16.4c1.2-2.7 3.5-4.1 6.1-4.1s4.9 1.4 6.1 4.1A9.9 9.9 0 0 1 10 19.9a9.9 9.9 0 0 1-6.1-3.5z" fill="rgba(255,255,255,0.85)" />
+  </svg>
+);
+
+// Asked once when a license has no name yet (licenses activated before names were asked for)
+function NamePrompt({ onDone }) {
+  const [name, setName] = useState('');
+  const save = () => { if (name.trim()) onDone(setMyName(name)); };
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
+      <div role="dialog" aria-label="What's your name?" style={{ width: '300px', background: '#2A2A2A', borderRadius: '16px', padding: '20px', boxShadow: '0 18px 48px rgba(0,0,0,0.45)' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}><div style={{ transform: 'scale(2)', margin: '10px' }}><PersonIcon /></div></div>
+        <div style={{ fontSize: '13px', fontWeight: '700', color: '#FFFFFF', textAlign: 'center', marginBottom: '6px' }}>What’s your name?</div>
+        <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.62)', textAlign: 'center', lineHeight: '17px', marginBottom: '14px' }}>
+          It goes on your SpotPlot account and here on the Home screen. You can change it in Settings.
+        </div>
+        <input autoFocus value={name} onChange={e => setName(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') save(); }}
+          placeholder="First and last name" autoComplete="name"
+          style={{ width: '100%', boxSizing: 'border-box', height: '28px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '7px', color: '#FFFFFF', padding: '0 10px', fontSize: '13px', outline: 'none', marginBottom: '12px', fontFamily: 'inherit' }} />
+        <button onClick={save} disabled={!name.trim()}
+          style={{ width: '100%', height: '28px', borderRadius: '14px', border: 'none', background: '#0A84FF', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: name.trim() ? 'pointer' : 'default', opacity: name.trim() ? 1 : 0.5, fontFamily: 'inherit' }}>
+          Continue
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function HomeScreen({ navigate }) {
   const [shows, setShows] = useState([]);
   const [search, setSearch] = useState('');
   const [showSettings, setShowSettings] = useState(false);
+  const [myName, setMyNameState] = useState(() => getMyName());
   // The first time SpotPlot opens after an update, show what's new in it
   const [appVersion] = useState(() => ipcRenderer.sendSync('get-device-info')?.appVersion || '');
   const [showWhatsNew, setShowWhatsNew] = useState(() => justUpdated(appVersion));
@@ -152,8 +187,10 @@ export default function HomeScreen({ navigate }) {
       <AppHeader title="SpotPlot">
         <div style={{ flex: 1 }} />
         {shows.length > 0 && <ViewSwitch view={view} onChange={changeView} />}
-        <button onClick={() => setShowSettings(true)} style={{ padding: '8px 14px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '8px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer' }}>
-          ⚙ Settings
+        <button onClick={() => setShowSettings(true)} title="Account and Settings"
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', maxWidth: '220px', padding: '6px 12px 6px 8px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '8px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>
+          <PersonIcon />
+          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{myName || 'Settings'}</span>
         </button>
         <input
           value={search}
@@ -164,10 +201,10 @@ export default function HomeScreen({ navigate }) {
         <button data-tour="import-show" onClick={() => ipcRenderer.send('show-context-menu', [
           { id: 'import-spotplot', label: 'SpotPlot Show File…' },
           { id: 'import-filemaker', label: 'FileMaker Show…' },
-        ])} style={{ padding: '8px 14px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '8px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer' }}>
+        ])} style={{ padding: '8px 14px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '8px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
           ↓ Import ▾
         </button>
-        <button data-tour="new-show" onClick={() => navigate('new-show')} style={{ padding: '8px 18px', background: '#0A84FF', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>+ New Show</button>
+        <button data-tour="new-show" onClick={() => navigate('new-show')} style={{ padding: '8px 18px', background: '#0A84FF', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>+ New Show</button>
       </AppHeader>
       <div style={{ flex: 1, padding: '32px 24px', overflowY: 'auto' }}>
         {shows.length === 0 ? (
@@ -240,7 +277,8 @@ export default function HomeScreen({ navigate }) {
         )}
       </div>
       <Tips steps={TIPS.home} watch={shows.length} />
-      {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
+      {showSettings && <SettingsPanel onClose={() => { setShowSettings(false); setMyNameState(getMyName()); }} />}
+      {!myName && !showWhatsNew && <NamePrompt onDone={(n) => setMyNameState(n)} />}
       {fileMakerSummary && <FileMakerImport summary={fileMakerSummary} onCancel={() => setFileMakerSummary(null)}
         onImported={(showId) => {
           setFileMakerSummary(null);

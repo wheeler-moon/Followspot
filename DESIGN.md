@@ -129,6 +129,9 @@ Use one to pick between 2–5 options, like highlight: None / Yellow / Red. Regu
 
 A **view switch** (Home screen grid / list) is an icon-only segmented control like Finder's: 30 × 24 segments with 14px glyphs on a `rgba(255,255,255,0.06)` track, each with a tooltip ("Grid", "List"). The choice is remembered on this Mac.
 
+### Account button (Home screen)
+The person's account sits in the Home top bar as a button: a 20px head-and-shoulders icon (white on a `rgba(255,255,255,0.16)` circle) followed by their name, on the usual `rgba(255,255,255,0.10)` button fill. It opens the Settings sidebar. Long names end in "…".
+
 ### Dates and times
 Say when something changed the way Finder does, in this Mac's time zone: "Modified today at 3:42 PM", "Modified yesterday at 9:10 AM", "Modified 5 days ago" (up to 6), then the date ("Modified Oct 3", with the year if it isn't this year). In a list column, drop the word "Modified".
 

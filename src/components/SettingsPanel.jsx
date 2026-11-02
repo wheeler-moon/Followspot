@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import useEscape from '../useEscape';
-import { getCachedLicense, setCachedLicense, validateLicense, deactivateLicense } from '../license';
+import { getCachedLicense, setCachedLicense, validateLicense, deactivateLicense, getMyName, setMyName } from '../license';
 import WhatsNew from './WhatsNew';
 const { ipcRenderer, shell } = window.require('electron');
 
@@ -137,6 +137,12 @@ export default function SettingsPanel({ onClose }) {
   const [deactivating, setDeactivating] = useState(false);
   const [deactivateError, setDeactivateError] = useState(null);
   const [showWhatsNew, setShowWhatsNew] = useState(false);
+  const [editingName, setEditingName] = useState(null);   // text while changing the name
+  const saveName = () => {
+    const n = setMyName(editingName);
+    if (n) setLic(l => ({ ...l, name: n }));
+    setEditingName(null);
+  };
   const version = ipcRenderer.sendSync('get-device-info')?.appVersion || '';
 
   // Refresh the account details each time Settings opens
@@ -160,6 +166,7 @@ export default function SettingsPanel({ onClose }) {
   // Escape closes the top-most: the deactivate box, then the panel (What's New handles its own)
   useEscape(onClose);
   useEscape(() => { if (!deactivating) setConfirmDeactivate(false); }, confirmDeactivate);
+  useEscape(() => setEditingName(null), editingName !== null);
 
   const copyKey = () => {
     if (!lic?.license_key) return;
@@ -195,6 +202,19 @@ export default function SettingsPanel({ onClose }) {
 
         <div style={{ padding: '16px', overflowY: 'auto', flex: 1 }}>
           <Group title="Account">
+            <Row label="Name">
+              {editingName !== null ? (
+                <input autoFocus onFocus={e => e.target.select()} value={editingName} onChange={e => setEditingName(e.target.value)} placeholder="First and last name"
+                  onKeyDown={e => { if (e.key === 'Enter') saveName(); }}
+                  onBlur={() => (editingName.trim() ? saveName() : setEditingName(null))}
+                  style={{ width: '170px', height: '24px', boxSizing: 'border-box', background: 'rgba(255,255,255,0.05)', border: `1px solid ${C.accent}`, borderRadius: '6px', color: C.label1, padding: '0 8px', fontSize: '13px', outline: 'none', fontFamily: 'inherit' }} />
+              ) : (
+                <>
+                  <Value>{getMyName() || lic?.name || '—'}</Value>
+                  <Button onClick={() => setEditingName(getMyName() || lic?.name || '')}>Edit</Button>
+                </>
+              )}
+            </Row>
             <Row label="Email"><Value>{lic?.email || '—'}</Value></Row>
             <Row label="Plan"><Value>{planText(lic)}</Value></Row>
             <Row label="Status"><Value color={status.color}>{status.text}</Value></Row>

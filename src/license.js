@@ -39,26 +39,49 @@ function device() {
   return deviceInfo;
 }
 
+// The person's name (Home screen, Settings → Account). Kept in the license cache; a name typed on this
+// Mac waits in NAME_PENDING_KEY until the license server has it (sent with the next check).
+const NAME_PENDING_KEY = 'spotplot_name_pending';
+export function getMyName() {
+  try { return localStorage.getItem(NAME_PENDING_KEY) || getCachedLicense()?.name || ''; } catch (e) { return ''; }
+}
+export function setMyName(name) {
+  const clean = String(name || '').trim().replace(/\s+/g, ' ').slice(0, 80);
+  if (!clean) return '';
+  try {
+    localStorage.setItem(NAME_PENDING_KEY, clean);
+    const cached = getCachedLicense();
+    if (cached) localStorage.setItem(LICENSE_CACHE_KEY, JSON.stringify({ ...cached, name: clean }));
+  } catch (e) {}
+  if (getCachedLicense()?.license_key) validateLicense(getCachedLicense().license_key);   // tell the server now if it's reachable
+  return clean;
+}
+
 export async function validateLicense(licenseKey) {
   try {
+    const pending = (() => { try { return localStorage.getItem(NAME_PENDING_KEY); } catch (e) { return null; } })();
     const response = await fetch(SERVER_URL + '/validate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ license_key: licenseKey, ...device() }),
+      body: JSON.stringify({ license_key: licenseKey, ...device(), ...(pending ? { name: pending } : {}) }),
     });
-    return await response.json();
+    const result = await response.json();
+    // The server has the new name now (an older server ignores it: keep showing ours)
+    if (pending && result?.valid) { try { if (result.name === pending) localStorage.removeItem(NAME_PENDING_KEY); } catch (e) {} }
+    if (result?.valid && !result.name && pending) result.name = pending;
+    return result;
   } catch(e) {
     console.error('Validation error:', e);
     return null;
   }
 }
 
-export async function activateLicense(licenseKey, email) {
+export async function activateLicense(licenseKey, email, name) {
   try {
     const response = await fetch(SERVER_URL + '/activate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ license_key: licenseKey, email, ...device() }),
+      body: JSON.stringify({ license_key: licenseKey, email, ...(name ? { name } : {}), ...device() }),
     });
     const data = await response.json();
     return data;
