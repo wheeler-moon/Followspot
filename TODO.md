@@ -20,6 +20,13 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 - [ ] Cue Defaults, second pass: first version is in (Show Settings → Cue Defaults, `src/cueDefaults.js`). Wheeler wants to think it through more and make sure it fully works and is structured right: when defaults should apply (on picking an action vs. when a cue is made), how they interact with tracking, inserted cues, copy/paste and actions' own settings, whether defaults should be per spot, and whether more details (character, When) belong there
 
 - [ ] Print header redesign (Wheeler has opinions): caller sheet header, spot sheet header, and the Color Load page. Waiting on his notes
+- [ ] Narrow windows: rethink how the app looks when the window is tight (e.g. half a Mac screen). Past a certain width it gets cramped and hard to use
+- [ ] Cue list action menu: review when it opens and when it should close, and fix where it lands (it doesn't always place itself well near the edges of the window)
+- [ ] Tracking: check what a cue picks up from the cue above when it's made Tracked from another action
+- [ ] "Track down" button: carry a spot's details from one cue down the cue list until its next change. Wheeler will explain in more detail before we build it
+- [ ] Add a cue at the top of a scene (right under the scene header)
+- [ ] Show logos: check how logos scale everywhere in the app; always show the whole logo, never cropped
+- [ ] Print cover page without a logo: an alternate layout when no show logo is uploaded, so there's no big empty space where the logo would go
 
 ### Later
 - [ ] Gel catalog upkeep: refresh `src/gels.json` from the makers' sites now and then (and bump `GEL_CATALOG_VERSION` in `main.js`). Discontinued gels people still use can be added back on request
