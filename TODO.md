@@ -24,6 +24,7 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 - [ ] Tracking: check what a cue picks up from the cue above when it's made Tracked from another action
 - [ ] "Track down" button: carry a spot's details from one cue down the cue list until its next change. Wheeler will explain in more detail before we build it
 - [ ] Add a cue at the top of a scene (right under the scene header)
+- [ ] Home screen (all shows): list the most recently edited show first, show when each was last changed ("Modified today 3:42 PM", "Modified 5 days ago"), and add two icons to switch between the current grid and a plain list view (like Finder's icon / list buttons). Needs a "last modified" time on each show that updates whenever anything in it changes
 - [ ] Show logos: check how logos scale everywhere in the app; always show the whole logo, never cropped
 - [ ] Print cover page without a logo: an alternate layout when no show logo is uploaded, so there's no big empty space where the logo would go
 
