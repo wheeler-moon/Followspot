@@ -13,7 +13,7 @@ The one to-do list for every SpotPlot project (see `docs/README.md` for the fami
 
 | By | What |
 |---|---|
-| **Nov 8** | Start the slow outside stuff: file the LLC (then EIN, bank), book the lawyer, ask an accountant about sales tax. Decide the iPad's launch plan |
+| **Nov 8** | Start the slow outside stuff: ~~file the LLC~~ (done Nov 3), EIN, business bank, book the lawyer, ask an accountant about sales tax. Decide the iPad's launch plan |
 | **Nov 22** | Last day for 1.0 features; anything unfinished moves to 1.1 |
 | 🛑 **Nov 23** | **Feature freeze**: bug fixes and polish only |
 | **Dec 6** | Selling side works in Stripe test mode (license server, webhooks, website Buy), app code made private, beta testers' launch plan decided |
@@ -90,7 +90,7 @@ Plan: `docs/admin-dashboard-plan.md`.
 - [ ] Stripe → licenses: webhooks fill each license's `billing_interval`, `renews_at`, `ends_at` and `payment_failed` (the server already sends them to Settings → Account), and set `STRIPE_PORTAL_URL` on Render so Settings → Manage… opens the customer portal
 - [ ] Stripe emails: turn on receipts, failed-payment and expiring-card emails, yearly renewal reminders, and the customer portal (cancel / update card)
 - [ ] **Before launch: lawyer review.** Have a lawyer go over the drafts Claude wrote on 2026-10-19: `privacy.html` and `terms.html` on the website, and the license agreement (`LICENSE.txt` / `LICENSE.rtf`). Make sure they match the final Stripe setup, refunds (Wheeler's choice: no refunds), student checks and the business details below
-- [ ] Register The Wheeler Moon Group (planned: New York LLC). Then use its exact legal name in the Terms, Privacy Policy, license agreement, Stripe and the App Store, and add a mailing address to both policies' Contact sections
+- [ ] The Wheeler Moon Group LLC (NY, approved 2026-11-03; name now in the Terms, Privacy Policy and license agreement). Still to do: EIN, business bank account, add a mailing address to both policies' Contact sections, NY publication notice within 120 days (by about March 3, 2027), D-U-N-S number if Apple should list the company, and use the name in Stripe and the App Store
 - [ ] Sales tax and international sales: decide whether to sell outside the US at launch. Stripe Tax handles US sales tax (still register in states as thresholds are hit); for worldwide VAT, consider a merchant of record (Paddle or Lemon Squeezy) instead. Ask an accountant
 - [ ] Stripe checkout: an unticked "I agree to the Terms; renews automatically until canceled" checkbox, the renewal terms right by the Pay button, confirmation email with how to cancel, and yearly renewal reminder emails (the Terms promise these)
 - [ ] Q1 2027: Production licenses (show, spots, close date). Q2 2027: Education licenses (school, seats)

@@ -8,7 +8,7 @@ SPOTPLOT, YOU AGREE TO BE BOUND BY THE TERMS OF THIS AGREEMENT. IF YOU DO NOT
 AGREE TO THE TERMS OF THIS AGREEMENT, DO NOT INSTALL OR USE SPOTPLOT.
 
 This End User License Agreement ("Agreement") is a legal agreement between you 
-("Licensee" or "you") and The Wheeler Moon Group ("Company," "we," "us," or "our"), the 
+("Licensee" or "you") and The Wheeler Moon Group LLC ("Company," "we," "us," or "our"), the 
 developer and publisher of SpotPlot ("Software"). This Agreement governs your use 
 of the Software and any related documentation, updates, and supplements.
 
@@ -92,7 +92,7 @@ Software, but only a limited right of use revocable in accordance with the terms
 of this Agreement.
 
 4.2 Trademarks. "SpotPlot" and all related logos, product names, and trade names 
-are trademarks or registered trademarks of The Wheeler Moon Group. You are not granted any 
+are trademarks or registered trademarks of The Wheeler Moon Group LLC. You are not granted any 
 right or license to use any of the Company's trademarks without the Company's 
 prior written consent.
 
@@ -268,4 +268,4 @@ the Company at:
 
 ────────────────────────────────────────────────────────────────────────────────
 
-© 2026 The Wheeler Moon Group. All rights reserved.
+© 2026 The Wheeler Moon Group LLC. All rights reserved.

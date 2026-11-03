@@ -257,7 +257,7 @@ export default function SettingsPanel({ onClose }) {
             <LinkRow label="Privacy Policy" external onClick={() => shell.openExternal('https://spotplotapp.com/privacy.html')} />
           </Group>
 
-          <div style={{ fontSize: '11px', color: C.label3, textAlign: 'center', marginTop: '8px' }}>© {new Date().getFullYear()} The Wheeler Moon Group</div>
+          <div style={{ fontSize: '11px', color: C.label3, textAlign: 'center', marginTop: '8px' }}>© {new Date().getFullYear()} The Wheeler Moon Group LLC</div>
         </div>
       </div>
 
