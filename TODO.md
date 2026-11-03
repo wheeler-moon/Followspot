@@ -65,10 +65,10 @@ Plan: `docs/ipad-app-plan.md`. Contract with the desktop: `docs/sync-protocol.md
 
 - [ ] Phase 1 finish: check landscape (When and Notes get separate columns) and text size in a dark booth on the real iPad
 - [ ] Keep the iPad's copies in step: `Resources/gels.json` (from `src/gels.json`) and `Resources/action-icons.json` (from the ActionIcon SVGs in `src/screens/CueListScreen.jsx`) whenever those change
-- [ ] Phase 2: suggestions (When/Notes editing), offline queue, desktop review list, approval switch
-- [ ] Phase 2: send cue flags (Missed / Clarify / Idea) to the Mac so the LD sees them in the cue list; today they stay on the iPad and can be shared as text
+- [ ] After launch (Phase 2): suggestions sent to the Mac (When/Notes editing), offline queue, desktop review list, approval switch
+- [ ] After launch (Phase 2): send cue flags (Missed / Clarify / Idea) to the Mac so the LD sees them in the cue list; today they stay on the iPad and can be shared as text
 - [ ] App Store listing: Privacy Policy URL https://spotplotapp.com/privacy.html, App Privacy answer "Data Not Collected" (true today: shows stay on the iPad, sync is local only). Revisit if Phase 2 sends anything off the device
-- [ ] Phase 4: follow the Eos console (Now / Next bar, live highlight), then grandMA
+- [ ] After launch (Phase 2): follow the Eos console (Now / Next bar, live highlight), then grandMA
 - [ ] Phase 5: polish, TestFlight beta, App Store
 
 ## Website (`spotplot-website`, spotplotapp.com)
