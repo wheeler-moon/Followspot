@@ -67,7 +67,14 @@ Plan: `docs/ipad-app-plan.md`. Contract with the desktop: `docs/sync-protocol.md
 - [ ] Keep the iPad's copies in step: `Resources/gels.json` (from `src/gels.json`) and `Resources/action-icons.json` (from the ActionIcon SVGs in `src/screens/CueListScreen.jsx`) whenever those change
 - [ ] After launch (Phase 2): suggestions sent to the Mac (When/Notes editing), offline queue, desktop review list, approval switch
 - [ ] After launch (Phase 2): send cue flags (Missed / Clarify / Idea) to the Mac so the LD sees them in the cue list; today they stay on the iPad and can be shared as text
-- [ ] App Store listing: Privacy Policy URL https://spotplotapp.com/privacy.html, App Privacy answer "Data Not Collected" (true today: shows stay on the iPad, sync is local only). Revisit if Phase 2 sends anything off the device
+- [ ] **App Store listing prep** (ready by Dec 11, submit Dec 12 set to release manually on Jan 1):
+  - Developer account: D-U-N-S number and switch the Apple developer account to The Wheeler Moon Group LLC (if the company should be listed as the developer); App Store Connect agreements, tax and banking forms
+  - App record in App Store Connect: name "SpotPlot for iPad", subtitle, category (Productivity or Business), price Free, age rating
+  - Description, keywords, promotional text, support URL (spotplotapp.com/support.html), marketing URL
+  - iPad screenshots (13-inch required) from a demo show, never a real one; optional preview video
+  - Privacy: Privacy Policy URL https://spotplotapp.com/privacy.html, App Privacy answer "Data Not Collected" (true today: shows stay on the iPad, sync is local only; revisit if Phase 2 sends anything off the device)
+  - Export compliance (encryption) answer, review notes for Apple (how to try it without a Mac: open a sample .spotplot file) and a demo file they can use
+  - TestFlight: external testing group for beta testers (needs Apple's beta review the first time)
 - [ ] After launch (Phase 2): follow the Eos console (Now / Next bar, live highlight), then grandMA
 - [ ] Phase 5: polish, TestFlight beta, App Store
 
