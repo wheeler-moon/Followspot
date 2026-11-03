@@ -5,7 +5,7 @@ Working plan for the operator tablet app. Started 2026-10-12. Decisions marked *
 ## Goals
 
 - Every spot operator (and the caller) has their spot's cues on an iPad: the printed sheets, and a new easy-to-read cue list.
-- iPads sync live with SpotPlot on the Mac during tech, and keep working on their own after the Mac leaves.
+- iPads stay in step with SpotPlot on the Mac during tech, and keep working on their own after the Mac leaves. The operator always approves updates to their cue list (decided 2026-11-03: no automatic live sync).
 - Optionally follow the lighting console, so the current cue is always highlighted.
 - Operators can only add to **When** and **Notes**, and those edits need approval.
 
@@ -126,7 +126,7 @@ A slim bar pinned at the top of the iPad while following:
 
 1. **Connect and view** (built 2026-10-17, in `~/Developer/SpotPlot/spotplot-ipad`; still to check landscape and a real iPad): desktop announces and pairs; the iPad downloads a show, picks a role, shows the cue list and PDFs, and works standalone. The desktop lists connected iPads.
 2. **Suggestions:** When/Notes editing on the iPad, the offline queue, and the desktop review list.
-3. **Live sync:** desktop edits reach connected iPads instantly; versioned catch-up after reconnecting.
+3. ~~Live sync~~: dropped (2026-11-03). Wheeler wants operators to approve every update to their cue list, so updates stay as the banner + See Changes + Update.
 4. **Follow console:** Eos listening on the iPad, the Now / Next bar, live and up-next highlights, scroll-to-pause.
 5. **Polish:** onboarding, TestFlight beta, then the App Store.
 
@@ -144,7 +144,7 @@ The look: an Apple app, not a generic one. Native SwiftUI controls, SF Pro, SF S
 - **Text size:** pinch, or a text-size control; remembered per iPad.
 - **Screen:** stays awake while a show is open.
 - **First launch:** one short welcome screen with a Find Your Mac button, then the list of Macs nearby and the pairing code.
-- **Updates (until live sync):** the iPad checks for changes automatically whenever the Mac is reachable (on open and every so often) and on pull-to-refresh, but never changes the show without asking: a banner at the top ("Updates from Maya's MacBook · 4 cues changed  [See changes] [Update]") that never covers the cue list. The operator taps Update when ready.
+- **Updates (always op-approved):** the iPad checks for changes automatically whenever the Mac is reachable (on open and every so often) and on pull-to-refresh, but never changes the show without asking: a banner at the top ("Updates from Maya's MacBook · 4 cues changed  [See changes] [Update]") that never covers the cue list. The operator taps Update when ready.
 - **Changes view:** every update, newest first, with its date and what changed in this role's cues (e.g. "LQ 14: Fade Out → Bump Out"). Also shows what an update would change before accepting it.
 - **Opening `.spotplot` files:** tap a file in AirDrop, Mail or Files to open it as a show. Opening a newer file of a show already on the iPad works like an update (banner, changes, confirm).
 - **Paperwork for file-opened shows:** the Mac's `.spotplot` export also carries each spot sheet and the caller sheet as PDFs, so the iPad has the exact paperwork without a connection.

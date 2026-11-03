@@ -68,7 +68,6 @@ Plan: `docs/ipad-app-plan.md`. Contract with the desktop: `docs/sync-protocol.md
 - [ ] Phase 2: suggestions (When/Notes editing), offline queue, desktop review list, approval switch
 - [ ] Phase 2: send cue flags (Missed / Clarify / Idea) to the Mac so the LD sees them in the cue list; today they stay on the iPad and can be shared as text
 - [ ] App Store listing: Privacy Policy URL https://spotplotapp.com/privacy.html, App Privacy answer "Data Not Collected" (true today: shows stay on the iPad, sync is local only). Revisit if Phase 2 sends anything off the device
-- [ ] Phase 3: live sync while connected
 - [ ] Phase 4: follow the Eos console (Now / Next bar, live highlight), then grandMA
 - [ ] Phase 5: polish, TestFlight beta, App Store
 
@@ -108,5 +107,5 @@ Plan: `docs/admin-dashboard-plan.md`.
 - [ ] Promo video (`~/Dropbox (Personal)/1. Professional Projects/1. Active/SpotPlot/spotplot-video`): **parked until about mid-November**, while the product gets finished. A rough first cut exists (silent, 16:9); expect to rework it once the app and iPad app are closer to launch (see its README)
 
 ## Future
-- [ ] SpotPlot Live Sync over the cloud (beyond the local-network iPad app)
+- [ ] Sync over the internet, for iPads away from the Mac's network (updates still approved by the op, as on the local network)
 - [ ] Console Connection tab in Show Settings (Eos console features on the desktop; was called EOS Control)
