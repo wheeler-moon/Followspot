@@ -19,7 +19,7 @@ The one to-do list for every SpotPlot project (see `docs/README.md` for the fami
 | **Dec 6** | Selling side works in Stripe test mode (license server, webhooks, website Buy), app code made private, beta testers' launch plan decided |
 | **Dec 7** | **Release candidate** (1.0) to beta testers |
 | **Dec 11** | Lawyer's notes back and folded into Terms / Privacy / license agreement |
-| **Dec 14** | Website wording, screenshots and promo video done |
+| **Dec 14** | Website wording, screenshots and promo video done; full site goes public (Pages: `teaser` → `main`) |
 | **Dec 20** | Triple-check done: real shows end to end, every PDF, export/import, iPad sync, FileMaker import, fresh install, update from old beta, buy → sign in → welcome |
 | 🛑 **Dec 21** | **Code freeze**: 1.0.0 built, signed, uploaded as a draft. Only showstoppers reopen it |
 | **Dec 29** | Stripe to live mode; buy one real license to prove it |
@@ -71,6 +71,7 @@ Plan: `docs/ipad-app-plan.md`. Contract with the desktop: `docs/sync-protocol.md
 - [ ] Phase 5: polish, TestFlight beta, App Store
 
 ## Website (`spotplot-website`, spotplotapp.com)
+- [ ] **Teaser until launch:** the public sees only the `teaser` branch (logo, tagline, 1.1.2027). Go live mid-December by switching GitHub → Settings → Pages → Branch from `teaser` to `main` (see the website's CLAUDE.md)
 - [ ] Buy buttons: switch the "Coming soon" buttons to Stripe checkout links at launch (see the site's README)
 - [ ] Check the Support page's billing answers match how Stripe is set up
 - [ ] Add the promo video when it's finished
