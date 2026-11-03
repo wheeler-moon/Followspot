@@ -126,6 +126,7 @@ A slim bar pinned at the top of the iPad while following:
 
 1. **Connect and view** (built 2026-10-17, in `~/Developer/SpotPlot/spotplot-ipad`; still to check landscape and a real iPad): desktop announces and pairs; the iPad downloads a show, picks a role, shows the cue list and PDFs, and works standalone. The desktop lists connected iPads.
 2. **Suggestions:** When/Notes editing on the iPad, the offline queue, and the desktop review list.
+1b. **My notes** (built 2026-11-03, for 1.0): the operator's own notes on cues, typed in the tap-a-cue popover under the flag buttons, shown on a small line under the cue. Kept on the iPad only (`ShowEntry.myNotes`, by cue id and spot), never sent to the Mac, and kept through updates. Like pencil notes on the printed sheet.
 3. ~~Live sync~~: dropped (2026-11-03). Wheeler wants operators to approve every update to their cue list, so updates stay as the banner + See Changes + Update.
 4. **Follow console:** Eos listening on the iPad, the Now / Next bar, live and up-next highlights, scroll-to-pause.
 5. **Polish:** onboarding, TestFlight beta, then the App Store.

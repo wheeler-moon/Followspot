@@ -47,6 +47,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 Saved for the iPad app's first release (kept out of the Mac's What's New).
 
+- **My notes**: tap a cue and type in **My note** to add your own note, like pencil on a printed sheet. It shows on a small line under the cue (in both the spot and caller views), stays on this iPad only and is kept when the show updates from the Mac. Cues with a note stay visible even when Hide Off or Hide Tracked would hide them
 - Notes on Off cues show in the Off row (and under Off in the caller view), and Hide Off Cues keeps the Off cues that have a note
 - Act breaks (like "Act One") always show as their orange header in the spot and caller lists, even with no cues of their own, in their place between scenes (as on the Mac)
 - A cue with more than one character shows them all ("Bob, Matt & Sue"), wrapping onto more lines instead of cutting off
