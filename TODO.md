@@ -25,6 +25,8 @@ The one to-do list for every SpotPlot project (see `docs/README.md` for the fami
 | **Dec 29** | Stripe to live mode; buy one real license to prove it |
 | 🚀 **Jan 1** | Publish 1.0.0, turn on the Buy buttons |
 
+- [ ] **No visible AI traces at launch** (by Dec 20). Nothing public may show the project was built with AI: app repo private (above); website repo private or replaced by a fresh one with no history and no `CLAUDE.md` (the public one has it plus co-author lines on its commits); new `spotplot-releases` repo starts clean; check the shipped app's code is minified with no comments or notes; website wording reads like a person wrote it
+
 Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `CHANGELOG.md` → Unreleased.
 
 ## Desktop app (`followspot`)
