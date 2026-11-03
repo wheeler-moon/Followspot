@@ -1,4 +1,5 @@
 import UpdateNotice from './components/UpdateNotice';
+import EndingNotice from './components/EndingNotice';
 import React, { useState, useEffect } from 'react';
 import HomeScreen from './screens/HomeScreen';
 import NewShowScreen from './screens/NewShowScreen';
@@ -10,7 +11,7 @@ import CharactersScreen from './screens/CharactersScreen';
 import SpotNotesScreen from './screens/SpotNotesScreen';
 import LicenseScreen from './screens/LicenseScreen';
 import ExpiredScreen from './screens/ExpiredScreen';
-import { getCachedLicense, isCacheValid, validateLicense, setCachedLicense } from './license';
+import { getCachedLicense, isCacheValid, validateLicense, setCachedLicense, isPastEnd, lastDayText } from './license';
 import { resetTips } from './components/Tips';
 import { getUndoTarget, isTextBox } from './undoTarget';
 
@@ -18,6 +19,7 @@ export default function App() {
   const [screen, setScreen] = useState('home');
   const [currentShow, setCurrentShow] = useState(null);
   const [licenseStatus, setLicenseStatus] = useState('checking');
+  const [ended, setEnded] = useState(null);   // why the license stopped (the server's answer), for the ended screen
 
   useEffect(() => {
     checkLicense();
@@ -42,10 +44,11 @@ export default function App() {
         markInvalid(cached, result);
         return;
       } else {
-        if (cached.valid) {
+        if (cached.valid && !isPastEnd(cached)) {
           setLicenseStatus('valid');
           return;
         }
+        if (cached.valid) { markInvalid(cached, { code: 'expired', plan: cached.plan, expires_at: cached.expires_at }); return; }
       }
     }
 
@@ -55,6 +58,7 @@ export default function App() {
   // The server said no: expired, revoked, or this Mac would be a 3rd device on the license
   const markInvalid = (cached, result) => {
     setCachedLicense({ ...cached, valid: false });
+    setEnded(result);
     setLicenseStatus(result.code === 'device_limit' ? 'device_limit' : 'expired');
   };
 
@@ -75,6 +79,8 @@ export default function App() {
     const timer = setInterval(() => {
       const cached = getCachedLicense();
       if (cached && cached.license_key) validateInBackground(cached.license_key);
+      // Past its end date with no answer from the server (offline): it ends here too
+      if (cached && isPastEnd(cached)) markInvalid(cached, { code: 'expired', plan: cached.plan, expires_at: cached.expires_at });
     }, 15 * 60 * 1000);
     return () => clearInterval(timer);
   }, [licenseStatus]);
@@ -140,7 +146,17 @@ export default function App() {
   }
 
   if (licenseStatus === 'expired') {
+    const lastDay = lastDayText(ended?.expires_at);
+    const free = ['beta', 'comped'].includes(ended?.plan);
+    const words = ended?.code === 'revoked'
+      ? { title: 'License turned off', message: 'This SpotPlot license has been turned off. Your shows are safe on this Mac. If you think this is a mistake, contact support at spotplotapp.com.' }
+      : lastDay === 'Dec 31, 2026' && free
+        ? { title: 'The SpotPlot beta has ended', message: 'Thank you for testing SpotPlot! Beta licenses ended on Dec 31, 2026. Your shows are safe on this Mac: get SpotPlot at spotplotapp.com to keep working on them.' }
+        : { title: free ? 'Your SpotPlot license has ended' : 'Subscription ended',
+            message: `${free ? 'Your free SpotPlot license' : 'Your SpotPlot subscription'} ended${lastDay ? ' on ' + lastDay : ''}. Your shows are safe on this Mac: get SpotPlot at spotplotapp.com to keep working on them.` };
     return <>{dragStrip}<ExpiredScreen
+      {...words}
+      onGetSpotPlot={() => window.require('electron').shell.openExternal('https://spotplotapp.com')}
       onRetry={checkLicense} 
       onNewLicense={() => {
         localStorage.removeItem('spotplot_license');
@@ -160,6 +176,7 @@ export default function App() {
       {screen === 'characters' && <CharactersScreen show={currentShow} navigate={navigate} />}
       {screen === 'spot-notes' && <SpotNotesScreen show={currentShow} navigate={navigate} />}
       <UpdateNotice />
+      <EndingNotice />
     </div>
   );
 }

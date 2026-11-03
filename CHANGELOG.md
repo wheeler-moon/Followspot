@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- **Your license's end date**: Settings → Account shows when a free or beta license ends ("Active through Dec 31, 2026"). In its last week a small notice says so, with a link to get SpotPlot. When a license ends, SpotPlot says so plainly, reminds you your shows are safe on your Mac, and links to spotplotapp.com
 - **Notes on Off cues**: click **+ Note** in an Off box to leave the operator a note while their spot is off (where to move next, a frame to set up in the dark…). It prints across the row on the spot sheet, right after Off, and under Off on the caller sheet. If you later give that cue an action, the note becomes its regular Notes line. Changing a cue to Off clears its old note, so an Off box always starts empty When printing a spot sheet with **Hide Off cues** on, **Keep ones with notes** (on to start) still prints the Off cues that have a note
 - Show Settings: the EOS Control tab is now called **Console Connection**
 

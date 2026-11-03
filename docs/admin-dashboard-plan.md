@@ -1,6 +1,6 @@
 # License server and admin dashboard: plan
 
-For `~/Developer/SpotPlot/spotplot-server` (repo `wheeler-moon/spotplot-server`, private; pushing `main` deploys to Render). Started 2026-10-13. Nothing here is built yet.
+For `~/Developer/SpotPlot/spotplot-server` (repo `wheeler-moon/spotplot-server`, private; pushing `main` deploys to Render). Started 2026-10-13. **Built 2026-11-03 (everything but Stripe):** see "What's built" at the end.
 
 ## Where it is today
 
@@ -74,3 +74,14 @@ Not legal advice; research the current rules when setting up Stripe and have the
 - Sales tax on software subscriptions in some states (Stripe Tax can calculate and collect).
 - Customers outside the US: EU/UK consumer rules (e.g. withdrawal rights for digital purchases) and VAT.
 - Terms of service and privacy policy pages on the website, matching the above.
+
+## What's built (2026-11-03)
+
+- **Storage stays one JSON file**, not SQLite: every read-change-write is synchronous in one Node process, so changes can't collide and be lost. Writes are atomic (temp file + rename) with a dated backup each day (`backups/`, last 30 days). Revisit if the server ever runs more than one process.
+- **End dates:** `expires_at`, chosen as a last day and stored as the end of that day in New York time (a license ending Dec 31 works until midnight Dec 31, NYC). Status is worked out from it on every check (`effectiveStatus`): active, expired or revoked. A failed payment adds 24 hours (`PAYMENT_GRACE_HOURS`) once Stripe sets `payment_failed`.
+- **Beta:** on first start, every existing license without a Stripe subscription got Dec 31, 2026 (`meta.beta_end_set`). New beta licenses default to it in the dashboard.
+- **Sign-in:** the password goes only to `/admin/login`, which returns a 12-hour session token (memory only; a deploy signs you out). 8 wrong tries from one address lock it out for 15 minutes.
+- **Dashboard:** Overview (active by plan, new this month, ending in 30 days, payments failing, estimated monthly revenue, Macs in use now, free licenses with no end date, ending soon, recent activity). Licenses (search, plan and status filters, sort, CSV export, select several to set or remove an end date). License page (key with Copy and Email Key…, name, email, plan, Mac limit, notes, end date with +30 / +90 / +1 year / end of beta, Macs with Remove, Stripe link, history, Turn License Off / Back On). No delete: turned-off licenses stay, hidden by the default filter.
+- **History:** every change (admin, app sign-ins and sign-outs, name changes, system) on `license.history`.
+- **App:** shows the end date in Settings, a notice in the last week, ends offline at the end date, and a clear screen for an ended or turned-off license.
+- **Not yet (Stripe):** webhooks to set end dates from subscriptions, payment_failed, customer links, revenue.

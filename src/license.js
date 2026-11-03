@@ -24,8 +24,23 @@ export function setCachedLicense(data) {
   window.dispatchEvent(new Event(ACCOUNT_CHANGED_EVENT));
 }
 
+// A license with an end date (beta, complimentary, a canceled plan) stops at that moment, even when this Mac
+// can't reach the server. After a failed renewal payment it keeps working PAYMENT_GRACE_HOURS longer.
+const PAYMENT_GRACE_HOURS = 24;
+export function isPastEnd(cached) {
+  if (!cached?.expires_at) return false;
+  return Date.now() >= new Date(cached.expires_at).getTime() + (cached.payment_failed ? PAYMENT_GRACE_HOURS * 3600000 : 0);
+}
+
+// The last day a license works, e.g. "Dec 31, 2026" (end dates are whole days, New York time)
+export function lastDayText(expiresAt) {
+  if (!expiresAt) return '';
+  return new Date(new Date(expiresAt).getTime() - 1).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' });
+}
+
 export function isCacheValid(cached) {
   if (!cached) return false;
+  if (isPastEnd(cached)) return false;
   const cachedAt = new Date(cached.cached_at);
   const now = new Date();
   const daysSinceCached = (now - cachedAt) / (1000 * 60 * 60 * 24);

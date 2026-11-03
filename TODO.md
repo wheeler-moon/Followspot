@@ -83,11 +83,10 @@ Plan: `docs/ipad-app-plan.md`. Contract with the desktop: `docs/sync-protocol.md
 
 Plan: `docs/admin-dashboard-plan.md`.
 
-- [ ] Move license storage from one JSON file to SQLite (before Stripe)
-- [ ] Expiry dates on licenses (renews/expires on), returned to the app by `/validate`, with a 24-hour grace period after a failed payment
 - [ ] Stripe: create and renew licenses automatically from webhooks (Standard and Student, monthly and yearly). Checkout must collect the buyer's **name** and the webhook saves it on the license (`name`), so the app knows it at sign-in
 - [ ] Student plan: .edu email verification
-- [ ] Admin dashboard: home (expiring soon, payments failing, by plan, revenue), search and filters, license page (extend/set expiry, change plan or device limit, revoke/reinstate, resend email, notes), history of every change, CSV export
+- [ ] **Deploy the new dashboard** (built 2026-11-03, committed, not pushed). Right after it deploys: sign in to `/admin` and set Wheeler's own license(s) to **No End Date** (every pre-launch license gets Dec 31, 2026), and change the admin password on Render (the old one was in a committed `.env`)
+- [ ] Stripe → dashboard: webhooks set `expires_at` to each subscription's period end (and `payment_failed` for the 24-hour grace), link `stripe_customer_id`, and log to the license history (by: stripe). The dashboard's revenue and payments-failing cards fill in from these
 - [ ] Stripe → licenses: webhooks fill each license's `billing_interval`, `renews_at`, `ends_at` and `payment_failed` (the server already sends them to Settings → Account), and set `STRIPE_PORTAL_URL` on Render so Settings → Manage… opens the customer portal
 - [ ] Stripe emails: turn on receipts, failed-payment and expiring-card emails, yearly renewal reminders, and the customer portal (cancel / update card)
 - [ ] **Before launch: lawyer review.** Have a lawyer go over the drafts Claude wrote on 2026-10-19: `privacy.html` and `terms.html` on the website, and the license agreement (`LICENSE.txt` / `LICENSE.rtf`). Make sure they match the final Stripe setup, refunds (Wheeler's choice: no refunds), student checks and the business details below

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import useEscape from '../useEscape';
-import { getCachedLicense, setCachedLicense, validateLicense, deactivateLicense, getMyName, setMyName } from '../license';
+import { getCachedLicense, setCachedLicense, validateLicense, deactivateLicense, getMyName, setMyName, lastDayText } from '../license';
 import WhatsNew from './WhatsNew';
 import { WELCOMED_KEY } from './WelcomeScreen';
 const { ipcRenderer, shell } = window.require('electron');
@@ -31,6 +31,8 @@ function statusText(lic) {
   if (lic.ends_at) return { text: `Canceled: works until ${formatDate(lic.ends_at)}`, color: C.orange };
   if (lic.status === 'grace_period') return { text: `Grace period: ${lic.grace_days_remaining ?? 'a few'} days left`, color: C.orange };
   if (lic.renews_at) return { text: `Renews ${formatDate(lic.renews_at)}` };
+  // A set end date (beta, complimentary): orange in its last week
+  if (lic.expires_at) return { text: `Active through ${lastDayText(lic.expires_at)}`, color: new Date(lic.expires_at) - Date.now() < 7 * 86400000 ? C.orange : undefined };
   if (lic.status === 'comped') return { text: 'Active · no charge' };
   if (lic.status === 'active') return { text: 'Active' };
   return { text: lic.status || '—' };
