@@ -47,7 +47,6 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 
 ### Later
 - [ ] Gel catalog upkeep: refresh `src/gels.json` from the makers' sites now and then (and bump `GEL_CATALOG_VERSION` in `main.js`). Discontinued gels people still use can be added back on request
-- [ ] Settings popup: more robust app-wide toggles
 - [ ] Shrink the app (~290 MB → ~100 MB) by rendering PDFs with Electron's built-in Chromium (`webContents.printToPDF` in a hidden window) instead of bundling Chrome for Testing. Smaller downloads and updates, faster notarization, fewer files to sign. **Caution:** an earlier attempt had PDF problems, which is why Chrome was bundled; compare every sheet type against the current output before switching, and keep the bundled Chrome as a fallback until verified.
 - [ ] Windows version
 - [ ] **Make the app's code private** (do it alongside a release). Two repos: `Followspot` goes private (source code); a new public `spotplot-releases` holds only the DMG and zip for each release, with no code. Steps:
