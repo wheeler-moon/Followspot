@@ -48,6 +48,8 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 Saved for the iPad app's first release (kept out of the Mac's What's New).
 
+- Shows list: each show has its logo (whole, never cropped), when it was last edited on the Mac and last opened on this iPad, and the show you opened most recently is at the top
+- Caller view: a little space between @ and the intensity
 - The cue details menu (•••) stays open while you switch things on and off; tap anywhere outside it to close it
 - Flags: tap a flag in the Flags list to close it and scroll the cue list to that cue. Cues with a flag (or your own note) stay visible even when Hide Off or Hide Tracked would hide them
 - My note: the keyboard's Done key closes the note (and saves it) instead of starting a new line

@@ -755,7 +755,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
                 ${quiet ? '' : getActionIconHTML(sc.action, 30, customActions)}
                 <span class="action-name">${quiet ? '—' : (displayAction(sc.action, actionNames) || '—')}</span>
                 <span class="char-name" style="margin-left:4px;">${charText || '—'}</span>
-                <div class="intensity-badge" style="margin-left:auto;">${sc.intensity ? `<span style="font-size:11pt;font-weight:400;color:#666;">@</span>${sc.intensity}` : ''}</div>
+                <div class="intensity-badge" style="margin-left:auto;">${sc.intensity ? `<span style="font-size:11pt;font-weight:400;color:#666;margin-right:1.5pt;">@</span>${sc.intensity}` : ''}</div>
               </div>
               ${(() => {
                 // Iris / color / time in one labeled strip; fields hidden on print are left out entirely
