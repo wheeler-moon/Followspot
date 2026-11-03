@@ -157,7 +157,7 @@ A compact way to show a spot's frames in one row: the chips share the row's widt
 Quick marks an operator puts on a cue: **Missed** (red, `exclamationmark.triangle.fill`), **Clarify** (orange, `questionmark.circle.fill`), **Idea** (yellow, `lightbulb.fill`). Tapping a cue opens a popover with three big buttons (96×78, radius 14, the color at 16% behind the symbol and label). A flagged cue shows small symbols under its T· number.
 
 ### Highlighted rows and row shading (iPad)
-A highlighted cue gets its color at 24% across the row plus a solid 5pt bar on its left edge. A highlighted When/Notes line uses 42%. Cue rows alternate between no fill and white at 3.5% so rows are easy to tell apart. In the caller view (spots side by side), cues are split by a full-width line (white 16%) and spots by a short, faint line (white 9%, stopping 10pt short of the top and bottom), so a cue reads as one row and it never looks like a grid. Each spot's When box in a row starts at the same height.
+A highlighted cue gets its color at 24% across the row plus a solid 5pt bar on its left edge. A highlighted When/Notes line uses 42%. Cue rows alternate between no fill and white at 3.5% so rows are easy to tell apart. In the caller view (spots side by side), each cue is its own card (white 5.5%, 12pt corners, inset 8pt, 8pt gap between cards) so cues read as separate rows and it never looks like a grid; spots inside a card are split by a short, faint line (white 9%, stopping 10pt short of the top and bottom). The LQ column is snug and capped; a long cue number shrinks to fit. Each spot's When box in a row starts at the same height.
 
 Several color frames are written **F1+2** (the F once, frames in number order), on prints and on the iPad.
 
