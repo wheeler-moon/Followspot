@@ -11,6 +11,8 @@ The one to-do list for every SpotPlot project (see `docs/README.md` for the fami
 
 ## Launch timeline
 
+**The full, dated launch checklist is `docs/launch-checklist.md`**: every task for every product, who does it, ticked off as it's done. The table below is the summary.
+
 | By | What |
 |---|---|
 | **Nov 8** | Start the slow outside stuff: ~~file the LLC~~ (done Nov 3), EIN, business bank, book the lawyer, ask an accountant about sales tax. Request the company's D-U-N-S number (Apple needs it for an organization developer account) |
@@ -45,6 +47,10 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 - [ ] "Track down" button: carry a spot's details from one cue down the cue list until its next change. Wheeler will explain in more detail before we build it
 - [ ] Action icons: refine a few of the action icon images based on beta feedback. Wheeler will say which ones and what to change. The iPad keeps its own copy (`Resources/action-icons.json`), so update it too, and check the printed Action Key
 
+### Before launch (not features)
+- [ ] **Apple signing certificate expires Feb 1, 2027** (Developer ID Application, team 299TQ9H5QB). Make a new one in December so 1.0 and its first updates are signed with it. If the developer account moves to the LLC, convert the existing account rather than opening a new one: auto-update needs the same Team ID
+- [ ] Make the app's code private (steps below, under Later) before launch, with a release
+
 ### Later
 - [ ] Gel catalog upkeep: refresh `src/gels.json` from the makers' sites now and then (and bump `GEL_CATALOG_VERSION` in `main.js`). Discontinued gels people still use can be added back on request
 - [ ] Shrink the app (~290 MB → ~100 MB) by rendering PDFs with Electron's built-in Chromium (`webContents.printToPDF` in a hidden window) instead of bundling Chrome for Testing. Smaller downloads and updates, faster notarization, fewer files to sign. **Caution:** an earlier attempt had PDF problems, which is why Chrome was bundled; compare every sheet type against the current output before switching, and keep the bundled Chrome as a fallback until verified.
@@ -67,6 +73,7 @@ Plan: `docs/ipad-app-plan.md`. Contract with the desktop: `docs/sync-protocol.md
 - [ ] Keep the iPad's copies in step: `Resources/gels.json` (from `src/gels.json`) and `Resources/action-icons.json` (from the ActionIcon SVGs in `src/screens/CueListScreen.jsx`) whenever those change
 - [ ] After launch (Phase 2): suggestions sent to the Mac (When/Notes editing), offline queue, desktop review list, approval switch
 - [ ] After launch (Phase 2): send cue flags (Missed / Clarify / Idea) to the Mac so the LD sees them in the cue list; today they stay on the iPad and can be shared as text
+- [ ] **Reserve the name now:** create the "SpotPlot" app record in App Store Connect (holds the name; check it isn't taken)
 - [ ] **App Store listing prep** (ready by Dec 11, submit Dec 12 set to release manually on Jan 1):
   - Developer account: D-U-N-S number and switch the Apple developer account to The Wheeler Moon Group LLC (if the company should be listed as the developer); App Store Connect agreements, tax and banking forms
   - App record in App Store Connect: name "SpotPlot for iPad", subtitle, category (Productivity or Business), price Free, age rating
@@ -92,7 +99,8 @@ Plan: `docs/admin-dashboard-plan.md`.
 
 - [ ] Stripe: create and renew licenses automatically from webhooks (Standard and Student, monthly and yearly). Checkout must collect the buyer's **name** and the webhook saves it on the license (`name`), so the app knows it at sign-in
 - [ ] Student plan: .edu email verification
-- [ ] **Deploy the new dashboard** (built 2026-11-03, committed, not pushed). Right after it deploys: sign in to `/admin` and set Wheeler's own license(s) to **No End Date** (every pre-launch license gets Dec 31, 2026), and change the admin password on Render (the old one was in a committed `.env`)
+- [ ] **License email** (before launch): the server sends each buyer their key, sign-in email and download link when Stripe says they've paid (an email service such as Postmark or Resend, from spotplotapp.com with SPF/DKIM so it isn't spam)
+- [ ] Confirm the Render plan doesn't sleep when idle and has a persistent disk; keep a copy of the license backups off Render
 - [ ] Stripe → dashboard: webhooks set `expires_at` to each subscription's period end (and `payment_failed` for the 24-hour grace), link `stripe_customer_id`, and log to the license history (by: stripe). The dashboard's revenue and payments-failing cards fill in from these
 - [ ] Stripe → licenses: webhooks fill each license's `billing_interval`, `renews_at`, `ends_at` and `payment_failed` (the server already sends them to Settings → Account), and set `STRIPE_PORTAL_URL` on Render so Settings → Manage… opens the customer portal
 - [ ] Stripe emails: turn on receipts, failed-payment and expiring-card emails, yearly renewal reminders, and the customer portal (cancel / update card)
@@ -103,6 +111,8 @@ Plan: `docs/admin-dashboard-plan.md`.
 - [ ] Q1 2027: Production licenses (show, spots, close date). Q2 2027: Education licenses (school, seats)
 
 ## Business and pricing
+- [ ] Support email address that gets checked (e.g. support@spotplotapp.com), used on the website, in the app and on the App Store
+- [ ] Decide what beta testers get at launch (discount code, free month…) and whether the Student plan launches Jan 1
 - [ ] Stripe integration. Plans: Standard $15/month or $144/year; Student $8/month or $72/year (.edu). Launch with Standard and Student in January; Production tier Q1 after launch; Education tier Q2
 - [ ] Production plan: revisit the device count (spots × 2 + 2), since iPads are free and don't need licenses
 - [ ] Windows distribution
