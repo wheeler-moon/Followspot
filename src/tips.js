@@ -35,7 +35,7 @@ export const TIPS = {
     { id: 'cue-lq', target: 'cue-lq', title: 'One row per light cue',
       body: 'Click the number to type the LQ, and "pg" to note the script page. The menu under it sets the scene. Right-click the number to copy or paste the whole cue. Press Cmd+= to add a cue.' },
     { id: 'cue-action', target: 'cue-action', title: 'What the spot does',
-      body: 'Pick an action like Pick Up, Fade Out or Off, then the character (+ adds another). Off means the spot isn\'t used in that cue.' },
+      body: 'Pick an action like Pick Up, Fade Out or Off, then the character (+ adds another). Off means the spot isn\'t used in that cue; + Note in an Off box leaves the operator a note.' },
     { id: 'cue-look', target: 'cue-look', title: 'Iris and color',
       body: 'Pick the iris size, then click the color frames to use. Two frames on reads as F1+2. NC means no color.' },
     { id: 'cue-wlq', target: 'cue-wlq', title: 'w/LQ',

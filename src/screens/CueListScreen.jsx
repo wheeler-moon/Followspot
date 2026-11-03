@@ -7,6 +7,7 @@ import Tips from '../components/Tips';
 import { TIPS } from '../tips';
 import AppHeader from '../components/AppHeader';
 import RichLine from '../components/RichLine';
+import { safeRich } from '../richText';
 import { cueFieldSettings } from '../cueFields';
 import { irisSizeList } from '../irisSizes';
 import { gelColor } from '../gelColors';
@@ -279,6 +280,7 @@ function SpotCueCell({ onDragEnd, onContextMenu, spotCue, spot, cue, fieldsShown
   const [showCustomTime, setShowCustomTime] = useState(false);
   const [showCustomChar, setShowCustomChar] = useState(!!spotCue?.custom_character);
   const [addingChar, setAddingChar] = useState(false);   // a new, still-empty character box under the first
+  const [addingOffNote, setAddingOffNote] = useState(false);   // + Note clicked in an Off box, nothing typed yet
   const customCharDone = useRef(false);
   const [customTimeVal, setCustomTimeVal] = useState('');
   const ref = useRef();
@@ -377,6 +379,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
   const toggleWLQ = () => onUpdate(spotCue.id, 'with_lq', withLQ ? 0 : 1);
 
   if (spotCue.action === 'Off') {
+    const showOffNote = fieldsShown.notes !== false && (addingOffNote || !!safeRich(spotCue.notes));
     return (
       <td
         draggable
@@ -394,7 +397,25 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
             <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.28)', fontWeight: '500' }}>Off</span>
           </div>
 {showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} anchorRef={actionBtnRef} customActions={customActions} actionNames={actionNames} />}
-          <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.28)', marginTop: '6px', fontStyle: 'italic', textAlign: 'center', fontWeight: '600', pointerEvents: 'none' }}>spot inactive</div>
+          {/* A note for the op while the spot is off. It's the cue's regular note, so it carries over if the spot comes back on */}
+          {showOffNote ? (
+            <div onBlur={() => setAddingOffNote(false)} style={{ marginTop: '6px' }}>
+              <RichLine value={spotCue.notes} autoFocus={addingOffNote}
+                onSave={html => onUpdate(spotCue.id, 'notes', html)}
+                placeholder="Note for the op…"
+                style={{ textAlign: 'center', borderRadius: '6px', color: 'rgba(255,255,255,0.85)', padding: '2px 4px', fontSize: '13px', fontWeight: '500', ...lineHighlightStyle(spotCue.notes_highlight) }} />
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '6px' }}>
+              <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.28)', fontStyle: 'italic', fontWeight: '600', pointerEvents: 'none' }}>spot inactive</span>
+              {fieldsShown.notes !== false && (
+                <button onClick={() => setAddingOffNote(true)} title="Add a note for the operator while this spot is off"
+                  style={{ height: '20px', padding: '0 7px', borderRadius: '10px', border: 'none', background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.55)', fontSize: '11px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  + Note
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </td>
     );

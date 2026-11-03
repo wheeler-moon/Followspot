@@ -41,11 +41,6 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 - [ ] Narrow windows: rethink how the app looks when the window is tight (e.g. half a Mac screen). Past a certain width it gets cramped and hard to use
 - [ ] Tracking: check what a cue picks up from the cue above when it's made Tracked from another action
 - [ ] "Track down" button: carry a spot's details from one cue down the cue list until its next change. Wheeler will explain in more detail before we build it
-- [ ] **Notes on Off cues:** a small "+ Note" in an Off box so the LD can write the op a note while the spot is off (e.g. about the next cue or something to do in the dark). Likely the same `notes` field, so if the cue is later changed from Off to Pick Up (etc.) the note simply becomes that cue's regular note. Prints:
-  - Spot sheet: OFF always sits in the action column; the note follows it, centered left/right and filling the rest of the box (not in the Notes column)
-  - Caller sheet: the note centered under OFF
-  - Print options: replace "hide Off cues" with two choices, **Hide all Off cues** and **Hide Off cues without notes** (pick the clearest control)
-  - Check the iPad shows Off notes too, and the CSV export
 - [ ] Action icons: refine a few of the action icon images based on beta feedback. Wheeler will say which ones and what to change. The iPad keeps its own copy (`Resources/action-icons.json`), so update it too, and check the printed Action Key
 
 ### Later

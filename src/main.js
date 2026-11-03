@@ -316,7 +316,7 @@ function buildSheet(kind, opts) {
       html: cover(buildSpotSheetHTML({
         cueFields: show.cue_fields, show, spot, colorSlots: slotsFor(spot.id), cues, characters, scenes, label, customActions,
         spotCues: database.prepare('SELECT * FROM spot_cues WHERE spot_id = ?').all(spot.id),
-        numSpots: spots.length, hideOff: !!opts.hideOff, hideTracked: !!opts.hideTracked,
+        numSpots: spots.length, hideOff: opts.hideOff === 'unnoted' ? 'unnoted' : !!opts.hideOff, hideTracked: !!opts.hideTracked,
         rangeStart: opts.rangeStart ?? null, rangeEnd: opts.rangeEnd ?? null, showTracks: opts.showTracks !== false,
       }), `Spot ${spot.spot_number}${spot.operator_name ? ' · ' + spot.operator_name : ''}`, [spot], PAGE_MARGINS.spot, false),
       landscape, margin: PAGE_MARGINS.spot,

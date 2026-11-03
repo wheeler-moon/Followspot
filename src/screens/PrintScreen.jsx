@@ -47,6 +47,7 @@ export default function PrintScreen({ show, navigate }) {
   const [selected, setSelected] = useState(null); // item from the "what to print" list
   const [label, setLabel] = useState('');
   const [hideOff, setHideOff] = useState(false);
+  const [keepOffNotes, setKeepOffNotes] = useState(true); // with Hide Off cues: still print Off cues that have a note
   const [hideTracked, setHideTracked] = useState(false);
   const [rangeStart, setRangeStart] = useState('');
   const [rangeEnd, setRangeEnd] = useState('');
@@ -81,7 +82,7 @@ export default function PrintScreen({ show, navigate }) {
     if (!selected) return null;
     const req = { kind: selected.kind, showId: show.id, label };
     if (selected.kind === 'spot') {
-      Object.assign(req, { spotId: selected.spotId, hideOff, hideTracked,
+      Object.assign(req, { spotId: selected.spotId, hideOff: hideOff && (keepOffNotes ? 'unnoted' : 'all'), hideTracked,
         rangeStart: rangeStart ? parseInt(rangeStart) : null, rangeEnd: rangeEnd ? parseInt(rangeEnd) : null });
     }
     if (selected.kind === 'spot' || selected.kind === 'caller') Object.assign(req, { showTracks, cover: coverPage });
@@ -106,7 +107,7 @@ export default function PrintScreen({ show, navigate }) {
       else setPreviewError(result?.error || 'Could not build the preview.');
     }, 250);
     return () => clearTimeout(t);
-  }, [selected?.key, label, hideOff, hideTracked, rangeStart, rangeEnd, notesSpotId, showCostumeNotes, showTracks, coverPage, usedOnly]);
+  }, [selected?.key, label, hideOff, keepOffNotes, hideTracked, rangeStart, rangeEnd, notesSpotId, showCostumeNotes, showTracks, coverPage, usedOnly]);
 
   // Leaving the print screen: let the app shut down the preview's background Chrome
   useEffect(() => () => ipcRenderer.send('print-closed'), []);
@@ -173,6 +174,11 @@ export default function PrintScreen({ show, navigate }) {
                 <>
                   <div style={sectionLabel}>Options</div>
                   <Switch on={hideOff} onChange={setHideOff} label="Hide Off cues" hint="Skip cues where this spot is off" />
+                  {hideOff && (
+                    <div style={{ marginLeft: '54px', marginTop: '-4px' }}>
+                      <Switch on={keepOffNotes} onChange={setKeepOffNotes} label="Keep ones with notes" hint="Off cues with a note for the op still print" />
+                    </div>
+                  )}
                   <Switch on={hideTracked} onChange={setHideTracked} label="Hide Tracked cues" hint="Only cues where something changes" />
                   <Switch on={showTracks} onChange={setShowTracks} label="T· numbers" hint="Small spot cue numbers under each LQ" />
                   <Switch on={coverPage} onChange={setCoverPage} label="Cover page" hint="Logo, team, this spot's colors and an action key" />

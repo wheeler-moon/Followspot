@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- **Notes on Off cues**: click **+ Note** in an Off box to leave the operator a note while their spot is off (where to move next, a frame to set up in the dark…). It prints across the row on the spot sheet, right after Off, and under Off on the caller sheet. If you later give that cue an action, the note becomes its regular Notes line. When printing a spot sheet with **Hide Off cues** on, **Keep ones with notes** (on to start) still prints the Off cues that have a note
 - Show Settings: the EOS Control tab is now called **Console Connection**
 
 - **Sign In / Sign Out**: the first screen now says Sign in to SpotPlot, and Settings → Deactivate is now **Sign Out** (it still frees this Mac's place on your license so you can use another Mac). Signing in again after signing out shows the welcome again
@@ -46,6 +47,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 Saved for the iPad app's first release (kept out of the Mac's What's New).
 
+- Notes on Off cues show in the Off row (and under Off in the caller view), and Hide Off Cues keeps the Off cues that have a note
 - Act breaks (like "Act One") always show as their orange header in the spot and caller lists, even with no cues of their own, in their place between scenes (as on the Mac)
 - A cue with more than one character shows them all ("Bob, Matt & Sue"), wrapping onto more lines instead of cutting off
 - Jump to Scene (the list button in the top bar) scrolls straight to any scene, like the Mac's Jump to

@@ -5,8 +5,9 @@ const FORMAT_KEYS = { b: 'bold', i: 'italic', u: 'underline' };
 
 // Single-line text field that supports Cmd+B / Cmd+I / Cmd+U on selected words.
 // Saves sanitized HTML on blur or Enter.
-export default function RichLine({ value, onSave, placeholder, style }) {
+export default function RichLine({ value, onSave, placeholder, style, autoFocus }) {
   const ref = useRef();
+  useEffect(() => { if (autoFocus) ref.current?.focus(); }, []);
 
   // Show the saved value, and follow outside changes (undo, Tracked, swap) while not editing
   useEffect(() => {

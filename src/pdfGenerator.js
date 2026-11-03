@@ -138,7 +138,8 @@ const sceneRowHTML = (scene, colspan) => `
         `;
 
 function buildSpotSheetHTML({ cueFields, show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, hideOff, hideTracked, rangeStart, rangeEnd, customActions, showTracks = true }) {
-  const pagePrint = cueFieldSettings(cueFields).page.print;
+  const pageFields = cueFieldSettings(cueFields);
+  const pagePrint = pageFields.page.print;
   const actionNames = actionNameMap(show && show.action_names);
   const isLandscape = false;
   let logoHTML = '<div class="header-logo-placeholder">LOGO</div>';
@@ -175,10 +176,12 @@ const sceneOrderMap = {};
   if (rangeEnd !== null && rangeEnd !== undefined) {
     sortedCues = sortedCues.filter(c => c.track_number <= rangeEnd);
   }
- if (hideOff) {
+  // hideOff: true / 'all' hides every Off cue; 'unnoted' keeps Off cues that have a note
+  if (hideOff) {
     sortedCues = sortedCues.filter(c => {
       const sc = spotCues.find(sc => sc.cue_id === c.id && sc.spot_id === spot.id);
-      return sc && sc.action !== 'Off';
+      if (!sc) return false;
+      return sc.action !== 'Off' || (hideOff === 'unnoted' && pageFields.notes.print && !!safeRich(sc.notes));
     });
   }
 
@@ -225,6 +228,8 @@ const sceneOrderMap = {};
     const activeFrames = framesText(sc.active_frames);
     const isOff = sc.action === 'Off';
     const quiet = isQuiet(sc);
+    // A note on an Off cue fills the row (it's the cue's regular note; left out when Notes don't print)
+    const offNote = isOff && pageFields.notes.print ? safeRich(sc.notes) : '';
 
     const isIgnored = sc.ignored === 1;
     const highlight = sc.highlight;
@@ -256,9 +261,12 @@ const sceneOrderMap = {};
             </table>
             <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20pt;font-weight:900;color:#1a1a1a;letter-spacing:0.3em;">— IGNORE —</div>
           </td>
-        ` : isOff ? `
-          <td colspan="7" style="text-align:center;vertical-align:middle;padding:8px;font-size:11pt;font-weight:600;color:#aaa;">Off</td>
+        ` : isOff ? (pageFields.action.print ? `
+          <td class="action-cell off-word">Off</td>
+          <td colspan="6" class="off-note"><span style="${lineHighlightCSS(sc.notes_highlight)}">${offNote}</span></td>
         ` : `
+          <td colspan="7" class="off-note"><span class="off-word">Off</span>${offNote ? ` &nbsp;<span style="${lineHighlightCSS(sc.notes_highlight)}">${offNote}</span>` : ''}</td>
+        `) : `
         <td class="action-cell">
           ${sc.action && !quiet ? `
             <div class="action-inner">
@@ -510,6 +518,9 @@ const sceneOrderMap = {};
     opacity: 0.35;
   }
 
+  .off-row td.off-word, .off-row .off-word { font-size: 11pt; font-weight: 600; color: #aaa; }
+  .off-row td.off-note { text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 600; color: #1a1a1a; }
+
   .lq-cell {
     font-size: 16pt;
     font-weight: 800;
@@ -717,12 +728,14 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
       const activeFrames = sc ? framesText(sc.active_frames) : '';
 
       if (isOff) {
+        const offNote = sc && printFields.notes.print ? safeRich(sc.notes) : '';
         spotCellsHTML += `
           <td class="spot-cell off-cell">
             <div class="off-inner">
               ${actionIconSVG('Off', 18)}
               <span class="off-label">Off</span>
             </div>
+            ${offNote ? `<div class="off-note"><span style="${lineHighlightCSS(sc.notes_highlight)}">${offNote}</span></div>` : ''}
           </td>
         `;
       } else {
@@ -944,6 +957,8 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
     font-weight: 700;
     color: #666;
   }
+
+  .off-note { margin-top: 4px; font-size: 10.5pt; font-weight: 600; color: #1a1a1a; text-align: center; }
 
   .cell-top {
     display: flex;
