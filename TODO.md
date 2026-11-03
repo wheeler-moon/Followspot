@@ -7,23 +7,25 @@ The one to-do list for every SpotPlot project (see `docs/README.md` for the fami
 - New requests and beta bug reports go into the right product's section straight away, even if they're for "someday".
 - Anything that touches more than one product (e.g. new show data the iPad must understand) says so, so neither side is forgotten.
 
-**Launch target: January 1, 2027** (Standard and Student plans on sale). Everything here is sorted with that date in mind.
+**Launch target: January 1, 2027** (Standard and Student plans on sale, and SpotPlot for iPad on the App Store). Everything here is sorted with that date in mind.
 
 ## Launch timeline
 
 | By | What |
 |---|---|
-| **Nov 8** | Start the slow outside stuff: ~~file the LLC~~ (done Nov 3), EIN, business bank, book the lawyer, ask an accountant about sales tax. Decide the iPad's launch plan |
-| **Nov 22** | Last day for 1.0 features; anything unfinished moves to 1.1 |
+| **Nov 8** | Start the slow outside stuff: ~~file the LLC~~ (done Nov 3), EIN, business bank, book the lawyer, ask an accountant about sales tax. Request the company's D-U-N-S number (Apple needs it for an organization developer account) |
+| **Nov 22** | Last day for 1.0 features (Mac and iPad); anything unfinished moves to 1.1 |
 | 🛑 **Nov 23** | **Feature freeze**: bug fixes and polish only |
 | **Dec 6** | Selling side works in Stripe test mode (license server, webhooks, website Buy), app code made private, beta testers' launch plan decided |
-| **Dec 7** | **Release candidate** (1.0) to beta testers |
-| **Dec 11** | Lawyer's notes back and folded into Terms / Privacy / license agreement |
+| **Dec 7** | **Release candidate** (1.0) to beta testers; iPad on TestFlight for them |
+| **Dec 11** | iPad App Store listing ready (screenshots, description, privacy answers) |
+| 🛑 **Dec 12** | **iPad submitted for App Store review**, set to release manually (review slows over the holidays; leaves time for a rejection and resubmit) |
+| **Dec 13** | Lawyer's notes back and folded into Terms / Privacy / license agreement |
 | **Dec 14** | Website wording, screenshots and promo video done; full site goes public (Pages: `teaser` → `main`) |
 | **Dec 20** | Triple-check done: real shows end to end, every PDF, export/import, iPad sync, FileMaker import, fresh install, update from old beta, buy → sign in → welcome |
 | 🛑 **Dec 21** | **Code freeze**: 1.0.0 built, signed, uploaded as a draft. Only showstoppers reopen it |
 | **Dec 29** | Stripe to live mode; buy one real license to prove it |
-| 🚀 **Jan 1** | Publish 1.0.0, turn on the Buy buttons |
+| 🚀 **Jan 1** | Publish Mac 1.0.0, release the approved iPad app, turn on the Buy buttons |
 
 - [ ] **No visible AI traces at launch** (by Dec 20). Nothing public may show the project was built with AI: app repo private (above); website repo private or replaced by a fresh one with no history and no `CLAUDE.md` (the public one has it plus co-author lines on its commits); new `spotplot-releases` repo starts clean; check the shipped app's code is minified with no comments or notes; website wording reads like a person wrote it
 
