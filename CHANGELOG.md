@@ -6,7 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
-- **Notes on Off cues**: click **+ Note** in an Off box to leave the operator a note while their spot is off (where to move next, a frame to set up in the dark…). It prints across the row on the spot sheet, right after Off, and under Off on the caller sheet. If you later give that cue an action, the note becomes its regular Notes line. When printing a spot sheet with **Hide Off cues** on, **Keep ones with notes** (on to start) still prints the Off cues that have a note
+- **Notes on Off cues**: click **+ Note** in an Off box to leave the operator a note while their spot is off (where to move next, a frame to set up in the dark…). It prints across the row on the spot sheet, right after Off, and under Off on the caller sheet. If you later give that cue an action, the note becomes its regular Notes line. Changing a cue to Off clears its old note, so an Off box always starts empty When printing a spot sheet with **Hide Off cues** on, **Keep ones with notes** (on to start) still prints the Off cues that have a note
 - Show Settings: the EOS Control tab is now called **Console Connection**
 
 - **Sign In / Sign Out**: the first screen now says Sign in to SpotPlot, and Settings → Deactivate is now **Sign Out** (it still frees this Mac's place on your license so you can use another Mac). Signing in again after signing out shows the welcome again

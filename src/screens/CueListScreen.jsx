@@ -325,6 +325,11 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
       return;
     }
     onUpdate(spotCue.id, 'action', a.name);
+    // Turning a spot Off starts its box clean: the active cue's note doesn't carry into the Off note
+    if (a.name === 'Off' && spotCue.action !== 'Off') {
+      if (spotCue.notes) onUpdate(spotCue.id, 'notes', '');
+      if (spotCue.notes_highlight) onUpdate(spotCue.id, 'notes_highlight', null);
+    }
     // The action's own intensity/time, then this show's Cue Defaults for anything still empty (src/cueDefaults.js)
     const frames = (colorSlots || []).map(sl => 'F' + sl.slot_number);
     for (const [field, value] of Object.entries(fieldsForPick(a, spotCue, { defaults, fromOff, frames }))) onUpdate(spotCue.id, field, value);
