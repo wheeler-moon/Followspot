@@ -73,7 +73,6 @@ Plan: `docs/ipad-app-plan.md`. Contract with the desktop: `docs/sync-protocol.md
 - [ ] Keep the iPad's copies in step: `Resources/gels.json` (from `src/gels.json`) and `Resources/action-icons.json` (from the ActionIcon SVGs in `src/screens/CueListScreen.jsx`) whenever those change
 - [ ] After launch (Phase 2): suggestions sent to the Mac (When/Notes editing), offline queue, desktop review list, approval switch
 - [ ] After launch (Phase 2): send cue flags (Missed / Clarify / Idea) to the Mac so the LD sees them in the cue list; today they stay on the iPad and can be shared as text
-- [ ] **Reserve the name now:** create the "SpotPlot" app record in App Store Connect (holds the name; check it isn't taken)
 - [ ] **App Store listing prep** (ready by Dec 11, submit Dec 12 set to release manually on Jan 1):
   - Developer account: D-U-N-S number and switch the Apple developer account to The Wheeler Moon Group LLC (if the company should be listed as the developer); App Store Connect agreements, tax and banking forms
   - App record in App Store Connect: name "SpotPlot for iPad", subtitle, category (Productivity or Business), price Free, age rating

@@ -16,7 +16,7 @@ Every task between now and launch, in date order, for all of SpotPlot (Mac app, 
 - [ ] W: Book the lawyer: Terms, Privacy Policy, license agreement, refunds (no refunds), auto-renewal rules; also ask about a **"SpotPlot" trademark search**
 - [ ] W: Ask an accountant: sales tax, selling outside the US (Stripe Tax vs. Paddle/Lemon Squeezy)
 - [ ] W: Request the D-U-N-S number for the LLC (free; can take ~2 weeks)
-- [ ] W: **Reserve the app name**: create the "SpotPlot" app record in App Store Connect now (holds the name; check it isn't taken)
+- [x] W: **Reserve the app name**: "SpotPlot" app record created in App Store Connect (Nov 4); first build (1.0, build 1) uploaded to TestFlight
 - [ ] W: Business mailing address for the Terms and Privacy Policy (a PO box or virtual address is fine)
 - [ ] W: Decide: does the **Student plan** launch Jan 1? (needs .edu verification and a graduation date at checkout) or Standard only at first?
 - [ ] W: Decide what beta testers get at launch (e.g. a discount code, or a free first month)
