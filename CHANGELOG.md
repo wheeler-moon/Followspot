@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- Caller sheet: when any spot in a cue has a When or a Note, every spot in that cue shows the When and Note box (empty if it has none), so they always line up
 - Shorter tips and settings descriptions, quicker to read
 - A new or inserted cue now brings each spot's iris size from the cue above, along with its character and color
 - Cue list: a spot's iris size shows bright blue in the cue where it changes and muted while it stays the same, like color frames

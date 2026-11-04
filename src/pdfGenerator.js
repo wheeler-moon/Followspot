@@ -720,6 +720,11 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
     }
 
     let spotCellsHTML = '';
+    // If any spot in this cue has a When or a Note, every active spot gets that row (empty if it has none),
+    // so the information always sits in the same place across the row
+    const rowSCs = spots.map(spot => (spotCuesBySpot[spot.id] || []).find(x => x.cue_id === cue.id)).filter(x => x && x.action !== 'Off');
+    const rowHasWhen = printFields.when.print && rowSCs.some(x => whenText(x, cue));
+    const rowHasNotes = printFields.notes.print && rowSCs.some(x => safeRich(x.notes));
     for (const spot of spots) {
       const spotCues = spotCuesBySpot[spot.id] || [];
       const sc = spotCues.find(sc => sc.cue_id === cue.id);
@@ -771,9 +776,10 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
               })()}
               ${(() => {
                 // When and Notes share one box, one labeled row each
+                const when = whenText(sc, cue), note = safeRich(sc.notes);
                 const rows = [
-                  printFields.when.print && whenText(sc, cue) ? `<div class="say-row when-text" style="${lineHighlightCSS(sc.when_highlight)}"><span class="lbl">When</span><span>${whenText(sc, cue)}</span></div>` : '',
-                  printFields.notes.print && safeRich(sc.notes) ? `<div class="say-row notes-text" style="${lineHighlightCSS(sc.notes_highlight)}"><span class="lbl">Note</span><span>${safeRich(sc.notes)}</span></div>` : '',
+                  rowHasWhen ? `<div class="say-row when-text" style="${when ? lineHighlightCSS(sc.when_highlight) : ''}"><span class="lbl">When</span><span>${when || '&nbsp;'}</span></div>` : '',
+                  rowHasNotes ? `<div class="say-row notes-text" style="${note ? lineHighlightCSS(sc.notes_highlight) : ''}"><span class="lbl">Note</span><span>${note || '&nbsp;'}</span></div>` : '',
                 ].filter(Boolean);
                 return rows.length ? `<div class="say-box">${rows.join('')}</div>` : '';
               })()}
