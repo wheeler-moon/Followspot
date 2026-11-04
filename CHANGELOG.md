@@ -6,7 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
-- Caller sheet with 4 or more spots: short iris names (H&S, FB), smaller action words that stay on one line, and each spot's color load on one row at the top. Action symbols are the same size throughout a sheet
+- Caller sheet with 4 or more spots: short iris names (H&S, FB), smaller action words that stay on one line, and each spot's color load on one row at the top, lined up even when a spot has no location. Names never split mid-word. Action symbols are the same size throughout a sheet
 - Caller sheet: an ignored spot keeps its size, goes grey and faint, with IGNORE centered over it
 - Caller sheet: each cue lines up across its spots. The action word, character and intensity share one line; iris, color and time sit at the same height; and if any spot has a When or a Note, every active spot shows both, in line. Tracked spots keep their short layout
 - Shorter tips and settings descriptions, quicker to read

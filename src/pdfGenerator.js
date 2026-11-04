@@ -705,7 +705,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
           <span class="spot-number">SPOT ${spot.spot_number}</span>
           <span class="spot-operator">${spot.operator_name || 'TBD'}</span>
         </div>
-        <div class="spot-meta">${[spot.location, spot.fixture_type].filter(Boolean).join(' · ')}</div>
+        <div class="spot-meta">${[spot.location, spot.fixture_type].filter(Boolean).join(' · ') || '&nbsp;'}</div>
         <div class="gel-frames">${gelHTML}</div>
       </div>
     `;
@@ -1043,10 +1043,10 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
   .caller-action > svg, .caller-action > img { align-self: flex-end; margin-bottom: -7px; flex-shrink: 0; width: 30px; height: 30px; }
   /* Four or more spots */
   .caller-action .action-name { white-space: nowrap; }
-  .compact .caller-action { gap: 4px; }
+  .compact .caller-action { gap: 4px; flex-wrap: wrap; row-gap: 0; }
   .compact .caller-action > svg, .compact .caller-action > img { width: 24px; height: 24px; margin-bottom: -5px; }
   .compact .action-name { font-size: 8.5pt; }
-  .compact .char-name { font-size: 11pt; margin-left: 2px !important; min-width: 0; overflow-wrap: break-word; }
+  .compact .char-name { font-size: 11pt; margin-left: 2px !important; }
   .compact .intensity-badge { font-size: 13pt; padding-left: 2px; }
   .compact .spot-header-card { justify-self: stretch; margin: 0 4px; max-width: none; padding: 4px 5px; }
   .compact .gel-frames { flex-wrap: nowrap; gap: 2px; }
@@ -1137,7 +1137,9 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
 
   .spot-number { font-size: 11pt; font-weight: 800; }
   .spot-operator { font-size: 10pt; font-weight: 600; color: #444; }
-  .spot-meta { font-size: 7pt; color: #888; margin-bottom: 3px; }
+  .spot-meta { font-size: 7pt; color: #888; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* Every spot's color load sits on the same line, even when a spot has no location or fixture */
+  .spot-header-card { align-self: start; }
 
   .gel-frames { display: flex; gap: 3px; flex-wrap: wrap; }
 
