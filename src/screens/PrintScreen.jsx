@@ -42,15 +42,6 @@ function buildRequest(selected, o, label, showId) {
   return req;
 }
 
-// "Letter · Portrait · Pages 2–5": what Print Setup is set to, under its button
-function setupSummary(kind, o, spotCount) {
-  const parts = [o.paper === 'legal' ? 'Legal' : 'Letter', orientationFor(kind, o, spotCount) === 'landscape' ? 'Landscape' : 'Portrait'];
-  if (o.rangeMode === 'pages' && (o.pageFrom || o.pageTo)) parts.push(`Pages ${o.pageFrom || 1}–${o.pageTo || 'end'}`);
-  else if (o.rangeMode === 'cues' && hasCueRange(kind) && (o.rangeStart || o.rangeEnd)) parts.push(`T·${o.rangeStart || 'first'}–${o.rangeEnd || 'last'}`);
-  else parts.push('All pages');
-  return parts.join(' · ');
-}
-
 // Re-renders the preview PDF whenever the request changes (short pause so typing stays smooth).
 // Only the newest request's result is shown.
 function usePreview(req) {
@@ -363,9 +354,6 @@ export default function PrintScreen({ show, navigate }) {
               )}
 
               <button data-tour="print-setup" onClick={() => setSetupOpen(true)} style={{ ...borderedButton, width: '100%', marginTop: '8px' }}>Print Setup…</button>
-              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)', marginTop: '6px', textAlign: 'center' }}>
-                {setupSummary(selected.kind, options, spots.length)}
-              </div>
             </>
           )}
         </div>
