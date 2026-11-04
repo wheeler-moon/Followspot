@@ -16,25 +16,28 @@ const primaryButton = { ...borderedButton, background: '#0A84FF' };
 const DEFAULT_OPTIONS = {
   hideOff: false, keepOffNotes: true, hideTracked: false, showTracks: true, coverPage: false,
   usedOnly: false, showCostumeNotes: true, notesSpotId: null,
-  paper: 'letter', orientation: {},              // orientation by sheet kind; unset = the sheet's usual one
-  rangeMode: 'all', pageFrom: '', pageTo: '', rangeStart: '', rangeEnd: '',
+  pages: {},   // paper, orientation and range for each kind of sheet (all spot sheets share one)
 };
+// orientation null = the sheet's usual one
+const DEFAULT_PAGE = { paper: 'letter', orientation: null, rangeMode: 'all', pageFrom: '', pageTo: '', rangeStart: '', rangeEnd: '' };
+const pageOf = (o, kind) => ({ ...DEFAULT_PAGE, ...((o.pages || {})[kind] || {}) });
 
 // Spot sheets only print portrait and the caller sheet only landscape (main.js buildSheet)
 const fixedOrientation = (kind) => kind === 'spot' ? 'portrait' : kind === 'caller' ? 'landscape' : null;
 const hasCueRange = (kind) => kind === 'spot' || kind === 'caller';
 function orientationFor(kind, o, spotCount) {
-  return fixedOrientation(kind) || o.orientation[kind] || (kind === 'color' && spotCount > 2 ? 'landscape' : 'portrait');
+  return fixedOrientation(kind) || pageOf(o, kind).orientation || (kind === 'color' && spotCount > 2 ? 'landscape' : 'portrait');
 }
 
 function buildRequest(selected, o, label, showId, cueFields) {
   if (!selected) return null;
-  const req = { kind: selected.kind, showId, label, paper: o.paper };
+  const pg = pageOf(o, selected.kind);
+  const req = { kind: selected.kind, showId, label, paper: pg.paper };
   if (cueFields) req.cueFields = cueFields;   // Page Setup's unsaved Cue Details
-  if (!fixedOrientation(selected.kind) && o.orientation[selected.kind]) req.orientation = o.orientation[selected.kind];
-  if (o.rangeMode === 'pages') Object.assign(req, { pageFrom: o.pageFrom || null, pageTo: o.pageTo || null });
-  if (o.rangeMode === 'cues' && hasCueRange(selected.kind)) {
-    Object.assign(req, { rangeStart: o.rangeStart ? parseInt(o.rangeStart) : null, rangeEnd: o.rangeEnd ? parseInt(o.rangeEnd) : null });
+  if (!fixedOrientation(selected.kind) && pg.orientation) req.orientation = pg.orientation;
+  if (pg.rangeMode === 'pages') Object.assign(req, { pageFrom: pg.pageFrom || null, pageTo: pg.pageTo || null });
+  if (pg.rangeMode === 'cues' && hasCueRange(selected.kind)) {
+    Object.assign(req, { rangeStart: pg.rangeStart ? parseInt(pg.rangeStart) : null, rangeEnd: pg.rangeEnd ? parseInt(pg.rangeEnd) : null });
   }
   if (selected.kind === 'spot') Object.assign(req, { spotId: selected.spotId, hideOff: o.hideOff && (o.keepOffNotes ? 'unnoted' : 'all'), hideTracked: o.hideTracked });
   if (selected.kind === 'spot' || selected.kind === 'caller') Object.assign(req, { showTracks: o.showTracks, cover: o.coverPage });
@@ -145,43 +148,61 @@ function PreviewArea({ selected, preview, updating, error, empty }) {
   return <div style={center}>Preparing preview…</div>;
 }
 
-// Page Setup's preview: one page at a time as a picture on its own grey, like the Mac's print window,
-// with "Page 1 of 3" and arrows to step through the pages
-function PagePreview({ req, preview, updating, error }) {
-  const [index, setIndex] = useState(0);
+// Page Setup's preview: every page as a picture on its own grey, like the Mac's print window. Scroll
+// through them; each page is drawn when it comes into view, and "Page 3 of 12" follows along.
+function PreviewPage({ req, page, aspect, root, onVisible }) {
+  const ref = useRef();
   const [image, setImage] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [wanted, setWanted] = useState(false);
+  const key = JSON.stringify(req);
+  useEffect(() => { setImage(null); }, [key]);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(entries => {
+      for (const e of entries) {
+        if (e.isIntersecting) setWanted(true);
+        if (e.intersectionRatio > 0.5) onVisible(page);
+      }
+    }, { root: root.current, rootMargin: '400px 0px', threshold: [0, 0.5] });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [page]);
+  useEffect(() => {
+    if (!wanted || !req) return;
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      const result = await ipcRenderer.invoke('print-page-image', { ...req, page });
+      if (!cancelled && result?.success) setImage(result.image);
+    }, 120);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [key, wanted]);
+  return (
+    <div ref={ref} style={{ width: '100%', maxWidth: aspect >= 1 ? '100%' : `calc((100vh - 200px) * ${aspect})`, aspectRatio: String(aspect), background: '#FFFFFF', boxShadow: '0 4px 18px rgba(0,0,0,0.35)', flexShrink: 0 }}>
+      {image && <img src={image} alt={`Page ${page}`} style={{ display: 'block', width: '100%', height: '100%' }} />}
+    </div>
+  );
+}
+
+function PagePreview({ req, preview, updating, error, aspect }) {
+  const scroller = useRef();
+  const [current, setCurrent] = useState(1);
   const pages = preview?.pages || 0;
   const first = req && req.pageFrom ? Math.max(1, parseInt(req.pageFrom) || 1) : 1;   // pages kept start here
   const key = JSON.stringify(req);
-  useEffect(() => { setIndex(0); }, [key]);
-  useEffect(() => {
-    if (!req || !pages) return;
-    const i = Math.min(index, pages - 1);
-    let cancelled = false;
-    setLoading(true);
-    const t = setTimeout(async () => {
-      const result = await ipcRenderer.invoke('print-page-image', { ...req, page: first + i });
-      if (cancelled) return;
-      setLoading(false);
-      if (result?.success) setImage(result.image);
-    }, 150);
-    return () => { cancelled = true; clearTimeout(t); };
-  }, [key, index, pages]);
-
-  const arrow = (enabled) => ({ width: '24px', height: '24px', border: 'none', borderRadius: '12px', background: 'transparent', color: '#FFFFFF', fontSize: '15px', opacity: enabled ? 1 : 0.3, cursor: enabled ? 'pointer' : 'default' });
+  useEffect(() => { setCurrent(1); if (scroller.current) scroller.current.scrollTop = 0; }, [key]);
   return (
-    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#38383A', padding: '24px 24px 16px', gap: '14px' }}>
-      <div style={{ flex: 1, minHeight: 0, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-        {error ? <div style={{ color: '#FF453A', fontSize: '13px' }}>{error}</div>
-          : image ? <img src={image} alt="Page preview" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', background: '#FFFFFF', boxShadow: '0 4px 18px rgba(0,0,0,0.35)', opacity: loading || updating ? 0.6 : 1, transition: 'opacity 0.15s' }} />
-          : <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '13px' }}>Preparing preview…</div>}
+    <div style={{ flex: 1, minWidth: 0, position: 'relative', background: '#38383A' }}>
+      <div ref={scroller} style={{ position: 'absolute', inset: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', padding: '24px 28px 72px', opacity: updating ? 0.6 : 1, transition: 'opacity 0.15s' }}>
+        {error ? <div style={{ margin: 'auto', color: '#FF453A', fontSize: '13px' }}>{error}</div>
+          : !pages ? <div style={{ margin: 'auto', color: 'rgba(255,255,255,0.55)', fontSize: '13px' }}>Preparing preview…</div>
+          : Array.from({ length: pages }, (_, i) => (
+            <PreviewPage key={key + ':' + i} req={req} page={first + i} aspect={aspect} root={scroller} onVisible={(p) => setCurrent(p - first + 1)} />
+          ))}
       </div>
       {pages > 0 && (
-        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '4px', height: '30px', padding: '0 6px', borderRadius: '15px', background: 'rgba(30,30,30,0.85)', fontSize: '13px', color: '#FFFFFF' }}>
-          <button onClick={() => setIndex(i => Math.max(0, i - 1))} disabled={index === 0} aria-label="Previous page" style={arrow(index > 0)}>‹</button>
-          <span style={{ minWidth: '92px', textAlign: 'center' }}>Page {Math.min(index, pages - 1) + 1} of {pages}</span>
-          <button onClick={() => setIndex(i => Math.min(pages - 1, i + 1))} disabled={index >= pages - 1} aria-label="Next page" style={arrow(index < pages - 1)}>›</button>
+        <div style={{ position: 'absolute', left: '50%', bottom: '16px', transform: 'translateX(-50%)', height: '30px', padding: '0 16px', display: 'flex', alignItems: 'center', borderRadius: '15px', background: 'rgba(30,30,30,0.88)', fontSize: '13px', color: '#FFFFFF', pointerEvents: 'none' }}>
+          Page {current} of {pages}
         </div>
       )}
     </div>
@@ -219,6 +240,8 @@ function PageSetup({ selected, options, label, show, spots, onSave, onCancel }) 
   const kind = selected.kind;
   const fixed = fixedOrientation(kind);
   const orientation = orientationFor(kind, draft, spots.length);
+  const pg = pageOf(draft, kind);
+  const setPage = (patch) => setDraft(d => ({ ...d, pages: { ...(d.pages || {}), [kind]: { ...pageOf(d, kind), ...patch } } }));
   const digits = (v) => v.replace(/\D/g, '');
 
   const row = { display: 'grid', gridTemplateColumns: '96px 1fr', alignItems: 'center', columnGap: '12px', marginBottom: '14px' };
@@ -235,7 +258,8 @@ function PageSetup({ selected, options, label, show, spots, onSave, onCancel }) 
         style={{ width: 'min(960px, calc(100vw - 48px))', height: 'min(640px, calc(100vh - 48px))', display: 'flex', background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 18px 48px rgba(0,0,0,0.45)' }}>
         {/* Live preview of the draft */}
         <div style={{ flex: 1, minWidth: 0, display: 'flex', borderRight: '1px solid rgba(255,255,255,0.10)' }}>
-          <PagePreview req={draftRequest} preview={preview} updating={updating} error={error} />
+          <PagePreview req={draftRequest} preview={preview} updating={updating} error={error}
+            aspect={(() => { const land = orientation === 'landscape', legal = pg.paper === 'legal'; const w = land ? (legal ? 14 : 11) : 8.5, h = land ? 8.5 : (legal ? 14 : 11); return w / h; })()} />
         </div>
 
         {/* Settings */}
@@ -247,7 +271,7 @@ function PageSetup({ selected, options, label, show, spots, onSave, onCancel }) 
           <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
             <div style={row}>
               <span style={rowLabel}>Paper Size</span>
-              <select value={draft.paper} onChange={e => set({ paper: e.target.value })} style={{ ...fieldStyle, height: '24px' }}>
+              <select value={pg.paper} onChange={e => setPage({ paper: e.target.value })} style={{ ...fieldStyle, height: '24px' }}>
                 <option value="letter">US Letter (8.5 × 11 in)</option>
                 <option value="legal">US Legal (8.5 × 14 in)</option>
               </select>
@@ -258,7 +282,7 @@ function PageSetup({ selected, options, label, show, spots, onSave, onCancel }) 
                 <div style={{ display: 'inline-flex', gap: '2px', padding: '2px', background: 'rgba(255,255,255,0.06)', borderRadius: '8px' }}>
                   {['portrait', 'landscape'].map(v => (
                     <button key={v} title={v === 'portrait' ? 'Portrait' : 'Landscape'} disabled={!!fixed}
-                      onClick={() => !fixed && set({ orientation: { ...draft.orientation, [kind]: v } })}
+                      onClick={() => !fixed && setPage({ orientation: v })}
                       style={segment(orientation === v, fixed && fixed !== v)}>
                       <PageIcon landscape={v === 'landscape'} />
                     </button>
@@ -271,21 +295,21 @@ function PageSetup({ selected, options, label, show, spots, onSave, onCancel }) 
             <div style={{ ...row, alignItems: 'start' }}>
               <span style={{ ...rowLabel, lineHeight: '24px' }}>Print</span>
               <div>
-                <select value={draft.rangeMode === 'cues' && !hasCueRange(kind) ? 'all' : draft.rangeMode} onChange={e => set({ rangeMode: e.target.value })} style={{ ...fieldStyle, height: '24px' }}>
+                <select value={pg.rangeMode === 'cues' && !hasCueRange(kind) ? 'all' : pg.rangeMode} onChange={e => setPage({ rangeMode: e.target.value })} style={{ ...fieldStyle, height: '24px' }}>
                   <option value="all">All Pages</option>
                   <option value="pages">Page Range</option>
                   {hasCueRange(kind) && <option value="cues">T· Range</option>}
                 </select>
-                {draft.rangeMode === 'pages' && (
+                {pg.rangeMode === 'pages' && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px', fontSize: '13px', color: 'rgba(255,255,255,0.85)' }}>
-                    From <input autoFocus value={draft.pageFrom} onChange={e => set({ pageFrom: digits(e.target.value) })} placeholder="1" style={smallField} />
-                    to <input value={draft.pageTo} onChange={e => set({ pageTo: digits(e.target.value) })} placeholder={preview?.totalPages ? String(preview.totalPages) : 'end'} style={smallField} />
+                    From <input autoFocus value={pg.pageFrom} onChange={e => setPage({ pageFrom: digits(e.target.value) })} placeholder="1" style={smallField} />
+                    to <input value={pg.pageTo} onChange={e => setPage({ pageTo: digits(e.target.value) })} placeholder={preview?.totalPages ? String(preview.totalPages) : 'end'} style={smallField} />
                   </div>
                 )}
-                {draft.rangeMode === 'cues' && hasCueRange(kind) && (
+                {pg.rangeMode === 'cues' && hasCueRange(kind) && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px', fontSize: '13px', color: 'rgba(255,255,255,0.85)' }}>
-                    T· <input autoFocus value={draft.rangeStart} onChange={e => set({ rangeStart: digits(e.target.value) })} placeholder="first" style={smallField} />
-                    to <input value={draft.rangeEnd} onChange={e => set({ rangeEnd: digits(e.target.value) })} placeholder="last" style={smallField} />
+                    T· <input autoFocus value={pg.rangeStart} onChange={e => setPage({ rangeStart: digits(e.target.value) })} placeholder="first" style={smallField} />
+                    to <input value={pg.rangeEnd} onChange={e => setPage({ rangeEnd: digits(e.target.value) })} placeholder="last" style={smallField} />
                   </div>
                 )}
               </div>

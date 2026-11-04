@@ -1826,7 +1826,7 @@ function coverPageHTML({ show, label, sheetName, spots, colorSlotsBySpot, spotCu
   .cv-date { font-size: 9pt; color: #888; }
   .cv-title { font-size: ${landscape ? '30pt' : '38pt'}; font-weight: 800; letter-spacing: -1px; line-height: 1.1;
     text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 7px; }
-  .cv-logo-box { flex: 1 1 auto; min-height: 1.2in; max-height: ${landscape ? '3.4in' : '3.6in'}; width: 100%; display: flex; justify-content: center; margin: 12px 0; }
+  .cv-logo-box { flex: 1 1 auto; min-height: 1.2in; max-height: ${landscape ? '3.4in' : pageHeightIn > 11 ? '6.2in' : '3.6in'}; width: 100%; display: flex; justify-content: center; margin: 12px 0; }   /* taller logo on Legal */
   .cv-logo { height: 100%; max-width: 100%; object-fit: contain; }
   .cv-theatre { font-size: 13pt; font-weight: 600; color: #333; }
   .cv-producer { font-size: 11pt; color: #666; margin-top: 3px; }

@@ -427,8 +427,12 @@ function setupIPC() {
     try {
       const sheet = buildSheet(kind, opts);
       fs.writeFileSync(file, await renderPDFBuffer(sheet.html, { ...sheet, pageRanges: String(page) }));
-      const image = await require('electron').nativeImage.createThumbnailFromPath(file, { width: 1400, height: 1400 });
-      return { success: true, image: image.toDataURL() };
+      // Ask for the page's own shape, or the picture comes back squeezed into a square
+      const wIn = sheet.landscape ? (sheet.paper === 'legal' ? 14 : 11) : 8.5;
+      const hIn = sheet.landscape ? 8.5 : (sheet.paper === 'legal' ? 14 : 11);
+      const scale = 1600 / Math.max(wIn, hIn);
+      const image = await require('electron').nativeImage.createThumbnailFromPath(file, { width: Math.round(wIn * scale), height: Math.round(hIn * scale) });
+      return { success: true, image: image.toDataURL(), aspect: wIn / hIn };
     } catch (e) {
       console.error('Page preview error:', e);
       return { success: false, error: e.message };
