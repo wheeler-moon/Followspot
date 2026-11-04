@@ -16,7 +16,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 - A new or inserted cue now brings each spot's iris size from the cue above, along with its character and color
 - Cue list: a spot's iris size shows bright blue in the cue where it changes and muted while it stays the same, like color frames
 - Changing a cue to **Tracked** now starts it clean (no time, intensity, When, w/LQ or notes) and carries on from that spot's cue above: the same character, iris size and color frames. It keeps following: change the character, iris or color in the cue above and the Tracked cues below it change too, except any you've set to something different
-- Clearer action symbols: Bump Up and Bump Out point up and down, Ballyhoo is two overlapping circles, Iris In and Iris/Fade Out's arrows point inward (Iris Out's point out), new symbols for Swap To and Stay With, and a new purple for the iris actions. Prints and the Action Key match
+- Clearer action symbols: Bump Up and Bump Out are bold arrows hitting a bar (the light snaps straight to full or out), Ballyhoo is two overlapping circles, Iris In and Iris/Fade Out's arrows point inward (Iris Out's point out), new symbols for Swap To and Stay With, and a new purple for the iris actions. Prints and the Action Key match
 
 ## 0.5.0 (2026-11-04)
 
@@ -66,7 +66,7 @@ Other
 Saved for the iPad app's first release (kept out of the Mac's What's New).
 
 - Ignored cues go grey and faint, with a big IGNORE centered over the cue (spot and caller views)
-- Action symbols match SpotPlot for Mac's new ones (Bump Up / Bump Out, Ballyhoo, Iris In / Out, Swap To, Stay With, iris purple)
+- Action symbols match SpotPlot for Mac's new ones (Bump Up / Bump Out as arrows hitting a bar, Ballyhoo, Iris In / Out, Swap To, Stay With, iris purple)
 - Shows list: each show has its logo (whole, never cropped), when it was last edited on the Mac and last opened on this iPad, and the show you opened most recently is at the top
 - Caller view: a little space between @ and the intensity
 - The cue details menu (•••) stays open while you switch things on and off; tap anywhere outside it to close it
