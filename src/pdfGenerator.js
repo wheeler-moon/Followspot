@@ -650,7 +650,7 @@ const sceneOrderMap = {};
 </html>`;
 }
 
-function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions, showTracks = true }) {
+function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions, showTracks = true, rangeStart = null, rangeEnd = null }) {
   let logoBase64 = '';
   if (show.logo_path) {
     try {
@@ -670,7 +670,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
   const sceneOrderMap = {};
   scenes.forEach((s, i) => { sceneOrderMap[s.id] = i; });
   
-  const sortedCues = [...cues].sort((a, b) => {
+  let sortedCues = [...cues].sort((a, b) => {
     const sceneA = sceneOrderMap[a.scene_id] ?? 999;
     const sceneB = sceneOrderMap[b.scene_id] ?? 999;
     if (sceneA !== sceneB) return sceneA - sceneB;
@@ -678,6 +678,10 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
   });
   const colorChangedBySpot = {};
   for (const spot of spots) colorChangedBySpot[spot.id] = colorChangeCues(sortedCues, spotCuesBySpot[spot.id] || []);
+  // A T· range (Print Setup): only those cues, after color changes are worked out on the whole show
+  const isRange = rangeStart != null || rangeEnd != null;
+  if (rangeStart != null) sortedCues = sortedCues.filter(cue => cue.track_number >= rangeStart);
+  if (rangeEnd != null) sortedCues = sortedCues.filter(cue => cue.track_number <= rangeEnd);
   const printFields = cueFieldSettings(cueFields);
   // Four or more spots: a tighter sheet (short iris names, smaller action words, a one-row color load)
   const compact = spots.length >= 4;
@@ -715,7 +719,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
 
   let rowsHTML = '';
   let currentSceneId = 'NONE';
-  const actBreaksBefore = emptyActBreaks(scenes, sortedCues);
+  const actBreaksBefore = emptyActBreaks(scenes, sortedCues, { edges: !isRange });
 
   for (const cue of sortedCues) {
     if (cue.scene_id !== currentSceneId) {
@@ -1911,14 +1915,16 @@ const PAGE_FOOTER = `<div style="width:100%;text-align:center;font-family:-apple
 </div>`;
 
 // Renders a sheet's HTML as a Letter-size PDF and returns the bytes
-async function renderPDFBuffer(html, { landscape, margin }) {
+// paper: 'letter' (8.5 × 11 in) or 'legal' (8.5 × 14 in). pageRanges: e.g. '2-5' to keep only those pages.
+async function renderPDFBuffer(html, { landscape, margin, paper, pageRanges }) {
   const browser = await getBrowser();
   const page = await browser.newPage();
   try {
     await page.setContent(html, { waitUntil: 'load' });
     return Buffer.from(await page.pdf({
-      width: landscape ? '11in' : '8.5in',
-      height: landscape ? '8.5in' : '11in',
+      width: landscape ? (paper === 'legal' ? '14in' : '11in') : '8.5in',
+      height: landscape ? '8.5in' : (paper === 'legal' ? '14in' : '11in'),
+      ...(pageRanges ? { pageRanges } : {}),
       printBackground: true,
       margin,
       displayHeaderFooter: true,

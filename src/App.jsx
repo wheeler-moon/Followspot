@@ -115,6 +115,14 @@ export default function App() {
     return () => ipcRenderer.removeListener('menu-reset-character-choice', reset);
   }, [currentShow]);
 
+  // File → Print… (⌘P) from anywhere in a show opens the Print screen (it opens Print Setup itself when already there)
+  useEffect(() => {
+    const { ipcRenderer } = window.require('electron');
+    const onPrint = () => { if (screen !== 'print' && currentShow) navigate('print', currentShow); };
+    ipcRenderer.on('menu-print', onPrint);
+    return () => ipcRenderer.removeListener('menu-print', onPrint);
+  }, [screen, currentShow]);
+
   const navigate = (dest, data) => {
     setCurrentShow(data || null);
     setScreen(dest);

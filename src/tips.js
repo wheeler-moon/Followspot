@@ -48,6 +48,8 @@ export const TIPS = {
   print: [
     { id: 'print-options', target: 'print-label', title: 'Label and options',
       body: 'Add a label like "2-24 Dress Run" for the page header.' },
+    { id: 'print-setup', target: 'print-setup', title: 'Print Setup',
+      body: 'Paper size, orientation, and which pages or cues to print. ⌘P opens it too.' },
     { id: 'print-preview', target: 'print-preview', title: 'What you see is what prints',
       body: 'This is the real PDF, page breaks and all.' },
   ],

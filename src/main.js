@@ -284,6 +284,18 @@ app.on('open-file', (event, filePath) => {
   }
 });
 
+// Renders a sheet, keeping only the pages in opts.pageFrom–pageTo (Print Setup → Page Range) when given.
+// The range is fitted to the pages the sheet really has, so a too-big number just means "to the end".
+async function renderSheetPDF(sheet, opts) {
+  const full = await renderPDFBuffer(sheet.html, sheet);
+  const totalPages = countPages(full);
+  const from = Math.max(1, parseInt(opts.pageFrom) || 1);
+  const to = Math.min(totalPages, parseInt(opts.pageTo) || totalPages);
+  if ((from === 1 && to === totalPages) || from > to) return { pdf: full, pages: totalPages, totalPages };
+  const pdf = await renderPDFBuffer(sheet.html, { ...sheet, pageRanges: `${from}-${to}` });
+  return { pdf, pages: to - from + 1, totalPages };
+}
+
 // Builds one printable sheet. kind: 'spot' | 'caller' | 'color' | 'notes' | 'characters'.
 // The print preview and the PDF export both use this, so they always match.
 function buildSheet(kind, opts) {
@@ -297,7 +309,13 @@ function buildSheet(kind, opts) {
   const slotsFor = id => database.prepare('SELECT * FROM color_slots WHERE spot_id = ? ORDER BY is_permanent, slot_number').all(id);
   const label = opts.label || '';
   const labelPart = label || 'Sheet';
-  const landscape = spots.length > 2;
+  // Paper and orientation (Print Setup). Spot sheets always print portrait and the caller sheet landscape;
+  // the other sheets can be either (the color load starts landscape for 3+ spots).
+  const paper = opts.paper === 'legal' ? 'legal' : 'letter';
+  const defaultLandscape = kind === 'caller' || (kind === 'color' && spots.length > 2);
+  const landscape = kind === 'spot' ? false : kind === 'caller' ? true
+    : opts.orientation === 'landscape' ? true : opts.orientation === 'portrait' ? false : defaultLandscape;
+  const pageLengthIn = paper === 'legal' ? 14 : 11;
   // Every action used in the show (for the action key and cover pages)
   const showSpotCues = () => database.prepare('SELECT sc.* FROM spot_cues sc JOIN cues c ON sc.cue_id = c.id WHERE c.show_id = ?').all(opts.showId);
   // Optional cover page in front of a spot or caller sheet, sized to the sheet's printable height
@@ -306,7 +324,7 @@ function buildSheet(kind, opts) {
     if (!opts.cover) return html;
     const colorSlotsBySpot = {};
     for (const sp of coverSpots) colorSlotsBySpot[sp.id] = slotsFor(sp.id);
-    const pageHeightIn = (isLandscape ? 8.5 : 11) - parseFloat(margin.top) - parseFloat(margin.bottom) - 0.08;
+    const pageHeightIn = (isLandscape ? 8.5 : pageLengthIn) - parseFloat(margin.top) - parseFloat(margin.bottom) - 0.08;
     return withCoverPage(html, coverPageHTML({ show, label, sheetName, spots: coverSpots, colorSlotsBySpot, spotCues: showSpotCues(), customActions, pageHeightIn, landscape: isLandscape }));
   };
 
@@ -319,7 +337,7 @@ function buildSheet(kind, opts) {
         numSpots: spots.length, hideOff: opts.hideOff === 'unnoted' ? 'unnoted' : !!opts.hideOff, hideTracked: !!opts.hideTracked,
         rangeStart: opts.rangeStart ?? null, rangeEnd: opts.rangeEnd ?? null, showTracks: opts.showTracks !== false,
       }), `Spot ${spot.spot_number}${spot.operator_name ? ' · ' + spot.operator_name : ''}`, [spot], PAGE_MARGINS.spot, false),
-      landscape, margin: PAGE_MARGINS.spot,
+      landscape, paper, margin: PAGE_MARGINS.spot,
       fileName: `${show.title} - Spot ${spot.spot_number} - ${labelPart}.pdf`,
     };
   }
@@ -330,9 +348,10 @@ function buildSheet(kind, opts) {
       spotCuesBySpot[spot.id] = database.prepare('SELECT * FROM spot_cues WHERE spot_id = ?').all(spot.id);
     }
     return {
-      html: cover(buildCallerSheetHTML({ cueFields: show.cue_fields, show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions, showTracks: opts.showTracks !== false }),
+      html: cover(buildCallerSheetHTML({ cueFields: show.cue_fields, show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions, showTracks: opts.showTracks !== false,
+        rangeStart: opts.rangeStart ?? null, rangeEnd: opts.rangeEnd ?? null }),
         'Caller Sheet', spots, PAGE_MARGINS.caller, landscape),
-      landscape, margin: PAGE_MARGINS.caller,
+      landscape, paper, margin: PAGE_MARGINS.caller,
       fileName: `${show.title} - Caller Sheet - ${labelPart}.pdf`,
     };
   }
@@ -341,7 +360,7 @@ function buildSheet(kind, opts) {
     for (const spot of spots) colorSlotsBySpot[spot.id] = slotsFor(spot.id);
     return {
       html: buildColorLoadHTML({ show, spots, colorSlotsBySpot, label }),
-      landscape, margin: PAGE_MARGINS.color,
+      landscape, paper, margin: PAGE_MARGINS.color,
       fileName: `${show.title} - Color Load - ${labelPart}.pdf`,
     };
   }
@@ -350,7 +369,7 @@ function buildSheet(kind, opts) {
     const spotCues = database.prepare("SELECT sc.* FROM spot_cues sc JOIN cues c ON sc.cue_id = c.id WHERE c.show_id = ? AND sc.spot_note IS NOT NULL AND sc.spot_note != ''").all(opts.showId);
     return {
       html: buildSpotNotesHTML({ show, spots: noteSpots, cues, scenes, spotCues, characters, label }),
-      landscape: false, margin: PAGE_MARGINS.notes,
+      landscape, paper, margin: PAGE_MARGINS.notes,
       fileName: `${show.title} - Spot Notes - ${labelPart}.pdf`,
     };
   }
@@ -358,21 +377,21 @@ function buildSheet(kind, opts) {
     const cast = database.prepare('SELECT * FROM characters WHERE show_id = ? AND COALESCE(print_on_sheet, 1) = 1 ORDER BY sort_order, id').all(opts.showId);
     return {
       html: buildCharactersHTML({ show, characters: cast, label, showCostumeNotes: opts.showCostumeNotes !== false }),
-      landscape: false, margin: PAGE_MARGINS.characters,
+      landscape, paper, margin: PAGE_MARGINS.characters,
       fileName: `${show.title} - Characters - ${labelPart}.pdf`,
     };
   }
   if (kind === 'actions') {
     return {
       html: buildActionKeyHTML({ show, label, customActions, usedOnly: !!opts.usedOnly, spotCues: showSpotCues() }),
-      landscape: false, margin: PAGE_MARGINS.actions,
+      landscape, paper, margin: PAGE_MARGINS.actions,
       fileName: `${show.title} - Action Key - ${labelPart}.pdf`,
     };
   }
   if (kind === 'scenes') {
     return {
       html: buildSceneListHTML({ show, label, scenes, cues }),
-      landscape: false, margin: PAGE_MARGINS.scenes,
+      landscape, paper, margin: PAGE_MARGINS.scenes,
       fileName: `${show.title} - Scene List - ${labelPart}.pdf`,
     };
   }
@@ -391,8 +410,8 @@ function setupIPC() {
   ipcMain.handle('print-preview', async (event, { kind, ...opts }) => {
     try {
       const sheet = buildSheet(kind, opts);
-      const pdf = await renderPDFBuffer(sheet.html, sheet);
-      return { success: true, pdf, pages: countPages(pdf) };
+      const { pdf, pages, totalPages } = await renderSheetPDF(sheet, opts);
+      return { success: true, pdf, pages, totalPages };
     } catch(e) {
       console.error('Print preview error:', e);
       return { success: false, error: e.message };
@@ -409,7 +428,8 @@ function setupIPC() {
         filters: [{ name: 'PDF', extensions: ['pdf'] }],
       });
       if (!filePath) { event.returnValue = { success: false, cancelled: true }; return; }
-      await renderPDF(sheet.html, sheet, filePath);
+      const { pdf } = await renderSheetPDF(sheet, opts);
+      require('fs').writeFileSync(filePath, pdf);
       event.returnValue = { success: true, path: filePath };
     } catch(e) {
       console.error('PDF export error:', e);
@@ -1199,8 +1219,11 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
 
   // View → Ask About New Characters Again: only works while a show is open (the renderer says when)
   ipcMain.on('show-open', (event, isOpen) => {
-    const item = require('electron').Menu.getApplicationMenu()?.getMenuItemById('reset-character-choice');
-    if (item) item.enabled = !!isOpen;
+    const menu = require('electron').Menu.getApplicationMenu();
+    for (const id of ['reset-character-choice', 'print']) {
+      const item = menu?.getMenuItemById(id);
+      if (item) item.enabled = !!isOpen;
+    }
   });
 
   // Deletes a cue and what every spot does in it; returns them so ⌘Z can put the cue back (db-restore-cue)
@@ -1335,6 +1358,8 @@ app.whenReady().then(async () => {
         { label: 'Export as Spreadsheet (CSV)…', click: () => { mainWindow.webContents.send('menu-export-csv'); } },
         { label: 'Import Show', accelerator: 'CmdOrCtrl+I', click: () => { mainWindow.webContents.send('menu-import-show'); } },
         { label: 'Import from FileMaker…', click: () => { mainWindow.webContents.send('menu-import-filemaker'); } },
+        { type: 'separator' },
+        { id: 'print', label: 'Print…', accelerator: 'CmdOrCtrl+P', enabled: false, click: () => { mainWindow.webContents.send('menu-print'); } },
         { type: 'separator' },
         { label: 'Close Window', role: 'close' },
       ],
