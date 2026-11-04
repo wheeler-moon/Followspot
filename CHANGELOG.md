@@ -6,7 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
-- Clearer action symbols: Bump Up and Bump Out point up and down, Ballyhoo is two overlapping circles, Iris In's arrows point inward (Iris Out's point out), new symbols for Swap To and Stay With, and a new purple for the iris actions. Prints and the Action Key match
+- Clearer action symbols: Bump Up and Bump Out point up and down, Ballyhoo is two overlapping circles, Iris In and Iris/Fade Out's arrows point inward (Iris Out's point out), new symbols for Swap To and Stay With, and a new purple for the iris actions. Prints and the Action Key match
 
 ## 0.5.0 (2026-11-04)
 
