@@ -749,7 +749,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
       if (sc.highlight === 'yellow') cellStyle = 'background:rgba(200,160,0,0.15);';
       if (sc.highlight === 'red') cellStyle = 'background:rgba(200,60,60,0.15);';
       if (isIgnored) cellStyle = 'background:rgba(220,220,220,0.3);';
-      const dim = isIgnored ? 'opacity:0.2;' : '';
+      const dim = isIgnored ? 'opacity:0.2;filter:grayscale(1);' : '';
       const quiet = isQuiet(sc);
 
       const actionHTML = `<div class="action-inner caller-action" style="margin-bottom:0;">
@@ -779,15 +779,14 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
       const sayHTML = sayRows.length ? `<div class="say-box">${sayRows.join('')}</div>` : '';
       const ignoreHTML = isIgnored ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14pt;font-weight:900;color:#1a1a1a;letter-spacing:0.2em;z-index:2;">— IGNORE —</div>` : '';
 
-      if (quiet) {   // Tracked: its own short layout, top to bottom
+      if (quiet || isIgnored) {   // Tracked: its own short layout. Ignored: IGNORE laid over the whole box, centered
         cells[0].push(`
-          <td rowspan="3" class="spot-cell quiet-cell" style="${cellStyle}position:relative;">${ignoreHTML}
+          <td rowspan="3" class="spot-cell${quiet ? ' quiet-cell' : ''}" style="${cellStyle}position:relative;">${ignoreHTML}
             <div style="${dim}">${actionHTML}${detailsHTML}${sayHTML}</div>
           </td>`);
       } else {
-        // (an ignored spot says IGNORE in its middle part, across the box)
         cells[0].push(`<td class="spot-cell sec-a" style="${cellStyle}"><div style="${dim}">${actionHTML}</div></td>`);
-        cells[1].push(`<td class="spot-cell sec-d" style="${cellStyle}">${isIgnored ? `<div style="text-align:center;font-size:14pt;font-weight:900;color:#1a1a1a;letter-spacing:0.2em;">— IGNORE —</div>` : ''}<div style="${dim}">${detailsHTML}</div></td>`);
+        cells[1].push(`<td class="spot-cell sec-d" style="${cellStyle}"><div style="${dim}">${detailsHTML}</div></td>`);
         cells[2].push(`<td class="spot-cell sec-s" style="${cellStyle}"><div style="${dim}">${sayHTML}</div></td>`);
       }
     }

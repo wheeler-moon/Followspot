@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- Caller sheet: an ignored spot keeps its size, goes grey and faint, with IGNORE centered over it
 - Caller sheet: each cue lines up across its spots. The action word, character and intensity share one line; iris, color and time sit at the same height; and if any spot has a When or a Note, every active spot shows both, in line. Tracked spots keep their short layout
 - Shorter tips and settings descriptions, quicker to read
 - A new or inserted cue now brings each spot's iris size from the cue above, along with its character and color
@@ -60,6 +61,7 @@ Other
 
 Saved for the iPad app's first release (kept out of the Mac's What's New).
 
+- Ignored cues go grey and faint, with a big IGNORE centered over the cue (spot and caller views)
 - Action symbols match SpotPlot for Mac's new ones (Bump Up / Bump Out, Ballyhoo, Iris In / Out, Swap To, Stay With, iris purple)
 - Shows list: each show has its logo (whole, never cropped), when it was last edited on the Mac and last opened on this iPad, and the show you opened most recently is at the top
 - Caller view: a little space between @ and the intensity
