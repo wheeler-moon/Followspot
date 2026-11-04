@@ -39,7 +39,7 @@ export default function SpotOrderPanel({ show }) {
   return (
     <div>
       <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.52)', marginBottom: '16px' }}>
-        Drag to reorder. This changes the column order in the cue list and the spot order on the caller sheet.
+        Drag to reorder the cue list's columns and the caller sheet.
       </div>
       <div style={{ display: 'flex', gap: '16px', alignItems: 'stretch' }}>
         {spots.map((spot, index) => (

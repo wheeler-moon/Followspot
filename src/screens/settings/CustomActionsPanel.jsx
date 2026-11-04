@@ -216,7 +216,7 @@ export default function CustomActionsPanel({ show }) {
   return (
     <div>
       <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.52)', marginBottom: '16px', lineHeight: '18px' }}>
-        Click a built-in action to give it a different name in this show. Add your own actions below, and click one to change its name or icon.
+        Click an action to rename it for this show. Add your own below.
       </div>
 
       <div style={sectionTitle}>Built-in actions</div>

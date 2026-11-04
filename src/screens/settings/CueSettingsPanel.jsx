@@ -24,7 +24,7 @@ export default function CueSettingsPanel({ show }) {
   return (
     <div>
       <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)', marginBottom: '16px', lineHeight: '18px' }}>
-        Choose which cue details appear on the cue list and on printed sheets. Unchecking only hides a field; nothing is deleted.
+        Choose what shows on the cue list and on prints. Hiding deletes nothing.
       </div>
       <div style={{ display: 'flex', alignItems: 'center', padding: '0 14px 6px' }}>
         <div style={{ flex: 1 }} />

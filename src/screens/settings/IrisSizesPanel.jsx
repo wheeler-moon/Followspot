@@ -80,7 +80,7 @@ export default function IrisSizesPanel({ show }) {
   return (
     <div>
       <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)', marginBottom: '16px', lineHeight: '18px' }}>
-        These are the iris buttons on the cue list, in this order; drag ⠿ to reorder. The button label is the short text on the button; the full name is what's saved in each cue and printed. Renaming a full name updates every cue that uses it, and Reset puts a built-in size back to its original name.
+        Your cue list's iris buttons, in order. The label goes on the button; the full name prints.
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 14px 6px 48px' }}>

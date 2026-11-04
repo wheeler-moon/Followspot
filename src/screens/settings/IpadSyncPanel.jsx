@@ -38,7 +38,7 @@ export default function IpadSyncPanel({ show }) {
   return (
     <div>
       <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)', marginBottom: '16px', lineHeight: '18px' }}>
-        Send this show to your spot operators' iPads over the local network. No internet needed: the Mac and iPads just need to be on the same network. Each show has its own code, so iPads only ever see the shows you give them the code for.
+        Send this show to operators' iPads on the same network. No internet needed.
       </div>
 
       <div style={group}>

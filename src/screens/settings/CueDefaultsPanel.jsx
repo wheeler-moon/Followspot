@@ -51,10 +51,7 @@ export default function CueDefaultsPanel({ show }) {
         <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.55)' }}>Cue Defaults is still being worked on and may change in an update.</span>
       </div>
       <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)', marginBottom: '16px', lineHeight: '18px' }}>
-        Starting values for a spot in a cue. When you pick an action in the cue list, anything set here fills in boxes that are still empty.
-        <strong style={{ color: 'rgba(255,255,255,0.78)', fontWeight: '600' }}> Time</strong> fills in for every action.
-        <strong style={{ color: 'rgba(255,255,255,0.78)', fontWeight: '600' }}> Intensity, iris and color</strong> fill in only when the spot is coming out of Off; a spot that's already up keeps tracking what it had.
-        An action's own settings still win (a Bump is always 0 seconds, a Pick Up is Full).
+        Fills in empty boxes when you pick an action. Time always; intensity, iris and color only when the spot comes out of Off.
       </div>
 
       {/* A sample spot box, like one in the cue list */}
@@ -104,7 +101,7 @@ export default function CueDefaultsPanel({ show }) {
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '12px', maxWidth: '420px' }}>
         <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.40)', lineHeight: '15px', flex: 1 }}>
-          Click a chosen chip again to clear it. Frames a spot doesn't have are skipped.
+          Click a chip again to clear it.
         </div>
         {anySet && (
           <button onClick={() => save(cueDefaults(null))}
