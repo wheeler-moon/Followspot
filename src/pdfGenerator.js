@@ -1822,7 +1822,7 @@ function coverPageHTML({ show, label, sheetName, spots, colorSlotsBySpot, spotCu
   .cv-identity { display: flex; flex-direction: column; align-items: center; text-align: center; min-height: 0; ${landscape ? 'width: 3.4in; flex-shrink: 0; justify-content: center;' : 'flex: 1 1 auto;'} }
   .cv-main { display: flex; flex-direction: column; min-width: 0; ${landscape ? 'flex: 1; justify-content: center;' : ''} }
   .cv-meta { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 8px; min-height: 22px; }
-  .cv-label { font-size: 10pt; font-weight: 800; color: #fff; background: #1a1a1a; padding: 2px 11px; border-radius: 20px; }
+  .cv-label { font-size: 13pt; font-weight: 800; color: #1a1a1a; }   /* like the label in the sheets' headers */
   .cv-date { font-size: 9pt; color: #888; }
   .cv-title { font-size: ${landscape ? '30pt' : '38pt'}; font-weight: 800; letter-spacing: -1px; line-height: 1.1;
     text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 7px; }
