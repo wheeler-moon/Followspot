@@ -7,6 +7,7 @@ const { cueFieldSettings } = require('./cueFields');
 const { actionNameMap, displayAction } = require('./actionNames');
 const { gelColor } = require('./gelColors');
 const { characterLabel } = require('./characterNames');
+const { irisSizeList } = require('./irisSizes');
 
 // Style rules that hide the cue fields a show has unticked under "Show on print"
 function hiddenFieldCSS(cueFields, selectors) {
@@ -678,6 +679,11 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
   const colorChangedBySpot = {};
   for (const spot of spots) colorChangedBySpot[spot.id] = colorChangeCues(sortedCues, spotCuesBySpot[spot.id] || []);
   const printFields = cueFieldSettings(cueFields);
+  // Four or more spots: a tighter sheet (short iris names, smaller action words, a one-row color load)
+  const compact = spots.length >= 4;
+  const irisShort = {};
+  for (const size of irisSizeList(show && show.iris_sizes)) irisShort[size.value] = size.label || size.value;
+  const irisText = (value) => compact ? (irisShort[value] || value) : value;
   const actionNames = actionNameMap(show && show.action_names);
 
   const spotsHeaderHTML = spots.map(spot => {
@@ -763,7 +769,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
       // A change is highlighted yellow; the same color as before prints grey
       const colorHL = colorChangedBySpot[spot.id].has(cue.id) ? `background:${COLOR_CHANGE_BG};` : `color:${QUIET_GREY};`;
       const items = [
-        printFields.iris.print && sc.frame_size ? `<span class="detail-badge iris"><span class="lbl">Iris</span>${sc.frame_size}</span>` : '',
+        printFields.iris.print && sc.frame_size ? `<span class="detail-badge iris"><span class="lbl">Iris</span>${escapeText(irisText(sc.frame_size))}</span>` : '',
         printFields.color.print && colorText ? `<span class="detail-badge color" style="${colorHL}"><span class="lbl">Color</span>${colorText}</span>` : '',
         printFields.time.print && sc.fade_time ? `<span class="detail-badge time"><span class="lbl">Time</span>${sc.fade_time}s</span>` : '',
       ].filter(Boolean);
@@ -1034,7 +1040,19 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
      Only a color change gets a fill, so it pops. */
   /* Action word, character and intensity sit on the same bottom line, even when one wraps */
   .caller-action { align-items: last baseline; }
-  .caller-action > svg, .caller-action > img { align-self: flex-end; margin-bottom: -7px; }
+  .caller-action > svg, .caller-action > img { align-self: flex-end; margin-bottom: -7px; flex-shrink: 0; width: 30px; height: 30px; }
+  /* Four or more spots */
+  .caller-action .action-name { white-space: nowrap; }
+  .compact .caller-action { gap: 4px; }
+  .compact .caller-action > svg, .compact .caller-action > img { width: 24px; height: 24px; margin-bottom: -5px; }
+  .compact .action-name { font-size: 8.5pt; }
+  .compact .char-name { font-size: 11pt; margin-left: 2px !important; min-width: 0; overflow-wrap: break-word; }
+  .compact .intensity-badge { font-size: 13pt; padding-left: 2px; }
+  .compact .spot-header-card { justify-self: stretch; margin: 0 4px; max-width: none; padding: 4px 5px; }
+  .compact .gel-frames { flex-wrap: nowrap; gap: 2px; }
+  .compact .gel-slot { flex: 1 1 auto; min-width: 0; padding: 1px 2px; }
+  .compact .gel-num { font-size: 7pt; white-space: nowrap; letter-spacing: -0.2px; }
+  .compact .gel-label { font-size: 5pt; }
 
   .cue-details {
     display: inline-flex;
@@ -1147,7 +1165,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
   })}
 </style>
 </head>
-<body>
+<body class="${compact ? 'compact' : ''}">
   <div class="header">
     ${show.logo_path ? `<img class="header-logo" src="${logoBase64}" />` : `<div class="header-logo-placeholder"></div>`}
     <div class="header-main">

@@ -36,6 +36,7 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 ## Desktop app (`followspot`)
 
 ### Next (0.5.1)
+- [ ] **Reminder, after the paperwork pass:** make the Bump Up / Bump Out symbols visually more aggressive (Wheeler has ideas)
 - [ ] Beta feedback: add items here as testers report them
 - [ ] ⌘C / ⌘V for a cue box without right-clicking (needs a way to select a box first)
 - [ ] Cue Defaults, second pass: first version is in (Show Settings → Cue Defaults, `src/cueDefaults.js`). Wheeler wants to think it through more and make sure it fully works and is structured right: when defaults should apply (on picking an action vs. when a cue is made), how they interact with tracking, inserted cues, copy/paste and actions' own settings, whether defaults should be per spot, and whether more details (character, When) belong there. Remove the "In progress" label in the panel once it is settled.
@@ -67,6 +68,7 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 
 Plan: `docs/ipad-app-plan.md`. Contract with the desktop: `docs/sync-protocol.md`.
 
+- [ ] **Reminder, after the paperwork pass:** how the changes are shown when an iPad is asked to update its cue list (Wheeler has a thought)
 - [ ] Phase 1 finish: check landscape (When and Notes get separate columns) and text size in a dark booth on the real iPad
 - [ ] Keep the iPad's copies in step: `Resources/gels.json` (from `src/gels.json`) and `Resources/action-icons.json` (from the ActionIcon SVGs in `src/screens/CueListScreen.jsx`) whenever those change
 - [ ] After launch (Phase 2): suggestions sent to the Mac (When/Notes editing), offline queue, desktop review list, approval switch
