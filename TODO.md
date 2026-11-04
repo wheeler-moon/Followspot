@@ -42,7 +42,6 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 
 - [ ] Print headers: go over the header on every PDF (spot sheet, caller sheet, Color Load, Spot Notes, Characters, Action Key, Scene List, cover page) so they match. The Color Load header looks misaligned. Wheeler has opinions on the redesign; waiting on his notes
 - [ ] Narrow windows: rethink how the app looks when the window is tight (e.g. half a Mac screen). Past a certain width it gets cramped and hard to use
-- [ ] Tracking: check what a cue picks up from the cue above when it's made Tracked from another action
 - [ ] "Track down" button: carry a spot's details from one cue down the cue list until its next change. Wheeler will explain in more detail before we build it
 
 ### Before launch (not features)

@@ -25,7 +25,7 @@ Every task between now and launch, in date order, for all of SpotPlot (Mac app, 
 
 - [x] W+B: Action icons refined from beta feedback (Mac, iPad copy, printed Action Key)
 - [ ] W+B: "Track down" button (Wheeler explains it first)
-- [ ] B: Tracking: what a cue picks up from the cue above when made Tracked
+- [x] B: Tracking: what a cue picks up from the cue above when made Tracked
 - [ ] W+B: Print headers pass (needs Wheeler's notes; Color Load header misaligned)
 - [ ] B: Narrow windows (half a Mac screen)
 - [ ] B: ⌘C / ⌘V for a cue box

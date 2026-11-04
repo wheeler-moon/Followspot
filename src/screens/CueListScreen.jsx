@@ -274,7 +274,7 @@ let cueClipboard = null;
 // Copy Whole Cue / Paste Whole Cue: what every spot does in one cue, by spot id (same show only)
 let wholeCueClipboard = null;
 
-function SpotCueCell({ onDragEnd, onContextMenu, spotCue, spot, cue, fieldsShown = {}, characters, colorSlots, onUpdate, onNewCustomCharacter, lqNumber, onDragStart, onDragOver, onDragLeave, onDrop, isDragTarget, isMenuTarget, colorSame, onDoubleClick, irisSizes, customActions, actionNames, defaults, fromOff }) {
+function SpotCueCell({ above, onDragEnd, onContextMenu, spotCue, spot, cue, fieldsShown = {}, characters, colorSlots, onUpdate, onNewCustomCharacter, lqNumber, onDragStart, onDragOver, onDragLeave, onDrop, isDragTarget, isMenuTarget, colorSame, onDoubleClick, irisSizes, customActions, actionNames, defaults, fromOff }) {
   const [showActionPicker, setShowActionPicker] = useState(false);
   const [hoveredFrame, setHoveredFrame] = useState(null);
   const [showCustomTime, setShowCustomTime] = useState(false);
@@ -313,14 +313,19 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
 
   const handleActionSelect = (a) => {
     if (a.name === 'Tracked') {
-      onUpdate(spotCue.id, 'action', '');
-      onUpdate(spotCue.id, 'intensity', '');
-      onUpdate(spotCue.id, 'fade_time', '');
-      onUpdate(spotCue.id, 'description', '');
-      onUpdate(spotCue.id, 'with_lq', 0);
-      onUpdate(spotCue.id, 'when_highlight', null);
-      onUpdate(spotCue.id, 'notes', '');
-      onUpdate(spotCue.id, 'notes_highlight', null);
+      // Tracked starts clean, then carries on from this spot's cue above: same character(s), iris and color frames
+      const cleared = { action: '', intensity: '', fade_time: '', description: '', with_lq: 0, when_highlight: null,
+        notes: '', notes_highlight: null, highlight: null };
+      const carried = {
+        character_id: above?.character_id ?? null, custom_character: above?.custom_character ?? null,
+        extra_characters: above?.extra_characters ?? null, frame_size: above?.frame_size ?? '',
+        active_frames: above?.active_frames ?? '', no_color: above?.no_color ?? 0,
+      };
+      for (const [field, value] of Object.entries({ ...cleared, ...carried })) {
+        if ((spotCue[field] ?? null) !== (value ?? null)) onUpdate(spotCue.id, field, value);
+      }
+      setShowCustomChar(!!carried.custom_character);
+      setAddingChar(false);
       setShowActionPicker(false);
       return;
     }
@@ -715,7 +720,7 @@ function HeaderColorLoad({ slots, perm }) {
   );
 }
 
-function CueRow({ onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesBySpot, cue, isLastCue, fieldsShown, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onNewCustomCharacter, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal, onCueDoubleClick, irisSizes, customActions, actionNames, defaults, fromOffCells }) {
+function CueRow({ onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesBySpot, cue, isLastCue, fieldsShown, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onNewCustomCharacter, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal, onCueDoubleClick, irisSizes, customActions, actionNames, defaults, fromOffCells, aboveCells }) {
   const [editingLQ, setEditingLQ] = useState(false);
   const [lqVal, setLqVal] = useState(cue.lq_number || '');
 
@@ -787,7 +792,7 @@ function CueRow({ onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesB
           return (
             <SpotCueCell key={spot.id} spotCue={sc} spot={spot} cue={cue} fieldsShown={fieldsShown}
               characters={characters} colorSlots={slots}
-              defaults={defaults} fromOff={!!fromOffCells?.has(`${cue.id}:${spot.id}`)}
+              defaults={defaults} fromOff={!!fromOffCells?.has(`${cue.id}:${spot.id}`)} above={aboveCells?.get(`${cue.id}:${spot.id}`)}
               onUpdate={onUpdateSpotCue} onNewCustomCharacter={onNewCustomCharacter} lqNumber={lqVal}
               onDragStart={() => setDragSource({ spotCue: sc, spot, cue })}
               onDragOver={(e) => { 
@@ -1376,13 +1381,16 @@ export default function CueListScreen({ show, navigate }) {
   // Spot boxes where the spot is coming out of Off (first cue, or the cue before left it off): picking an
   // action there fills in Cue Defaults for intensity, iris and color too, not just time
   const fromOffCells = new Set();
+  const aboveCells = new Map();   // each spot box → that spot's box in the cue above (what Tracked carries on from)
   {
-    const last = {};
+    const last = {}, prev = {};
     const scBy = new Map((data?.spotCues || []).map(sc => [`${sc.cue_id}:${sc.spot_id}`, sc]));
     for (const cue of [...(data?.cues || [])].sort((a, b) => a.sort_order - b.sort_order)) {
       for (const spot of data?.spots || []) {
         const sc = scBy.get(`${cue.id}:${spot.id}`);
         if (!(spot.id in last) || ENDS_OFF.includes(last[spot.id]) || sc?.action === 'Off') fromOffCells.add(`${cue.id}:${spot.id}`);
+        if (prev[spot.id]) aboveCells.set(`${cue.id}:${spot.id}`, prev[spot.id]);
+        prev[spot.id] = sc;
         if (sc && sc.action && sc.action !== 'Tracked') last[spot.id] = sc.action;
         else if (!(spot.id in last)) last[spot.id] = 'Off';
       }
@@ -1741,7 +1749,7 @@ const groupedCues = () => {
                       irisSizes={irisSizes}
                       customActions={customActions}
                       actionNames={actionNames}
-                      defaults={showCueDefaults} fromOffCells={fromOffCells}
+                      defaults={showCueDefaults} fromOffCells={fromOffCells} aboveCells={aboveCells}
                       onCueDoubleClick={(cue, spot, spotCue) => {
                       setCuePopup({ cue, spot, spotCue });
                        setPopupNote(spotCue?.spot_note || '');
