@@ -720,11 +720,12 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
     }
 
     let spotCellsHTML = '';
-    // If any spot in this cue has a When or a Note, every active spot gets that row (empty if it has none),
+    // If any spot in this cue has a When or a Note, every active spot gets both rows (empty where it has none),
     // so the information always sits in the same place across the row
     const rowSCs = spots.map(spot => (spotCuesBySpot[spot.id] || []).find(x => x.cue_id === cue.id)).filter(x => x && x.action !== 'Off');
-    const rowHasWhen = printFields.when.print && rowSCs.some(x => whenText(x, cue));
-    const rowHasNotes = printFields.notes.print && rowSCs.some(x => safeRich(x.notes));
+    const rowHasSay = rowSCs.some(x => (printFields.when.print && whenText(x, cue)) || (printFields.notes.print && safeRich(x.notes)));
+    const rowHasWhen = rowHasSay && printFields.when.print;
+    const rowHasNotes = rowHasSay && printFields.notes.print;
     for (const spot of spots) {
       const spotCues = spotCuesBySpot[spot.id] || [];
       const sc = spotCues.find(sc => sc.cue_id === cue.id);
@@ -756,13 +757,13 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
           <td class="spot-cell${quiet ? ' quiet-cell' : ''}" style="${cellStyle}position:relative;">
             ${isIgnored ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14pt;font-weight:900;color:#1a1a1a;letter-spacing:0.2em;z-index:2;">— IGNORE —</div>` : ''}
             <div style="${isIgnored ? 'opacity:0.2;' : ''}">
-              <div class="action-inner" style="margin-bottom:0;align-items:center;">
+              <div class="sec sec-a"><div class="action-inner" style="margin-bottom:0;align-items:center;">
                 ${quiet ? '' : getActionIconHTML(sc.action, 30, customActions)}
                 <span class="action-name">${quiet ? '—' : (displayAction(sc.action, actionNames) || '—')}</span>
                 <span class="char-name" style="margin-left:4px;">${charText || '—'}</span>
                 <div class="intensity-badge" style="margin-left:auto;">${sc.intensity ? `<span style="font-size:11pt;font-weight:400;color:#666;margin-right:1.5pt;">@</span>${sc.intensity}` : ''}</div>
-              </div>
-              ${(() => {
+              </div></div>
+              <div class="sec sec-d">${(() => {
                 // Iris / color / time in one labeled strip; fields hidden on print are left out entirely
                 const colorText = sc.no_color ? 'NC' : activeFrames;
                 // A change is highlighted yellow; the same color as before prints grey
@@ -773,8 +774,8 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
                   printFields.time.print && sc.fade_time ? `<span class="detail-badge time"><span class="lbl">Time</span>${sc.fade_time}s</span>` : '',
                 ].filter(Boolean);
                 return items.length ? `<div class="cue-details">${items.join('')}</div>` : '';
-              })()}
-              ${(() => {
+              })()}</div>
+              <div class="sec sec-s">${(() => {
                 // When and Notes share one box, one labeled row each
                 const when = whenText(sc, cue), note = safeRich(sc.notes);
                 const rows = [
@@ -782,7 +783,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
                   rowHasNotes ? `<div class="say-row notes-text" style="${note ? lineHighlightCSS(sc.notes_highlight) : ''}"><span class="lbl">Note</span><span>${note || '&nbsp;'}</span></div>` : '',
                 ].filter(Boolean);
                 return rows.length ? `<div class="say-box">${rows.join('')}</div>` : '';
-              })()}
+              })()}</div>
             </div>
           </td>
         `;
@@ -1022,6 +1023,9 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
 
   /* Iris / color / time: one white strip, items split by hairlines.
      Only a color change gets a fill, so it pops. */
+  /* Each spot box is three stacked sections; a script below makes each section the same height across the cue */
+  .sec { display: flow-root; }
+
   .cue-details {
     display: inline-flex;
     margin-top: 4px;
@@ -1167,6 +1171,22 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
       ${rowsHTML}
     </tbody>
   </table>
+  <script>
+    // Line up action / iris-color-time / When-Note across every spot in a cue, even when one spot's
+    // character wraps or one spot has no iris or color
+    function lineUpCallerRows() {
+      for (const row of document.querySelectorAll('tr.cue-row')) {
+        for (const cls of ['sec-a', 'sec-d', 'sec-s']) {
+          const secs = [...row.querySelectorAll('.' + cls)];
+          secs.forEach(el => { el.style.minHeight = ''; });
+          const h = Math.max(0, ...secs.map(el => el.getBoundingClientRect().height));
+          secs.forEach(el => { el.style.minHeight = h + 'px'; });
+        }
+      }
+    }
+    lineUpCallerRows();
+    window.addEventListener('load', lineUpCallerRows);
+  </script>
 </body>
 </html>`;
 }
