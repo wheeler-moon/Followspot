@@ -1071,7 +1071,8 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
         const wasOff = prevAction === 'Off';
         const startsOff = endsInOff || wasOff;
 
-                database.prepare('INSERT INTO spot_cues (cue_id, spot_id, action, character_id, custom_character, extra_characters, intensity, fade_time, active_frames, description, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(
+                // A new cue tracks on from the cue above: same character(s), iris size and color (unless the spot ended up Off)
+                database.prepare('INSERT INTO spot_cues (cue_id, spot_id, action, character_id, custom_character, extra_characters, intensity, fade_time, active_frames, description, notes, frame_size, no_color) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(
           newCueId,
           spot.id,
           startsOff ? 'Off' : '',
@@ -1082,7 +1083,9 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
           '',
           startsOff ? '' : (prevSpotCue ? prevSpotCue.active_frames : ''),
           '',
-          ''
+          '',
+          startsOff ? '' : (prevSpotCue ? prevSpotCue.frame_size || '' : ''),
+          startsOff ? 0 : (prevSpotCue ? prevSpotCue.no_color || 0 : 0)
         );
       }
 
