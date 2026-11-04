@@ -3,6 +3,7 @@ import Tips from '../components/Tips';
 import { TIPS } from '../tips';
 import AppHeader from '../components/AppHeader';
 import useEscape from '../useEscape';
+import { CUE_FIELDS, cueFieldSettings } from '../cueFields';
 const { ipcRenderer } = window.require('electron');
 
 const sectionLabel = { fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' };
@@ -11,7 +12,7 @@ const smallField = { ...fieldStyle, width: '64px', height: '24px', padding: '0 8
 const borderedButton = { height: '28px', padding: '0 16px', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: '14px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' };
 const primaryButton = { ...borderedButton, background: '#0A84FF' };
 
-// Everything you can set for a sheet. Print Setup edits a copy and Save puts it back.
+// Everything you can set for a sheet. Page Setup edits a copy and Save puts it back.
 const DEFAULT_OPTIONS = {
   hideOff: false, keepOffNotes: true, hideTracked: false, showTracks: true, coverPage: false,
   usedOnly: false, showCostumeNotes: true, notesSpotId: null,
@@ -26,9 +27,10 @@ function orientationFor(kind, o, spotCount) {
   return fixedOrientation(kind) || o.orientation[kind] || (kind === 'color' && spotCount > 2 ? 'landscape' : 'portrait');
 }
 
-function buildRequest(selected, o, label, showId) {
+function buildRequest(selected, o, label, showId, cueFields) {
   if (!selected) return null;
   const req = { kind: selected.kind, showId, label, paper: o.paper };
+  if (cueFields) req.cueFields = cueFields;   // Page Setup's unsaved Cue Details
   if (!fixedOrientation(selected.kind) && o.orientation[selected.kind]) req.orientation = o.orientation[selected.kind];
   if (o.rangeMode === 'pages') Object.assign(req, { pageFrom: o.pageFrom || null, pageTo: o.pageTo || null });
   if (o.rangeMode === 'cues' && hasCueRange(selected.kind)) {
@@ -81,7 +83,7 @@ function Switch({ on, onChange, label, hint }) {
   );
 }
 
-// The on/off options for a sheet; the sidebar and Print Setup both show them
+// The on/off options for a sheet; the sidebar and Page Setup both show them
 function SheetOptions({ kind, o, set, spots }) {
   if (kind === 'spot') return (
     <>
@@ -143,17 +145,76 @@ function PreviewArea({ selected, preview, updating, error, empty }) {
   return <div style={center}>Preparing preview…</div>;
 }
 
+// Page Setup's preview: one page at a time as a picture on its own grey, like the Mac's print window,
+// with "Page 1 of 3" and arrows to step through the pages
+function PagePreview({ req, preview, updating, error }) {
+  const [index, setIndex] = useState(0);
+  const [image, setImage] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const pages = preview?.pages || 0;
+  const first = req && req.pageFrom ? Math.max(1, parseInt(req.pageFrom) || 1) : 1;   // pages kept start here
+  const key = JSON.stringify(req);
+  useEffect(() => { setIndex(0); }, [key]);
+  useEffect(() => {
+    if (!req || !pages) return;
+    const i = Math.min(index, pages - 1);
+    let cancelled = false;
+    setLoading(true);
+    const t = setTimeout(async () => {
+      const result = await ipcRenderer.invoke('print-page-image', { ...req, page: first + i });
+      if (cancelled) return;
+      setLoading(false);
+      if (result?.success) setImage(result.image);
+    }, 150);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [key, index, pages]);
+
+  const arrow = (enabled) => ({ width: '24px', height: '24px', border: 'none', borderRadius: '12px', background: 'transparent', color: '#FFFFFF', fontSize: '15px', opacity: enabled ? 1 : 0.3, cursor: enabled ? 'pointer' : 'default' });
+  return (
+    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#38383A', padding: '24px 24px 16px', gap: '14px' }}>
+      <div style={{ flex: 1, minHeight: 0, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+        {error ? <div style={{ color: '#FF453A', fontSize: '13px' }}>{error}</div>
+          : image ? <img src={image} alt="Page preview" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', background: '#FFFFFF', boxShadow: '0 4px 18px rgba(0,0,0,0.35)', opacity: loading || updating ? 0.6 : 1, transition: 'opacity 0.15s' }} />
+          : <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '13px' }}>Preparing preview…</div>}
+      </div>
+      {pages > 0 && (
+        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '4px', height: '30px', padding: '0 6px', borderRadius: '15px', background: 'rgba(30,30,30,0.85)', fontSize: '13px', color: '#FFFFFF' }}>
+          <button onClick={() => setIndex(i => Math.max(0, i - 1))} disabled={index === 0} aria-label="Previous page" style={arrow(index > 0)}>‹</button>
+          <span style={{ minWidth: '92px', textAlign: 'center' }}>Page {Math.min(index, pages - 1) + 1} of {pages}</span>
+          <button onClick={() => setIndex(i => Math.min(pages - 1, i + 1))} disabled={index >= pages - 1} aria-label="Next page" style={arrow(index < pages - 1)}>›</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Page outline icons for the orientation buttons
 const PageIcon = ({ landscape }) => (
   <svg width="18" height="18" viewBox="0 0 18 18"><rect x={landscape ? 1.5 : 4} y={landscape ? 4 : 1.5} width={landscape ? 15 : 10} height={landscape ? 10 : 15} rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.4" /></svg>
 );
 
-// Print Setup: paper, orientation, which pages, and the sheet's options, with a live preview.
-// Save keeps the changes; Cancel (or Escape) throws them away.
-function PrintSetup({ selected, options, label, show, spots, onSave, onCancel }) {
+// Page Setup: paper, orientation, which pages, the sheet's options and which cue details print,
+// with a live preview. Save keeps the changes; Cancel (or Escape) throws them away.
+function PageSetup({ selected, options, label, show, spots, onSave, onCancel }) {
   const [draft, setDraft] = useState(options);
   const set = (patch) => setDraft(d => ({ ...d, ...patch }));
-  const { preview, updating, error } = usePreview(buildRequest(selected, draft, label, show.id));
+  // Cue Details: the show's "Show on print" boxes from Show Settings → Cue Settings
+  const [cueFields, setCueFields] = useState(() => cueFieldSettings(ipcRenderer.sendSync('db-get-show', show.id)?.cue_fields));
+  const [cueFieldsChanged, setCueFieldsChanged] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const toggleField = (key) => { setCueFields(f => ({ ...f, [key]: { ...f[key], print: !f[key].print } })); setCueFieldsChanged(true); };
+  const showsCues = selected.kind === 'spot' || selected.kind === 'caller';
+  const draftRequest = buildRequest(selected, draft, label, show.id, showsCues && cueFieldsChanged ? cueFields : null);
+  const { preview, updating, error } = usePreview(draftRequest);
+  const save = () => {
+    if (cueFieldsChanged) {
+      // Keep the cue list's own boxes as they are now; only the print ones change
+      const current = cueFieldSettings(ipcRenderer.sendSync('db-get-show', show.id)?.cue_fields);
+      const next = Object.fromEntries(Object.keys(current).map(k => [k, { ...current[k], print: cueFields[k].print }]));
+      ipcRenderer.sendSync('db-update-show', { showId: show.id, cue_fields: JSON.stringify(next) });
+    }
+    onSave(draft);
+  };
   useEscape(onCancel);
   const kind = selected.kind;
   const fixed = fixedOrientation(kind);
@@ -170,17 +231,17 @@ function PrintSetup({ selected, options, label, show, spots, onSave, onCancel })
 
   return (
     <div onClick={onCancel} style={{ position: 'fixed', inset: 0, zIndex: 100000, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div onClick={e => e.stopPropagation()} onKeyDown={e => { if (e.key === 'Enter' && e.target.tagName !== 'SELECT') onSave(draft); }}
+      <div onClick={e => e.stopPropagation()} onKeyDown={e => { if (e.key === 'Enter' && e.target.tagName !== 'SELECT') save(); }}
         style={{ width: 'min(960px, calc(100vw - 48px))', height: 'min(640px, calc(100vh - 48px))', display: 'flex', background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 18px 48px rgba(0,0,0,0.45)' }}>
         {/* Live preview of the draft */}
         <div style={{ flex: 1, minWidth: 0, display: 'flex', borderRight: '1px solid rgba(255,255,255,0.10)' }}>
-          <PreviewArea selected={selected} preview={preview} updating={updating} error={error} />
+          <PagePreview req={draftRequest} preview={preview} updating={updating} error={error} />
         </div>
 
         {/* Settings */}
         <div style={{ width: '340px', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
           <div style={{ padding: '16px 16px 12px', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
-            <div style={{ fontSize: '15px', fontWeight: '600', color: '#FFFFFF' }}>Print Setup</div>
+            <div style={{ fontSize: '15px', fontWeight: '600', color: '#FFFFFF' }}>Page Setup</div>
             <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.55)', marginTop: '2px' }}>{selected.title}</div>
           </div>
           <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
@@ -236,10 +297,34 @@ function PrintSetup({ selected, options, label, show, spots, onSave, onCancel })
                 <SheetOptions kind={kind} o={draft} set={set} spots={spots} />
               </>
             )}
+            {showsCues && (
+              <>
+                <div style={{ height: '1px', background: 'rgba(255,255,255,0.10)', margin: '4px 0 12px' }} />
+                <div onClick={() => setDetailsOpen(o => !o)} role="button" aria-expanded={detailsOpen}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#FFFFFF', marginBottom: '8px' }}>
+                  <svg width="10" height="10" viewBox="0 0 10 10" style={{ transform: detailsOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }}>
+                    <path d="M3 1.5 L7 5 L3 8.5" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  Cue Details
+                </div>
+                {detailsOpen && (
+                  <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '6px 12px', marginLeft: '16px' }}>
+                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)', margin: '4px 0 6px' }}>What prints. Same as Cue Settings.</div>
+                    {CUE_FIELDS.map(({ key, label: fieldLabel }) => (
+                      <label key={key} style={{ display: 'flex', alignItems: 'center', gap: '8px', height: '26px', fontSize: '13px', color: '#FFFFFF', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={cueFields[key].print} onChange={() => toggleField(key)}
+                          style={{ width: '15px', height: '15px', accentColor: '#0A84FF', margin: 0, cursor: 'pointer' }} />
+                        {fieldLabel}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
           </div>
           <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.10)', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
             <button onClick={onCancel} style={borderedButton}>Cancel</button>
-            <button onClick={() => onSave(draft)} style={primaryButton}>Save</button>
+            <button onClick={save} style={primaryButton}>Save</button>
           </div>
         </div>
       </div>
@@ -247,11 +332,18 @@ function PrintSetup({ selected, options, label, show, spots, onSave, onCancel })
   );
 }
 
+// What you picked on the Print screen is remembered for each show on this Mac
+const savedKey = (showId) => 'spotplot_print_' + showId;
+function loadSaved(showId) {
+  try { return JSON.parse(localStorage.getItem(savedKey(showId))) || {}; } catch (e) { return {}; }
+}
+
 export default function PrintScreen({ show, navigate }) {
+  const saved = useRef(loadSaved(show.id)).current;
   const [spots, setSpots] = useState([]);
   const [selected, setSelected] = useState(null); // item from the "what to print" list
-  const [label, setLabel] = useState('');
-  const [options, setOptions] = useState(DEFAULT_OPTIONS);
+  const [label, setLabel] = useState(saved.label || '');
+  const [options, setOptions] = useState({ ...DEFAULT_OPTIONS, ...(saved.options || {}) });
   const setOpt = (patch) => setOptions(o => ({ ...o, ...patch }));
   const [setupOpen, setSetupOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -262,6 +354,16 @@ export default function PrintScreen({ show, navigate }) {
     const result = ipcRenderer.sendSync('db-get-spots', show.id);
     setSpots(Array.isArray(result) ? result : []);
   }, []);
+  // Reopen on the sheet picked last time (once the spot sheets are known)
+  const restored = useRef(false);
+  useEffect(() => {
+    if (restored.current || !saved.selectedKey) return;
+    const item = items.find(i => i.key === saved.selectedKey);
+    if (item) { setSelected(item); restored.current = true; }
+  }, [spots]);
+  useEffect(() => {
+    try { localStorage.setItem(savedKey(show.id), JSON.stringify({ label, options, selectedKey: selected?.key || saved.selectedKey || null })); } catch (e) {}
+  }, [label, options, selected?.key]);
 
   const items = [
     ...spots.map(s => ({ key: 'spot-' + s.id, kind: 'spot', spotId: s.id, title: 'Spot ' + s.spot_number, sub: s.operator_name || 'Spot sheet' })),
@@ -273,7 +375,7 @@ export default function PrintScreen({ show, navigate }) {
     { key: 'actions', kind: 'actions', title: 'Action key', sub: 'What every action symbol means' },
   ];
 
-  // File → Print… (⌘P) opens Print Setup (for the caller sheet if nothing is picked yet)
+  // File → Print… (⌘P) opens Page Setup (for the caller sheet if nothing is picked yet)
   const itemsRef = useRef(items);
   itemsRef.current = items;
   useEffect(() => {
@@ -353,7 +455,7 @@ export default function PrintScreen({ show, navigate }) {
                 </>
               )}
 
-              <button data-tour="print-setup" onClick={() => setSetupOpen(true)} style={{ ...borderedButton, width: '100%', marginTop: '8px' }}>Print Setup…</button>
+              <button onClick={() => setSetupOpen(true)} style={{ ...borderedButton, width: '100%', marginTop: '8px' }}>Page Setup…</button>
             </>
           )}
         </div>
@@ -362,10 +464,10 @@ export default function PrintScreen({ show, navigate }) {
         <PreviewArea selected={selected} preview={preview} updating={updating} error={previewError} empty="Select what you want to print" />
       </div>
       {setupOpen && selected && (
-        <PrintSetup selected={selected} options={options} label={label} show={show} spots={spots}
+        <PageSetup selected={selected} options={options} label={label} show={show} spots={spots}
           onSave={(draft) => { setOptions(draft); setSetupOpen(false); }} onCancel={() => setSetupOpen(false)} />
       )}
-      <Tips steps={TIPS.print} watch={selected ? (preview ? 2 : 1) : 0} />
+      {!setupOpen && <Tips steps={TIPS.print} watch={selected ? (preview ? 2 : 1) : 0} />}
     </div>
   );
 }

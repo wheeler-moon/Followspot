@@ -650,7 +650,7 @@ const sceneOrderMap = {};
 </html>`;
 }
 
-function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions, showTracks = true, rangeStart = null, rangeEnd = null }) {
+function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions, showTracks = true, rangeStart = null, rangeEnd = null, paper = 'letter' }) {
   let logoBase64 = '';
   if (show.logo_path) {
     try {
@@ -683,8 +683,10 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
   if (rangeStart != null) sortedCues = sortedCues.filter(cue => cue.track_number >= rangeStart);
   if (rangeEnd != null) sortedCues = sortedCues.filter(cue => cue.track_number <= rangeEnd);
   const printFields = cueFieldSettings(cueFields);
-  // Four or more spots: a tighter sheet (short iris names, smaller action words, a one-row color load)
-  const compact = spots.length >= 4;
+  // Tighter sheet when each spot gets under ~2.8in across (4+ spots on Letter; 5+ on Legal):
+  // short iris names, smaller action words, a one-row color load
+  const pageWidthIn = paper === 'legal' ? 14 : 11;
+  const compact = (pageWidthIn - 0.7 - 0.5) / Math.max(1, spots.length) < 2.8;
   const irisShort = {};
   for (const size of irisSizeList(show && show.iris_sizes)) irisShort[size.value] = size.label || size.value;
   const irisText = (value) => compact ? (irisShort[value] || value) : value;
@@ -1527,7 +1529,7 @@ function buildSpotNotesHTML({ show, spots, cues, scenes, spotCues, characters, l
 }
 
 // Cast grid: photo, character, performer and costume notes for every character, with the standard show header
-function buildCharactersHTML({ show, characters, label, showCostumeNotes }) {
+function buildCharactersHTML({ show, characters, label, showCostumeNotes, paper = 'letter', landscape = false }) {
   const fs = require('fs');
   const imageData = (filePath) => {
     if (!filePath) return '';
@@ -1541,11 +1543,12 @@ function buildCharactersHTML({ show, characters, label, showCostumeNotes }) {
   const initials = name => String(name || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
 
   // Always one page: choose the column count whose cells come out closest to a portrait card,
-  // then size text to the cell. Page content area is 7.7in x 10.1in (Letter minus margins).
-  const GAP = 10, GRID_W = 7.7 * 96, GRID_H = 10.05 * 96 - 96; // minus ~1in for the header
+  // then size text to the cell. The content area is the paper minus margins (0.8in across, ~0.95in down).
+  const pageW = landscape ? (paper === 'legal' ? 14 : 11) : 8.5, pageH = landscape ? 8.5 : (paper === 'legal' ? 14 : 11);
+  const GAP = 10, GRID_W = (pageW - 0.8) * 96, GRID_H = (pageH - 0.95) * 96 - 96; // minus ~1in for the header
   const n = Math.max(characters.length, 1);
   let best = null;
-  for (let cols = 1; cols <= 8; cols++) {
+  for (let cols = 1; cols <= 12; cols++) {
     const rows = Math.ceil(n / cols);
     const cellW = (GRID_W - GAP * (cols - 1)) / cols;
     const cellH = (GRID_H - GAP * (rows - 1)) / rows;
@@ -1576,7 +1579,7 @@ function buildCharactersHTML({ show, characters, label, showCostumeNotes }) {
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   @page { size: 8.5in 11in; margin: 0.5in 0.4in 0.4in 0.4in; }
-  html, body { height: 10.05in; overflow: hidden; }
+  html, body { height: ${(pageH - 0.95).toFixed(2)}in; overflow: hidden; }
   body { font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif; font-size: 11pt; color: #1a1a1a; background: white; display: flex; flex-direction: column; }
 
   .header { flex-shrink: 0; display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 2.5px solid #1a1a1a; }
@@ -1680,7 +1683,7 @@ function simpleHeaderHTML(show, label, kindName, sub) {
 }
 
 // ---------- Action key: every action symbol and what it's called ----------
-function buildActionKeyHTML({ show, label, customActions, usedOnly, spotCues }) {
+function buildActionKeyHTML({ show, label, customActions, usedOnly, spotCues, landscape = false }) {
   const used = new Set(actionsUsed(spotCues, customActions));
   const builtins = BUILTIN_ACTIONS.filter(a => !usedOnly || used.has(a));
   const customs = (customActions || []).filter(a => !usedOnly || used.has(a.name));
@@ -1692,7 +1695,7 @@ function buildActionKeyHTML({ show, label, customActions, usedOnly, spotCues }) 
   const total = builtins.length + customs.length;
   return `<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><style>${SIMPLE_SHEET_CSS}
-  .key-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 18px; }
+  .key-grid { display: grid; grid-template-columns: repeat(${landscape ? 4 : 3}, 1fr); gap: 8px; margin-bottom: 18px; }
   .key-card { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border: 1.5px solid #e2e2e2; border-radius: 10px; break-inside: avoid; }
   .key-icon { width: 40px; height: 40px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
   .key-name { font-size: 11.5pt; font-weight: 700; line-height: 1.2; }
@@ -1920,10 +1923,15 @@ async function renderPDFBuffer(html, { landscape, margin, paper, pageRanges }) {
   const browser = await getBrowser();
   const page = await browser.newPage();
   try {
+    const width = landscape ? (paper === 'legal' ? '14in' : '11in') : '8.5in';
+    const height = landscape ? '8.5in' : (paper === 'legal' ? '14in' : '11in');
     await page.setContent(html, { waitUntil: 'load' });
+    // The paper chosen in Page Setup wins over a sheet's own @page size (otherwise Chrome lays the
+    // sheet out at that size and just scales it onto the paper)
+    await page.addStyleTag({ content: `@page { size: ${width} ${height}; }` });
     return Buffer.from(await page.pdf({
-      width: landscape ? (paper === 'legal' ? '14in' : '11in') : '8.5in',
-      height: landscape ? '8.5in' : (paper === 'legal' ? '14in' : '11in'),
+      width,
+      height,
       ...(pageRanges ? { pageRanges } : {}),
       printBackground: true,
       margin,

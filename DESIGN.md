@@ -173,8 +173,8 @@ A yes/no question SpotPlot asks mid-task (e.g. adding a typed character) uses th
 ### "In progress" label
 A feature that works but isn't settled yet gets a small orange pill at the top of its panel: "In progress", 11px semibold, orange text (`#FF9F0A`) on 16% orange, 6px radius, then one short line in secondary text saying it may change in an update. Take it off once the feature is settled.
 
-### Setup dialog (Print Setup)
-A large dialog like Pages' print window: live preview on the left, settings on the right in a 340px column. Title (15 semibold) and what it's for (12, secondary) at the top; rows with right-aligned labels; Cancel and a blue Save (28px capsules) at the bottom right. Escape cancels, Return saves. Panel `#2A2A2A`, radius 16.
+### Setup dialog (Page Setup)
+A large dialog like Pages' print window: the page preview on the left on its own grey (`#38383A`), one page at a time with a "‹ Page 1 of 3 ›" capsule under it; settings on the right in a 340px column. Extra settings fold away under a disclosure row (chevron + semibold 13). Title (15 semibold) and what it's for (12, secondary) at the top; rows with right-aligned labels; Cancel and a blue Save (28px capsules) at the bottom right. Escape cancels, Return saves. Panel `#2A2A2A`, radius 16.
 
 ### Corner notice
 A short status that matters on every screen (an update downloading or ready): bottom-right, 16px from the edges, `#2A2A2A`, 12px radius, soft shadow, 13px text, an optional small accent button and a × to hide it. A spinner while something is in progress, a green dot when it's done. Don't use it for anything that needs an answer; that's a Mac alert.

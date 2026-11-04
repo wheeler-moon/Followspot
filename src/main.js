@@ -306,6 +306,8 @@ function buildSheet(kind, opts) {
   const characters = database.prepare('SELECT * FROM characters WHERE show_id = ?').all(opts.showId);
   const scenes = database.prepare('SELECT * FROM scenes WHERE show_id = ? ORDER BY sort_order').all(opts.showId);
   const customActions = show.custom_actions ? JSON.parse(show.custom_actions) : [];
+  // Which cue details print: the show's Cue Settings, or Page Setup's unsaved choices while it's open
+  const cueFields = opts.cueFields ? JSON.stringify(opts.cueFields) : show.cue_fields;
   const slotsFor = id => database.prepare('SELECT * FROM color_slots WHERE spot_id = ? ORDER BY is_permanent, slot_number').all(id);
   const label = opts.label || '';
   const labelPart = label || 'Sheet';
@@ -332,7 +334,7 @@ function buildSheet(kind, opts) {
     const spot = spots.find(s => s.id === opts.spotId);
     return {
       html: cover(buildSpotSheetHTML({
-        cueFields: show.cue_fields, show, spot, colorSlots: slotsFor(spot.id), cues, characters, scenes, label, customActions,
+        cueFields, show, spot, colorSlots: slotsFor(spot.id), cues, characters, scenes, label, customActions,
         spotCues: database.prepare('SELECT * FROM spot_cues WHERE spot_id = ?').all(spot.id),
         numSpots: spots.length, hideOff: opts.hideOff === 'unnoted' ? 'unnoted' : !!opts.hideOff, hideTracked: !!opts.hideTracked,
         rangeStart: opts.rangeStart ?? null, rangeEnd: opts.rangeEnd ?? null, showTracks: opts.showTracks !== false,
@@ -348,8 +350,8 @@ function buildSheet(kind, opts) {
       spotCuesBySpot[spot.id] = database.prepare('SELECT * FROM spot_cues WHERE spot_id = ?').all(spot.id);
     }
     return {
-      html: cover(buildCallerSheetHTML({ cueFields: show.cue_fields, show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions, showTracks: opts.showTracks !== false,
-        rangeStart: opts.rangeStart ?? null, rangeEnd: opts.rangeEnd ?? null }),
+      html: cover(buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions, showTracks: opts.showTracks !== false,
+        rangeStart: opts.rangeStart ?? null, rangeEnd: opts.rangeEnd ?? null, paper }),
         'Caller Sheet', spots, PAGE_MARGINS.caller, landscape),
       landscape, paper, margin: PAGE_MARGINS.caller,
       fileName: `${show.title} - Caller Sheet - ${labelPart}.pdf`,
@@ -376,14 +378,14 @@ function buildSheet(kind, opts) {
   if (kind === 'characters') {
     const cast = database.prepare('SELECT * FROM characters WHERE show_id = ? AND COALESCE(print_on_sheet, 1) = 1 ORDER BY sort_order, id').all(opts.showId);
     return {
-      html: buildCharactersHTML({ show, characters: cast, label, showCostumeNotes: opts.showCostumeNotes !== false }),
+      html: buildCharactersHTML({ show, characters: cast, label, showCostumeNotes: opts.showCostumeNotes !== false, paper, landscape }),
       landscape, paper, margin: PAGE_MARGINS.characters,
       fileName: `${show.title} - Characters - ${labelPart}.pdf`,
     };
   }
   if (kind === 'actions') {
     return {
-      html: buildActionKeyHTML({ show, label, customActions, usedOnly: !!opts.usedOnly, spotCues: showSpotCues() }),
+      html: buildActionKeyHTML({ show, label, customActions, usedOnly: !!opts.usedOnly, spotCues: showSpotCues(), landscape }),
       landscape, paper, margin: PAGE_MARGINS.actions,
       fileName: `${show.title} - Action Key - ${labelPart}.pdf`,
     };
@@ -415,6 +417,23 @@ function setupIPC() {
     } catch(e) {
       console.error('Print preview error:', e);
       return { success: false, error: e.message };
+    }
+  });
+  // Page Setup's preview: one page of the sheet as a picture (macOS draws the PDF page), so the
+  // window can show it on its own background with "Page 1 of 3" under it. page = the page number in the sheet.
+  ipcMain.handle('print-page-image', async (event, { kind, page, ...opts }) => {
+    const fs = require('fs'), os = require('os');
+    const file = path.join(os.tmpdir(), `spotplot-page-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}.pdf`);
+    try {
+      const sheet = buildSheet(kind, opts);
+      fs.writeFileSync(file, await renderPDFBuffer(sheet.html, { ...sheet, pageRanges: String(page) }));
+      const image = await require('electron').nativeImage.createThumbnailFromPath(file, { width: 1400, height: 1400 });
+      return { success: true, image: image.toDataURL() };
+    } catch (e) {
+      console.error('Page preview error:', e);
+      return { success: false, error: e.message };
+    } finally {
+      try { fs.unlinkSync(file); } catch (e) {}
     }
   });
   // Leaving the print screen: shut down the preview's background Chrome

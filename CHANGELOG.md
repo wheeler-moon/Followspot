@@ -6,7 +6,8 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
-- **Print Setup** (Print → Print Setup…, or ⌘P): paper size (Letter or Legal), orientation, and a page range or T· range, with a live preview. Spot sheets print portrait, the caller sheet landscape
+- **Page Setup** (Print → Page Setup…, or ⌘P): paper size (Letter or Legal), orientation, a page range or T· range, the sheet's options and which cue details print, with a page-by-page preview. Every sheet fits the paper you pick: Legal fits more cues on a spot sheet and gives the caller sheet more room. Spot sheets print portrait, the caller sheet landscape
+- Print remembers what you picked for each show: the sheet, label and every setting
 - Print preview opens showing a whole page
 - Caller sheet with 4 or more spots: short iris names (H&S, FB), smaller action words that stay on one line, and each spot's color load on one row at the top, lined up even when a spot has no location. Names never split mid-word. Action symbols are the same size throughout a sheet
 - Caller sheet: an ignored spot keeps its size, goes grey and faint, with IGNORE centered over it
