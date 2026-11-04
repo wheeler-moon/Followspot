@@ -165,7 +165,7 @@ function ActionPicker({ value, onChange, onClose, anchorRef, customActions, acti
   );
 }
 // Iris chips in a sideways-scrolling strip; edges fade and an arrow appears when more sizes are hidden
-function IrisStrip({ sizes, selected, onPick }) {
+function IrisStrip({ sizes, selected, onPick, same }) {
   const ref = useRef();
   const [more, setMore] = useState({ left: false, right: false });
 
@@ -205,7 +205,7 @@ function IrisStrip({ sizes, selected, onPick }) {
           const isSel = selected === iris.value;
           return (
             <div key={iris.value} data-selected={isSel} onClick={() => onPick(iris.value)} title={iris.value}
-              style={{ flexShrink: 0, padding: '2px 6px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap', background: isSel ? '#0A84FF' : '#2A2A2A', color: isSel ? '#FFFFFF' : 'rgba(255,255,255,0.28)', border: `1px solid ${isSel ? '#0A84FF' : 'rgba(255,255,255,0.1)'}` }}>
+              style={{ flexShrink: 0, padding: '2px 6px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap', background: isSel ? (same ? 'rgba(10,132,255,0.35)' : '#0A84FF') : '#2A2A2A', color: isSel ? (same ? 'rgba(255,255,255,0.6)' : '#FFFFFF') : 'rgba(255,255,255,0.28)', border: `1px solid ${isSel ? (same ? 'transparent' : '#0A84FF') : 'rgba(255,255,255,0.1)'}` }}>
               {iris.label}
             </div>
           );
@@ -281,7 +281,7 @@ const sameTrackValue = (a, b) => {
 // Copy Whole Cue / Paste Whole Cue: what every spot does in one cue, by spot id (same show only)
 let wholeCueClipboard = null;
 
-function SpotCueCell({ above, onDragEnd, onContextMenu, spotCue, spot, cue, fieldsShown = {}, characters, colorSlots, onUpdate, onNewCustomCharacter, lqNumber, onDragStart, onDragOver, onDragLeave, onDrop, isDragTarget, isMenuTarget, colorSame, onDoubleClick, irisSizes, customActions, actionNames, defaults, fromOff }) {
+function SpotCueCell({ above, onDragEnd, onContextMenu, spotCue, spot, cue, fieldsShown = {}, characters, colorSlots, onUpdate, onNewCustomCharacter, lqNumber, onDragStart, onDragOver, onDragLeave, onDrop, isDragTarget, isMenuTarget, colorSame, irisSame, onDoubleClick, irisSizes, customActions, actionNames, defaults, fromOff }) {
   const [showActionPicker, setShowActionPicker] = useState(false);
   const [hoveredFrame, setHoveredFrame] = useState(null);
   const [showCustomTime, setShowCustomTime] = useState(false);
@@ -569,7 +569,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
 
 <div data-tour="cue-look" style={{ display: 'flex', alignItems: 'center', marginBottom: '3px', gap: '8px' }}>
           {fieldsShown.iris === false ? <div style={{ flex: 1 }} /> : <IrisStrip sizes={irisSizes || []}
-            selected={spotCue.frame_size}
+            selected={spotCue.frame_size} same={irisSame}
             onPick={value => onUpdate(spotCue.id, 'frame_size', spotCue.frame_size === value ? '' : value)} />}
           <div style={{ display: fieldsShown.color === false ? 'none' : 'flex', gap: '3px', alignItems: 'center', flexShrink: 0 }}>
             <div
@@ -727,7 +727,7 @@ function HeaderColorLoad({ slots, perm }) {
   );
 }
 
-function CueRow({ onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesBySpot, cue, isLastCue, fieldsShown, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onNewCustomCharacter, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal, onCueDoubleClick, irisSizes, customActions, actionNames, defaults, fromOffCells, aboveCells }) {
+function CueRow({ onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesBySpot, irisChangesBySpot, cue, isLastCue, fieldsShown, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onNewCustomCharacter, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal, onCueDoubleClick, irisSizes, customActions, actionNames, defaults, fromOffCells, aboveCells }) {
   const [editingLQ, setEditingLQ] = useState(false);
   const [lqVal, setLqVal] = useState(cue.lq_number || '');
 
@@ -824,6 +824,7 @@ function CueRow({ onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesB
               isDragTarget={dragTarget?.cue?.id === cue?.id && dragTarget?.spot?.id === spot?.id}
               isMenuTarget={menuCell?.cueId === cue.id && (menuCell?.spotId === spot.id || menuCell?.spotId === 'all')}
               colorSame={!!sc && sc.action !== 'Off' && !!(sc.no_color || sc.active_frames) && !colorChangesBySpot?.[spot.id]?.has(cue.id)}
+              irisSame={!!sc && sc.action !== 'Off' && !!sc.frame_size && !irisChangesBySpot?.[spot.id]?.has(cue.id)}
               irisSizes={irisSizes}
               customActions={customActions}
               actionNames={actionNames}
@@ -1310,6 +1311,24 @@ export default function CueListScreen({ show, navigate }) {
     }
     return out;
   }, [data]);
+  // Same for iris size: bright blue where it changes, muted while it stays the same
+  const irisChangesBySpot = React.useMemo(() => {
+    const out = {};
+    const cues = [...(data?.cues || [])].sort((a, b) => a.sort_order - b.sort_order);
+    const byKey = new Map((data?.spotCues || []).map(x => [x.cue_id + ':' + x.spot_id, x]));
+    for (const spot of data?.spots || []) {
+      const changed = new Set();
+      let last = null;
+      for (const cue of cues) {
+        const sc = byKey.get(cue.id + ':' + spot.id);
+        if (!sc || sc.action === 'Off' || !sc.frame_size) continue;
+        if (sc.frame_size !== last) changed.add(cue.id);
+        last = sc.frame_size;
+      }
+      out[spot.id] = changed;
+    }
+    return out;
+  }, [data]);
 
   // Right-click menu on a cue cell: a real macOS menu (main.js 'show-context-menu'). The cell stays
   // outlined while its menu is open; the chosen item comes back as 'context-menu-action'.
@@ -1757,7 +1776,7 @@ const groupedCues = () => {
                       isLastCue={cue.id === lastCueId}
                       spots={data?.spots || []}
                       spotCues={data?.spotCues || []} characters={characters}
-                      colorSlotsBySpot={colorSlotsBySpot} scenes={data?.scenes || []} colorChangesBySpot={colorChangesBySpot}
+                      colorSlotsBySpot={colorSlotsBySpot} scenes={data?.scenes || []} colorChangesBySpot={colorChangesBySpot} irisChangesBySpot={irisChangesBySpot}
                       onUpdateCue={updateCue} onUpdateSpotCue={updateSpotCue} onNewCustomCharacter={addCustomCharacterToShow}
                       onDelete={deleteCue} onInsertAfter={insertCueAfter}
                       dragSource={dragSource} dragTarget={dragTarget}
