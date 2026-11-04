@@ -6,7 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
-- Caller sheet: each cue lines up across its spots. Iris, color and time sit at the same height, and if any spot has a When or a Note, every spot shows both, in line
+- Caller sheet: each cue lines up across its spots. The action word, character and intensity share one line; iris, color and time sit at the same height; and if any spot has a When or a Note, every active spot shows both, in line. Tracked spots keep their short layout
 - Shorter tips and settings descriptions, quicker to read
 - A new or inserted cue now brings each spot's iris size from the cue above, along with its character and color
 - Cue list: a spot's iris size shows bright blue in the cue where it changes and muted while it stays the same, like color frames

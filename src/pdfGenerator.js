@@ -714,18 +714,17 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
   for (const cue of sortedCues) {
     if (cue.scene_id !== currentSceneId) {
       currentSceneId = cue.scene_id;
-      for (const act of actBreaksBefore(cue)) rowsHTML += sceneRowHTML(act, colSpan + 1);
+      for (const act of actBreaksBefore(cue)) rowsHTML += `<tbody class="scene">${sceneRowHTML(act, colSpan + 1)}</tbody>`;
       const scene = sceneMap[cue.scene_id];
-      if (scene) rowsHTML += sceneRowHTML(scene, colSpan + 1);
+      if (scene) rowsHTML += `<tbody class="scene">${sceneRowHTML(scene, colSpan + 1)}</tbody>`;
     }
 
-    let spotCellsHTML = '';
-    // If any spot in this cue has a When or a Note, every active spot gets both rows (empty where it has none),
-    // so the information always sits in the same place across the row
-    const rowSCs = spots.map(spot => (spotCuesBySpot[spot.id] || []).find(x => x.cue_id === cue.id)).filter(x => x && x.action !== 'Off');
+    // Each cue is three table rows (action / iris-color-time / When-Note), so those line up across every spot
+    // even when one spot's character wraps or one spot has no iris or color. Off and Tracked spots span all three.
+    // If any active spot has a When or a Note, every active spot gets both (empty where it has none).
+    const rowSCs = spots.map(spot => (spotCuesBySpot[spot.id] || []).find(x => x.cue_id === cue.id)).filter(x => x && x.action !== 'Off' && !isQuiet(x));
     const rowHasSay = rowSCs.some(x => (printFields.when.print && whenText(x, cue)) || (printFields.notes.print && safeRich(x.notes)));
-    const rowHasWhen = rowHasSay && printFields.when.print;
-    const rowHasNotes = rowHasSay && printFields.notes.print;
+    const cells = [[], [], []];
     for (const spot of spots) {
       const spotCues = spotCuesBySpot[spot.id] || [];
       const sc = spotCues.find(sc => sc.cue_id === cue.id);
@@ -735,69 +734,73 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
 
       if (isOff) {
         const offNote = sc && printFields.notes.print ? safeRich(sc.notes) : '';
-        spotCellsHTML += `
-          <td class="spot-cell off-cell">
+        cells[0].push(`
+          <td rowspan="3" class="spot-cell off-cell">
             <div class="off-inner">
               ${actionIconSVG('Off', 18)}
               <span class="off-label">Off</span>
             </div>
             ${offNote ? `<div class="off-note"><span style="${lineHighlightCSS(sc.notes_highlight)}">${offNote}</span></div>` : ''}
-          </td>
-        `;
-      } else {
-        const isIgnored = sc.ignored === 1;
-        const highlight = sc.highlight;
-        let cellStyle = '';
-        if (highlight === 'yellow') cellStyle = 'background:rgba(200,160,0,0.15);';
-        if (highlight === 'red') cellStyle = 'background:rgba(200,60,60,0.15);';
-        if (isIgnored) cellStyle = 'background:rgba(220,220,220,0.3);';
+          </td>`);
+        continue;
+      }
+      const isIgnored = sc.ignored === 1;
+      let cellStyle = '';
+      if (sc.highlight === 'yellow') cellStyle = 'background:rgba(200,160,0,0.15);';
+      if (sc.highlight === 'red') cellStyle = 'background:rgba(200,60,60,0.15);';
+      if (isIgnored) cellStyle = 'background:rgba(220,220,220,0.3);';
+      const dim = isIgnored ? 'opacity:0.2;' : '';
+      const quiet = isQuiet(sc);
 
-        const quiet = isQuiet(sc);
-        spotCellsHTML += `
-          <td class="spot-cell${quiet ? ' quiet-cell' : ''}" style="${cellStyle}position:relative;">
-            ${isIgnored ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14pt;font-weight:900;color:#1a1a1a;letter-spacing:0.2em;z-index:2;">— IGNORE —</div>` : ''}
-            <div style="${isIgnored ? 'opacity:0.2;' : ''}">
-              <div class="sec sec-a"><div class="action-inner" style="margin-bottom:0;align-items:center;">
+      const actionHTML = `<div class="action-inner caller-action" style="margin-bottom:0;">
                 ${quiet ? '' : getActionIconHTML(sc.action, 30, customActions)}
                 <span class="action-name">${quiet ? '—' : (displayAction(sc.action, actionNames) || '—')}</span>
                 <span class="char-name" style="margin-left:4px;">${charText || '—'}</span>
                 <div class="intensity-badge" style="margin-left:auto;">${sc.intensity ? `<span style="font-size:11pt;font-weight:400;color:#666;margin-right:1.5pt;">@</span>${sc.intensity}` : ''}</div>
-              </div></div>
-              <div class="sec sec-d">${(() => {
-                // Iris / color / time in one labeled strip; fields hidden on print are left out entirely
-                const colorText = sc.no_color ? 'NC' : activeFrames;
-                // A change is highlighted yellow; the same color as before prints grey
-                const colorHL = colorChangedBySpot[spot.id].has(cue.id) ? `background:${COLOR_CHANGE_BG};` : `color:${QUIET_GREY};`;
-                const items = [
-                  printFields.iris.print && sc.frame_size ? `<span class="detail-badge iris"><span class="lbl">Iris</span>${sc.frame_size}</span>` : '',
-                  printFields.color.print && colorText ? `<span class="detail-badge color" style="${colorHL}"><span class="lbl">Color</span>${colorText}</span>` : '',
-                  printFields.time.print && sc.fade_time ? `<span class="detail-badge time"><span class="lbl">Time</span>${sc.fade_time}s</span>` : '',
-                ].filter(Boolean);
-                return items.length ? `<div class="cue-details">${items.join('')}</div>` : '';
-              })()}</div>
-              <div class="sec sec-s">${(() => {
-                // When and Notes share one box, one labeled row each
-                const when = whenText(sc, cue), note = safeRich(sc.notes);
-                const rows = [
-                  rowHasWhen ? `<div class="say-row when-text" style="${when ? lineHighlightCSS(sc.when_highlight) : ''}"><span class="lbl">When</span><span>${when || '&nbsp;'}</span></div>` : '',
-                  rowHasNotes ? `<div class="say-row notes-text" style="${note ? lineHighlightCSS(sc.notes_highlight) : ''}"><span class="lbl">Note</span><span>${note || '&nbsp;'}</span></div>` : '',
-                ].filter(Boolean);
-                return rows.length ? `<div class="say-box">${rows.join('')}</div>` : '';
-              })()}</div>
-            </div>
-          </td>
-        `;
+              </div>`;
+      // Iris / color / time in one labeled strip; fields hidden on print are left out entirely
+      const colorText = sc.no_color ? 'NC' : activeFrames;
+      // A change is highlighted yellow; the same color as before prints grey
+      const colorHL = colorChangedBySpot[spot.id].has(cue.id) ? `background:${COLOR_CHANGE_BG};` : `color:${QUIET_GREY};`;
+      const items = [
+        printFields.iris.print && sc.frame_size ? `<span class="detail-badge iris"><span class="lbl">Iris</span>${sc.frame_size}</span>` : '',
+        printFields.color.print && colorText ? `<span class="detail-badge color" style="${colorHL}"><span class="lbl">Color</span>${colorText}</span>` : '',
+        printFields.time.print && sc.fade_time ? `<span class="detail-badge time"><span class="lbl">Time</span>${sc.fade_time}s</span>` : '',
+      ].filter(Boolean);
+      const detailsHTML = items.length ? `<div class="cue-details">${items.join('')}</div>` : '';
+      // When and Notes share one box, one labeled row each
+      const when = whenText(sc, cue), note = safeRich(sc.notes);
+      const showWhen = printFields.when.print && (quiet ? !!when : rowHasSay);
+      const showNote = printFields.notes.print && (quiet ? !!note : rowHasSay);
+      const sayRows = [
+        showWhen ? `<div class="say-row when-text" style="${when ? lineHighlightCSS(sc.when_highlight) : ''}"><span class="lbl">When</span><span>${when || '&nbsp;'}</span></div>` : '',
+        showNote ? `<div class="say-row notes-text" style="${note ? lineHighlightCSS(sc.notes_highlight) : ''}"><span class="lbl">Note</span><span>${note || '&nbsp;'}</span></div>` : '',
+      ].filter(Boolean);
+      const sayHTML = sayRows.length ? `<div class="say-box">${sayRows.join('')}</div>` : '';
+      const ignoreHTML = isIgnored ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14pt;font-weight:900;color:#1a1a1a;letter-spacing:0.2em;z-index:2;">— IGNORE —</div>` : '';
+
+      if (quiet) {   // Tracked: its own short layout, top to bottom
+        cells[0].push(`
+          <td rowspan="3" class="spot-cell quiet-cell" style="${cellStyle}position:relative;">${ignoreHTML}
+            <div style="${dim}">${actionHTML}${detailsHTML}${sayHTML}</div>
+          </td>`);
+      } else {
+        // (an ignored spot says IGNORE in its middle part, across the box)
+        cells[0].push(`<td class="spot-cell sec-a" style="${cellStyle}"><div style="${dim}">${actionHTML}</div></td>`);
+        cells[1].push(`<td class="spot-cell sec-d" style="${cellStyle}">${isIgnored ? `<div style="text-align:center;font-size:14pt;font-weight:900;color:#1a1a1a;letter-spacing:0.2em;">— IGNORE —</div>` : ''}<div style="${dim}">${detailsHTML}</div></td>`);
+        cells[2].push(`<td class="spot-cell sec-s" style="${cellStyle}"><div style="${dim}">${sayHTML}</div></td>`);
       }
     }
 
     rowsHTML += `
-      <tr class="cue-row">
-        <td class="lq-cell">${cue.lq_number || '—'}${trackHTML(cue, showTracks, printFields.page.print)}</td>
-        ${spotCellsHTML}
-      </tr>
+      <tbody class="cue">
+        <tr class="cue-row"><td rowspan="3" class="lq-cell">${cue.lq_number || '—'}${trackHTML(cue, showTracks, printFields.page.print)}</td>${cells[0].join('')}</tr>
+        <tr class="cue-row">${cells[1].join('')}</tr>
+        <tr class="cue-row">${cells[2].join('')}</tr>
+      </tbody>
     `;
   }
-  for (const act of actBreaksBefore(null)) rowsHTML += sceneRowHTML(act, colSpan + 1);
+  for (const act of actBreaksBefore(null)) rowsHTML += `<tbody class="scene">${sceneRowHTML(act, colSpan + 1)}</tbody>`;
 
   const spotColHeaders = spots.map(spot => `
     <th class="spot-col-header" style="width:calc((100% - 48px) / ${spots.length})">SPOT ${spot.spot_number} · ${spot.operator_name || 'TBD'}</th>
@@ -905,7 +908,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
     border-left: 2px solid #444;
   }
 
-  tbody tr {
+  tbody tr:last-child {
     border-bottom: 1.5px solid #d0d0d0;
   }
 
@@ -915,7 +918,10 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
     page-break-after: avoid;
   }
 
-  tbody tr:nth-child(even) { background: #f8f8f8; }
+  tbody:nth-of-type(even) tr { background: #f8f8f8; }
+  /* A cue's three rows stay together on one page; a scene title stays with its first cue */
+  tbody.cue { break-inside: avoid; page-break-inside: avoid; }
+  tbody.scene { break-after: avoid; page-break-after: avoid; }
 
   .lq-cell {
     font-size: 13pt;
@@ -944,6 +950,10 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
     page-break-inside: avoid;
     break-inside: avoid;
   }
+  /* An active spot's three parts: no padding between them, so they read as one box */
+  .spot-cell.sec-a { padding-bottom: 0; }
+  .spot-cell.sec-d { padding-top: 0; padding-bottom: 0; }
+  .spot-cell.sec-s { padding-top: 0; }
 
   .off-cell {
     background: #f0f0f0;
@@ -1023,8 +1033,9 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
 
   /* Iris / color / time: one white strip, items split by hairlines.
      Only a color change gets a fill, so it pops. */
-  /* Each spot box is three stacked sections; a script below makes each section the same height across the cue */
-  .sec { display: flow-root; }
+  /* Action word, character and intensity sit on the same bottom line, even when one wraps */
+  .caller-action { align-items: last baseline; }
+  .caller-action > svg, .caller-action > img { align-self: flex-end; margin-bottom: -7px; }
 
   .cue-details {
     display: inline-flex;
@@ -1167,26 +1178,8 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
         ${spotColHeaders}
       </tr>
     </thead>
-    <tbody>
-      ${rowsHTML}
-    </tbody>
+    ${rowsHTML}
   </table>
-  <script>
-    // Line up action / iris-color-time / When-Note across every spot in a cue, even when one spot's
-    // character wraps or one spot has no iris or color
-    function lineUpCallerRows() {
-      for (const row of document.querySelectorAll('tr.cue-row')) {
-        for (const cls of ['sec-a', 'sec-d', 'sec-s']) {
-          const secs = [...row.querySelectorAll('.' + cls)];
-          secs.forEach(el => { el.style.minHeight = ''; });
-          const h = Math.max(0, ...secs.map(el => el.getBoundingClientRect().height));
-          secs.forEach(el => { el.style.minHeight = h + 'px'; });
-        }
-      }
-    }
-    lineUpCallerRows();
-    window.addEventListener('load', lineUpCallerRows);
-  </script>
 </body>
 </html>`;
 }
