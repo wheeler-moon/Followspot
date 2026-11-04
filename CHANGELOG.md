@@ -6,6 +6,8 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- Clearer action symbols: Bump Up and Bump Out point up and down, Ballyhoo is two overlapping circles, Iris In's arrows point inward (Iris Out's point out), new symbols for Swap To and Stay With, and a new purple for the iris actions. Prints and the Action Key match
+
 ## 0.5.0 (2026-11-04)
 
 New: **undo for everything in the cue list**, **more than one character in a cue**, a **Notes sidebar**, **Cue Defaults**, **notes on Off cues** and **spreadsheet export**.
@@ -53,6 +55,7 @@ Other
 
 Saved for the iPad app's first release (kept out of the Mac's What's New).
 
+- Action symbols match SpotPlot for Mac's new ones (Bump Up / Bump Out, Ballyhoo, Iris In / Out, Swap To, Stay With, iris purple)
 - Shows list: each show has its logo (whole, never cropped), when it was last edited on the Mac and last opened on this iPad, and the show you opened most recently is at the top
 - Caller view: a little space between @ and the intensity
 - The cue details menu (•••) stays open while you switch things on and off; tap anywhere outside it to close it

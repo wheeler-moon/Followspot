@@ -45,7 +45,6 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 - [ ] Narrow windows: rethink how the app looks when the window is tight (e.g. half a Mac screen). Past a certain width it gets cramped and hard to use
 - [ ] Tracking: check what a cue picks up from the cue above when it's made Tracked from another action
 - [ ] "Track down" button: carry a spot's details from one cue down the cue list until its next change. Wheeler will explain in more detail before we build it
-- [ ] Action icons: refine a few of the action icon images based on beta feedback. Wheeler will say which ones and what to change. The iPad keeps its own copy (`Resources/action-icons.json`), so update it too, and check the printed Action Key
 
 ### Before launch (not features)
 - [ ] **Apple signing certificate expires Feb 1, 2027** (Developer ID Application, team 299TQ9H5QB). Make a new one in December so 1.0 and its first updates are signed with it. If the developer account moves to the LLC, convert the existing account rather than opening a new one: auto-update needs the same Team ID

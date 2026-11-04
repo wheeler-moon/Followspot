@@ -21,7 +21,7 @@ When a color, icon or meaning changes in one place (for example an action's icon
 
 - **Dark only.** SpotPlot is used at tech tables and in dark booths. There is no light mode.
 - **Show content beats chrome.** Cue content (LQ numbers, actions, characters) is read quickly, at a distance, during tech. Make it bigger and higher-contrast than buttons, labels and headers.
-- **One accent color: Apple Blue.** It marks what's interactive or selected. Other colors only carry meaning (delete, warning, highlight). No purple anywhere in the UI.
+- **One accent color: Apple Blue.** It marks what's interactive or selected. Other colors only carry meaning (delete, warning, highlight). No purple anywhere except the iris actions' amethyst in the UI.
 - **Native Mac feel.** Use the system font, macOS control heights and corner radii, and capsule-shaped switches.
 - **Gel colors are data, not UI.** Gel swatches show the real gel color. Never tint, restyle or theme them.
 
@@ -68,7 +68,7 @@ Only use these when the color carries meaning.
 | Yellow | `#FFD60A` | The yellow cue highlight |
 | Green | `#30D158` | Success, confirmations |
 | Brown | `#AC8E68` | No-color (NC) and color-change actions |
-| Cyan / Indigo | `#64D2FF` / `#5E5CE6` | Action families only: swap/slide/stay, and iris moves |
+| Cyan / Amethyst | `#64D2FF` / `#A066D3` (print `#185FA5` / `#6A2C9E`) | Action families only: swap/slide/stay, and iris moves |
 
 For highlight **backgrounds**, use the color at 15% opacity (for example `rgba(255,66,69,0.15)`) so the text stays readable.
 
