@@ -39,7 +39,7 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 - [ ] Faster cue list loading: big shows take a couple of seconds to open
 - [ ] Beta feedback: add items here as testers report them
 - [ ] ⌘C / ⌘V for a cue box without right-clicking (needs a way to select a box first)
-- [ ] Cue Defaults, second pass: first version is in (Show Settings → Cue Defaults, `src/cueDefaults.js`). Wheeler wants to think it through more and make sure it fully works and is structured right: when defaults should apply (on picking an action vs. when a cue is made), how they interact with tracking, inserted cues, copy/paste and actions' own settings, whether defaults should be per spot, and whether more details (character, When) belong there
+- [ ] Cue Defaults, second pass: first version is in (Show Settings → Cue Defaults, `src/cueDefaults.js`). Wheeler wants to think it through more and make sure it fully works and is structured right: when defaults should apply (on picking an action vs. when a cue is made), how they interact with tracking, inserted cues, copy/paste and actions' own settings, whether defaults should be per spot, and whether more details (character, When) belong there. Remove the "In progress" label in the panel once it is settled.
 
 - [ ] Print headers: go over the header on every PDF (spot sheet, caller sheet, Color Load, Spot Notes, Characters, Action Key, Scene List, cover page) so they match. The Color Load header looks misaligned. Wheeler has opinions on the redesign; waiting on his notes
 - [ ] Narrow windows: rethink how the app looks when the window is tight (e.g. half a Mac screen). Past a certain width it gets cramped and hard to use

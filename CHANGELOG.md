@@ -6,43 +6,48 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
-- **Your license's end date**: Settings → Account shows when a free or beta license ends ("Active through Dec 31, 2026"). In its last week a small notice says so, with a link to get SpotPlot. When a license ends, SpotPlot says so plainly, reminds you your shows are safe on your Mac, and links to spotplotapp.com
-- **Notes on Off cues**: click **+ Note** in an Off box to leave the operator a note while their spot is off (where to move next, a frame to set up in the dark…). It prints across the row on the spot sheet, right after Off, and under Off on the caller sheet. If you later give that cue an action, the note becomes its regular Notes line. Changing a cue to Off clears its old note, so an Off box always starts empty When printing a spot sheet with **Hide Off cues** on, **Keep ones with notes** (on to start) still prints the Off cues that have a note
-- Show Settings: the EOS Control tab is now called **Console Connection**
+## 0.5.0 (2026-11-04)
 
-- **Sign In / Sign Out**: the first screen now says Sign in to SpotPlot, and Settings → Deactivate is now **Sign Out** (it still frees this Mac's place on your license so you can use another Mac). Signing in again after signing out shows the welcome again
-- A welcome the first time you activate SpotPlot on a Mac: the SpotPlot icon grows and rises as the sign-in fades away, "Welcome to SpotPlot" and your first name are revealed, then a button to create your first show
-- Cue list: add a cue at the top of a scene. Hover just below a scene's header and click **+ insert cue here** to make a new first cue for that scene (it also works under an act break with no cues yet). ⌘Z takes it back
-- Show logos always appear whole: the show's page no longer crops a logo into a rounded square, logo corners are no longer rounded off anywhere, and on printed sheets a wide logo gets room to be wide instead of shrinking into a small square
-- Print: a cover page for a show without a logo no longer leaves a big empty space. The show's title is a little larger and sits together with the spot's colors, centered on the page
-- **Your name on your account**: your license now carries your name (given when you get your license), so SpotPlot knows it as soon as you sign in. Your name (with a person icon) replaces the Settings button, at the far right of the Home screen's top bar; click it to open Settings, where you can add or change it
-- **Home screen**: your shows are listed with the one you changed most recently first, and each shows when it was last modified ("Modified today at 3:42 PM", "Modified 5 days ago"). Just opening or looking through a show doesn't count. Two new buttons at the top right of your shows switch between the grid and a list (SpotPlot remembers which you like)
-- Cue list: act breaks (like "Act One") always show as their orange header, even with no cues of their own, so the list opens on the first act instead of the first scene. Spot sheets and the caller sheet print them too, in their place between scenes (a sheet for a range of cues shows only the act breaks inside that range)
-- Cue list: **⌘Z undoes everything, and ⇧⌘Z redoes** (Edit → Undo and Redo in the menu bar do the same). Picking an action now undoes in one step (with the time and intensity it filled in), and these can be undone too: adding, inserting and deleting cues (a deleted cue comes back with everything every spot had), checking off a note in the Notes sidebar, renaming a scene from its header, and adding a scene or character. **⇧⌘Z redoes** what you undid. While you're typing in a box, ⌘Z and ⇧⌘Z undo and redo your typing
-- Cue list: the action menu stays attached to its cue while you scroll (and closes once the cue scrolls out of sight), opens upward when there isn't room below so it's never cut off, and closes when you click anywhere else, including the character box
-- **More than one character in a cue**: click the **+** beside a cue's character to add a second, then a third ("Pick Up Bob & Matt"). Each is picked from the show's characters or typed, and × takes one out. Spot sheets, the caller sheet, Spot Notes, the spreadsheet export and the iPad show them all as "Bob, Matt & Sue". A new cue carries them forward like the first character, and copy, paste and drag bring them along
-- Cue list: the character menus show just character names (performers are on the Characters screen), and in each spot's box intensity now lines up under the action and time under the character
-- Updates: while a new version downloads, a small notice in the bottom corner says "Downloading SpotPlot X.X.X…". Once it's ready, the notice has an **Install & Restart** button, handy if you chose Later. SpotPlot → Check for Updates… now always answers: you're up to date, an update is downloading, or it couldn't check
-- The grey hints in empty boxes now use one plain style throughout: they say what goes in the box ("Show title", "Operator's name", "Gel number or name"), with an example only where it helps ("Seconds, e.g. 2.5")
-- **Cue Defaults** (Show Settings → Cue Defaults): set a default time, intensity, iris size and color, laid out like a spot in the cue list. When you pick an action, they fill in whatever's still empty. Time fills in for every action; intensity, iris and color only when the spot is coming out of Off, so anything already up keeps tracking. An action's own settings still win (a Bump stays at 0 seconds, a Pick Up at Full)
-- **Spot Notes** is easier to read: each card shows the LQ, then the scene in small capitals, then what the spot is doing, then the note, with the buttons along the bottom. **✓ Given** now moves a note off its cue (the cue list's yellow dot goes away) into a **Given** tray at the bottom of the screen, newest first, where **Restore** puts it back. Checking a note off in the cue list's Notes sidebar does the same. Notes you'd already checked off move to Given automatically
-- **Export as a spreadsheet**: the dashboard's Export ▾ (or File → Export as Spreadsheet (CSV)…) saves a folder of CSV files for Excel, Numbers or Google Sheets: the cue list with every spot side by side, one row per spot per cue for sorting and filtering, plus spots and their gels, scenes, characters and spot notes
-- Spot Settings: a color typed by hand (not from the gel list) no longer opens the gel list when you come back to Spot Settings; the list only appears while you type
-- **Custom actions** (Show Settings → Custom Actions): click any action to edit it. Rename your own actions (cues that use one follow along), change their icon or delete them. A new icon library lets a custom action use one of SpotPlot's own symbols or a plain green, red or yellow circle, or you can still choose your own image. SpotPlot's built-in actions can be renamed for one show (say "Pick Up" to "Pickup"); the new name shows on the cue list, prints, the action key and the iPad
-- Cue list: a **Notes** sidebar that slides in on the right for taking notes during a run. Click the notes button (a page and pen, at the far right of the top bar), type the LQ, pick the spot (or **All Spots**) and press Return; the note is saved as that cue's spot note (Spot Notes and prints have it). It lists notes not given yet in cue order: click one to jump to its cue, ✓ to check it off. The notes button shows how many are still to give. A note for All Spots shows as its own column on the Spot Notes screen and at the top of every spot's notes printout
-- Spot Notes: **Go to Cue** on each note opens the cue list at that cue, with the spot's box outlined for a moment
-- Reordering scenes, characters, iris sizes and spot order: while you drag, a blue line shows exactly where the item will land, instead of highlighting the row it goes next to (in Spot Order, a tall bar between the spots)
-- Copy and paste a whole cue: right-click a cue's LQ number (or any spot's box) and choose **Copy Whole Cue (All Spots)**, then **Paste Whole Cue** on another cue. Every spot takes what it did in the copied cue, and one ⌘Z undoes it. The LQ number's right-click menu also has Insert Cue Above / Below and Delete
-- **Page number** is now a cue detail in Show Settings → Cue Settings, like the others: shown on the cue list (turn it off to hide the "pg"), and off on prints until you tick it. When it's on, spot sheets, the caller sheet and Spot Notes show each cue's page under its T· number
-- "Actor" is now "Performer" everywhere: the Characters screen, the add-character box, Print and the Characters sheet
-- When you type a new character name in a cue, the question now defaults to **Keep as Custom** (the blue button, so Return picks it); choosing Add to Characters still starts it unticked for the Characters sheet. Tick **Remember my choice for this show** to stop being asked in that show; View → Ask About New Characters Again brings the question back
-- Escape closes menus, pop-ups and dialogs throughout the app: Show Settings, a cue's options, the action menu, gel search results, the add scene / character boxes, Settings, What's New and more. It closes only the top-most one
-- Cue list: no more thin see-through line above a scene header when it's pinned at the top while scrolling
-- Cue list: double-click a scene header to rename the scene and its song right there (typing stays quick even in a long show); the new name shows everywhere
-- Cue list: the LQ number box is wider, so long numbers (like 1234.5) fit while typing. Escape cancels a change
-- Cue list: leaving and coming back reopens exactly where you were, and the Jump to menu starts fresh
-- First-run tips for Show Settings: the first time you open it, and the first time you open Spot Settings, Iris Sizes or Cue Settings, short tips point out the controls (color frames, copying colors, the permanent color, swapping spots, adding iris sizes, what shows where). Help → Show Tips Again brings them back
-- The window's grey title bar is gone: the red, yellow and green window buttons now sit in SpotPlot's own top bar, like Apple's apps on current macOS. Drag the window by any empty part of the top bar, or double-click it to zoom
+New: **undo for everything in the cue list**, **more than one character in a cue**, a **Notes sidebar**, **Cue Defaults**, **notes on Off cues** and **spreadsheet export**.
+
+Cue list
+- **⌘Z undoes everything** in the cue list, and ⇧⌘Z redoes
+- **Notes sidebar**: jot notes during a run, then click one to jump to its cue
+- **More than one character** in a cue: click the **+** beside the character
+- **Notes on Off cues**: click **+ Note** in an Off box. They print too
+- **Copy and paste a whole cue**: right-click a cue's LQ number
+- Add a cue at the top of a scene: hover under the scene's header and click **+ insert cue here**
+- Double-click a scene header to rename it
+- Act breaks always show, on screen and in print
+- Menus stay with their cue while you scroll and are never cut off
+- A new character name you type stays custom unless you choose to add it
+- The cue list reopens right where you left it
+
+Printing
+- **Page numbers** can print under each cue's T· number (Show Settings → Cue Settings)
+- Show logos are never cropped
+- Cover pages without a logo look cleaner
+
+Shows and spots
+- **Home screen**: the show you changed last is first, with a grid or list view
+- **Cue Defaults** (in progress): a default time, intensity, iris and color for new actions (Show Settings → Cue Defaults)
+- **Custom actions**: edit, rename or delete them, with a new icon library
+- **Spot Notes**: easier to read, with **Go to Cue** and a **Given** tray for notes you've given
+- **Export as a spreadsheet** for Excel, Numbers or Google Sheets
+- "Actor" is now "Performer", and EOS Control is now **Console Connection**
+
+Your account
+- **Sign In** and **Sign Out** replace Activate and Deactivate
+- A welcome when you first sign in
+- Your name shows on the Home screen; click it for Settings
+- Settings → Account shows when a beta or free license ends
+
+Other
+- Escape closes any menu or dialog
+- A notice shows when an update is downloading, with **Install & Restart**
+- A cleaner top bar, like Apple's own apps
+- Tips the first time you open Show Settings
+- A color typed by hand no longer reopens the gel list
 
 ## SpotPlot for iPad (not released yet)
 
