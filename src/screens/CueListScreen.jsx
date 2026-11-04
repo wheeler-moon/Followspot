@@ -271,6 +271,13 @@ function ExtraCharacterBox({ value, characters, onChange, onRemove, onNewName, c
 const COPY_FIELDS = ['action', 'character_id', 'custom_character', 'extra_characters', 'frame_size', 'intensity', 'fade_time', 'active_frames',
   'description', 'with_lq', 'notes', 'no_color', 'highlight', 'when_highlight', 'notes_highlight'];
 let cueClipboard = null;
+// What a Tracked box carries on from the cue above, and keeps following until someone changes it
+const TRACK_FOLLOW_FIELDS = ['character_id', 'custom_character', 'extra_characters', 'frame_size', 'active_frames', 'no_color'];
+const isTrackedAction = (action) => !action || action === 'Tracked';
+const sameTrackValue = (a, b) => {
+  const n = (v) => (v == null || v === '' || v === 0 || v === '0') ? '' : String(v);
+  return n(a) === n(b);
+};
 // Copy Whole Cue / Paste Whole Cue: what every spot does in one cue, by spot id (same show only)
 let wholeCueClipboard = null;
 
@@ -1246,6 +1253,16 @@ export default function CueListScreen({ show, navigate }) {
     setData(d => ({ ...d, spotCues: (d?.spotCues || []).map(sc => sc.id === spotCueId ? { ...sc, [field]: value } : sc) }));
     if (!skipUndo) {
       pushUndo({ type: 'spot-cue', spotCueId, field, oldValue, newValue: value });
+    }
+    // Tracked cues follow: the same spot's Tracked box in the next cue takes the change too (and on down
+    // the line), unless someone set that box to something else. Its own ⌘Z entry, grouped with this click.
+    if (oldSpotCue && TRACK_FOLLOW_FIELDS.includes(field)) {
+      const cues = [...(data?.cues || [])].sort((a, b) => a.sort_order - b.sort_order);
+      const next = cues[cues.findIndex(c => c.id === oldSpotCue.cue_id) + 1];
+      const below = next && (data?.spotCues || []).find(x => x.cue_id === next.id && x.spot_id === oldSpotCue.spot_id);
+      if (below && isTrackedAction(below.action) && sameTrackValue(below[field], oldValue) && !sameTrackValue(below[field], value)) {
+        updateSpotCue(below.id, field, value);
+      }
     }
   };
   const upsertSpotCue = (spotId, cueId, field, value) => {
