@@ -300,9 +300,9 @@ export default function SpotSettingsPanel({ show, focusSpotId = null }) {
         </div>
       )}
       {showSwap && <SwapSpotsDialog spots={spots} onClose={() => setShowSwap(false)}
-        onSwapped={(a, b) => {
+        onSwapped={(a, b, everything) => {
           // Swapping is its own undo: swapping the same two spots again puts everything back
-          const swap = () => ipcRenderer.sendSync('db-swap-spots', { spotAId: a, spotBId: b });
+          const swap = () => ipcRenderer.sendSync('db-swap-spots', { spotAId: a, spotBId: b, everything });
           record({ undo: swap, redo: swap });
           load(); setVersion(v => v + 1);
         }} />}

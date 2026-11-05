@@ -6,13 +6,15 @@ const { ipcRenderer } = window.require('electron');
 const secondaryBtn = { flex: 1, height: '28px', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: '14px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' };
 const primaryBtn = { ...secondaryBtn, background: '#0A84FF' };
 
-// Swaps every cue's data between two spots. Gels, operator and location stay with each spot.
+// Swaps every cue's data between two spots. Gels, operator, location and fixture stay with each spot,
+// unless "Also swap operator, location, fixture and gels" is ticked (off to start).
 export default function SwapSpotsDialog({ spots, onClose, onSwapped }) {
   const [a, setA] = useState(spots[0]?.id);
   const [b, setB] = useState(spots[1]?.id);
   const [confirming, setConfirming] = useState(false);
   useEscape(() => (confirming ? setConfirming(false) : onClose()));
   const [gelsDiffer, setGelsDiffer] = useState(false);
+  const [everything, setEverything] = useState(false);   // also swap operator, location, fixture and gels
 
   const spotLabel = id => 'Spot ' + (spots.find(s => s.id === id)?.spot_number ?? '?');
 
@@ -20,9 +22,9 @@ export default function SwapSpotsDialog({ spots, onClose, onSwapped }) {
     .map(s => `${s.is_permanent ? 'P' : s.slot_number}:${s.gel_number || ''}`).sort().join('|');
 
   const doSwap = () => {
-    const result = ipcRenderer.sendSync('db-swap-spots', { spotAId: a, spotBId: b });
+    const result = ipcRenderer.sendSync('db-swap-spots', { spotAId: a, spotBId: b, everything });
     if (!result?.success) { window.alert('Swap failed: ' + (result?.error || 'unknown error')); return; }
-    onSwapped?.(a, b);
+    onSwapped?.(a, b, everything);
     onClose();
   };
 
@@ -59,13 +61,18 @@ export default function SwapSpotsDialog({ spots, onClose, onSwapped }) {
               Swap all cue data between {spotLabel(a)} and {spotLabel(b)}?
             </div>
             <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)', lineHeight: '18px', marginBottom: '16px' }}>
-              Actions, characters, intensities, frames, times, When, notes, spot notes, highlights and ignores all move. Gel colors, operator and location stay with each spot. To undo, swap them again.
-              {gelsDiffer && (
+              Actions, characters, intensities, frames, times, When, notes, spot notes, highlights and ignores all move.{everything ? ' Operator, location, fixture and gels move too.' : ' Gel colors, operator and location stay with each spot.'} To undo, swap them again.
+              {gelsDiffer && !everything && (
                 <div style={{ marginTop: '10px', color: '#FF9F0A' }}>
                   These spots have different gel loads. Cue frame numbers move with the cues, so check the colors afterwards.
                 </div>
               )}
             </div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#FFFFFF', cursor: 'pointer', marginBottom: '16px' }}>
+              <input type="checkbox" checked={everything} onChange={e => setEverything(e.target.checked)}
+                style={{ width: '15px', height: '15px', accentColor: '#0A84FF', margin: 0, cursor: 'pointer' }} />
+              Also swap operator, location, fixture and gels
+            </label>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button onClick={() => setConfirming(false)} style={secondaryBtn}>Back</button>
               <button onClick={doSwap} style={primaryBtn}>Swap</button>

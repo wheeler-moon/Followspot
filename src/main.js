@@ -765,14 +765,23 @@ ipcMain.on('get-app-icon', (event) => {
     } catch(e) { event.returnValue = { success: false }; }
   });
 
-  ipcMain.on('db-swap-spots', (event, { spotAId, spotBId }) => {
-    // Swaps every cue's data between two spots; gels, operator and location stay with each spot
+  ipcMain.on('db-swap-spots', (event, { spotAId, spotBId, everything }) => {
+    // Swaps every cue's data between two spots; gels, operator, location and fixture stay with each
+    // spot unless everything is set (then the two spots trade those too)
     try {
       const database = getDb();
       database.transaction(() => {
         database.prepare('UPDATE spot_cues SET spot_id = CASE spot_id WHEN @a THEN @b ELSE @a END WHERE spot_id IN (@a, @b)').run({ a: spotAId, b: spotBId });
         // Spot notes already given (the Given tray) move with their cues too
         database.prepare('UPDATE given_notes SET spot_id = CASE spot_id WHEN @a THEN @b ELSE @a END WHERE spot_id IN (@a, @b)').run({ a: spotAId, b: spotBId });
+        if (everything) {
+          database.prepare('UPDATE color_slots SET spot_id = CASE spot_id WHEN @a THEN @b ELSE @a END WHERE spot_id IN (@a, @b)').run({ a: spotAId, b: spotBId });
+          const A = database.prepare('SELECT operator_name, location, fixture_type FROM spots WHERE id = ?').get(spotAId);
+          const B = database.prepare('SELECT operator_name, location, fixture_type FROM spots WHERE id = ?').get(spotBId);
+          const set = database.prepare('UPDATE spots SET operator_name = ?, location = ?, fixture_type = ? WHERE id = ?');
+          set.run(B.operator_name, B.location, B.fixture_type, spotAId);
+          set.run(A.operator_name, A.location, A.fixture_type, spotBId);
+        }
       })();
       event.returnValue = { success: true };
     } catch(e) {
