@@ -304,9 +304,7 @@ const startEdit = () => {
             ))}
           </div>
 
-          <div style={sectionLabel}>Spots</div>
-          <div style={group}>
-            {(() => {
+          {(() => {
               // Every spot's frames sit in the same columns (F1 under F1…), PERM last; click a row to edit the spot
               const spotsInOrder = [...stats.spots].sort((a, b) => a.spot_number - b.spot_number);
               const frames = (id) => withGaps(slotsBySpot[id] || []);   // a removed frame stays as an empty slot
@@ -317,15 +315,17 @@ const startEdit = () => {
               const colLabel = { width: FRAME_W, flexShrink: 0, textAlign: 'center', fontSize: '10px', fontWeight: '600', color: 'rgba(255,255,255,0.4)' };
               return (
                 <>
-                  {numbers.length > 0 && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 14px 0' }}>
-                      <div style={{ flex: 1 }} />
+                  {/* "Spots" and the F1, F2… labels on one line, above the group, over their columns */}
+                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px', padding: '0 14px 6px 0' }}>
+                    <div style={{ ...sectionLabel, margin: '0 0 0 14px', flex: 1 }}>Spots</div>
+                    {numbers.length > 0 && (
                       <div style={{ display: 'flex', gap: '4px' }}>
                         {numbers.map(n => <div key={n} style={colLabel}>F{n}</div>)}
                         {anyPerm && <div style={{ ...colLabel, color: '#C8A26B' }}>PERM</div>}
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
+                  <div style={group}>
                   {spotsInOrder.map((spot, i) => (
                     <div key={spot.id} style={{ ...row(i), cursor: 'pointer', minHeight: '50px' }} title="Edit this spot in Show Settings"
                       onClick={() => { setFocusSpot(spot.id); setShowSettings('spot-settings'); }}
@@ -344,10 +344,10 @@ const startEdit = () => {
                       </div>
                     </div>
                   ))}
+                  </div>
                 </>
               );
             })()}
-          </div>
 
           {[show.designer, show.associate_ld, show.assistant_ld, show.production_electrician, show.programmer].some(Boolean) && (
             <>
