@@ -47,7 +47,7 @@ export default function CueDefaultsPanel({ show }) {
     <div>
       {/* Still being worked out: say so, so nobody counts on it working this way for good */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-        <span style={{ fontSize: '11px', fontWeight: '600', color: '#FF9F0A', background: 'rgba(255,159,10,0.16)', borderRadius: '6px', padding: '2px 8px' }}>In progress</span>
+        <span style={{ fontSize: '12px', fontWeight: '600', color: '#FF9F0A' }}>In progress</span>
         <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.55)' }}>Cue Defaults is still being worked on and may change in an update.</span>
       </div>
       <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)', marginBottom: '16px', lineHeight: '18px' }}>

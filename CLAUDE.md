@@ -51,7 +51,9 @@ There are no tests and no linter (`npm run lint` is a no-op). To verify a change
 
 Main → renderer messages come from the menu bar: `menu-new-show`, `menu-export-show`, `menu-import-show`, `menu-add-cue` (Cmd+=). Screens subscribe with `ipcRenderer.on` and must remove the listener on unmount. `setupIPC()` must only run once, because running it twice caused double cue inserts.
 
-### Undo and redo in the cue list
+### Undo and redo in the cue list (and the Scenes screen)
+
+The Scenes screen has its own simple stack (each step stores its undo and redo) registered the same way.
 
 Every change a person can make in the cue list must be undoable with ⌘Z (and redoable with ⇧⌘Z), unless the app warns that it can't be. Changes go through `updateSpotCue` / `updateCue` (which record themselves) or call `pushUndo(...)` with how to take them back (kinds listed at `undoStackRef` in `CueListScreen.jsx`). Everything recorded during one click or menu choice is grouped into one ⌘Z step automatically. A new kind of step needs its opposite in `stepRef` so redo works. Edit → Undo / Redo (and their ⌘Z / ⇧⌘Z shortcuts) send `menu-undo` to the window; `App.jsx` passes it to the screen registered in `src/undoTarget.js` (the cue list), or does the browser's text undo while typing in a box or on screens without their own undo.
 

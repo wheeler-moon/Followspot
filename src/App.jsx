@@ -98,7 +98,11 @@ export default function App() {
     const { ipcRenderer } = window.require('electron');
     const onUndo = (e, what) => {
       const target = getUndoTarget();
-      if (target && !isTextBox(document.activeElement)) target(what);
+      // In an empty box there's no typing to undo, so ⌘Z undoes the screen's last step
+      // (e.g. right after adding a scene, when the cursor is back in the empty name box)
+      const el = document.activeElement;
+      const emptyBox = isTextBox(el) && !el.isContentEditable && !el.value;
+      if (target && (!isTextBox(el) || emptyBox)) target(what);
       else ipcRenderer.send('native-edit', what);
     };
     ipcRenderer.on('menu-undo', onUndo);

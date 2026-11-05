@@ -3,6 +3,7 @@ import { dropSlot, moveTo, moveItem, dropLineStyle } from '../dropLine';
 import Tips from '../components/Tips';
 import { TIPS } from '../tips';
 import AppHeader from '../components/AppHeader';
+import { setUndoTarget } from '../undoTarget';
 const { ipcRenderer } = window.require('electron');
 
 export default function ScenesScreen({ show, navigate }) {
@@ -25,9 +26,33 @@ export default function ScenesScreen({ show, navigate }) {
 
   useEffect(() => { load(); }, []);
 
+  // ⌘Z / ⇧⌘Z: everything on this screen can be undone and redone. Each step knows how to take itself
+  // back (undo) and do itself again (redo).
+  const undoStack = useRef([]), redoStack = useRef([]);
+  const record = (step) => { undoStack.current.push(step); redoStack.current = []; };
+  useEffect(() => {
+    setUndoTarget((what) => {
+      const from = what === 'redo' ? redoStack.current : undoStack.current;
+      const to = what === 'redo' ? undoStack.current : redoStack.current;
+      const step = from.pop();
+      if (!step) return;
+      (what === 'redo' ? step.redo : step.undo)();
+      to.push(step);
+      setEditingId(null);
+      load();
+    });
+    return () => setUndoTarget(null);
+  }, []);
+  const getRow = (id) => (ipcRenderer.sendSync('db-get-scenes', show.id) || []).find(s => s.id === id);
+  const orderOf = (list) => list.map((s, i) => ({ id: s.id, sort_order: s.sort_order ?? (i + 1) * 1000 }));
+
   const addScene = () => {
     if (!newLabel.trim() && !newSong.trim()) return;   // a label, a song, or both
-    ipcRenderer.sendSync('db-create-scene', { showId: show.id, label: newLabel, song: newSong, actBreak: newActBreak });
+    const result = ipcRenderer.sendSync('db-create-scene', { showId: show.id, label: newLabel, song: newSong, actBreak: newActBreak });
+    if (result?.success) {
+      const row = getRow(result.id);
+      record({ undo: () => ipcRenderer.sendSync('db-delete-scene', row.id), redo: () => ipcRenderer.sendSync('db-restore-row', { table: 'scenes', row }) });
+    }
     setNewLabel(''); setNewSong(''); setNewActBreak(false);
     load();
     setTimeout(() => labelInputRef.current?.focus(), 50);
@@ -42,14 +67,25 @@ export default function ScenesScreen({ show, navigate }) {
 
   const saveEdit = () => {
     if (!editLabel.trim() && !editSong.trim()) return;
-    ipcRenderer.sendSync('db-update-scene', { sceneId: editingId, label: editLabel, song: editSong, actBreak: editActBreak });
+    const was = scenes.find(s => s.id === editingId);
+    const before = { sceneId: editingId, label: was?.label || '', song: was?.song || '', actBreak: !!was?.act_break };
+    const after = { sceneId: editingId, label: editLabel, song: editSong, actBreak: editActBreak };
+    ipcRenderer.sendSync('db-update-scene', after);
+    record({ undo: () => ipcRenderer.sendSync('db-update-scene', before), redo: () => ipcRenderer.sendSync('db-update-scene', after) });
     setEditingId(null);
     load();
   };
 
   const deleteScene = (sceneId) => {
-    if (!window.confirm('Delete this scene? Cues assigned to it will become unassigned.')) return;
-    ipcRenderer.sendSync('db-delete-scene', sceneId);
+    if (!window.confirm('Delete this scene? Its cues become unassigned. ⌘Z brings it back.')) return;
+    const result = ipcRenderer.sendSync('db-delete-scene', sceneId);
+    if (result?.success && result.row) {
+      const { row, cueIds } = result;
+      record({
+        undo: () => { ipcRenderer.sendSync('db-restore-row', { table: 'scenes', row }); ipcRenderer.sendSync('db-set-cue-scene', { cueIds, sceneId: row.id }); },
+        redo: () => ipcRenderer.sendSync('db-delete-scene', row.id),
+      });
+    }
     load();
   };
 
@@ -69,8 +105,10 @@ export default function ScenesScreen({ show, navigate }) {
     const slot = dragOverId || dropSlot(e, index);
     if (dragItem.current === null || moveTo(dragItem.current, slot) === dragItem.current) { dragItem.current = null; setDragOverId(null); return; }
     const newScenes = moveItem(scenes, dragItem.current, slot);
+    const before = orderOf(scenes);
     const updates = newScenes.map((s, i) => ({ id: s.id, sort_order: (i + 1) * 1000 }));
     ipcRenderer.sendSync('db-reorder-scenes', updates);
+    record({ undo: () => ipcRenderer.sendSync('db-reorder-scenes', before), redo: () => ipcRenderer.sendSync('db-reorder-scenes', updates) });
     dragItem.current = null;
     setDragOverId(null);
     load();

@@ -854,9 +854,12 @@ ipcMain.on('get-app-icon', (event) => {
 
   ipcMain.on('db-delete-scene', (event, sceneId) => {
     try {
+      // The scene's row and its cues come back so ⌘Z can put them back (db-restore-row, db-set-cue-scene)
+      const row = getDb().prepare('SELECT * FROM scenes WHERE id = ?').get(sceneId);
+      const cueIds = getDb().prepare('SELECT id FROM cues WHERE scene_id = ?').all(sceneId).map(c => c.id);
       getDb().prepare('UPDATE cues SET scene_id = NULL WHERE scene_id = ?').run(sceneId);
       getDb().prepare('DELETE FROM scenes WHERE id = ?').run(sceneId);
-      event.returnValue = { success: true };
+      event.returnValue = { success: true, row, cueIds };
     } catch(e) { event.returnValue = { success: false }; }
   });
 
@@ -1288,6 +1291,14 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
     } catch(e) { console.error('restore cue:', e); event.returnValue = { success: false }; }
   });
   // A scene or character taken away by undo, put back by redo
+  // Undoing a scene's delete: its cues go back into it
+  ipcMain.on('db-set-cue-scene', (event, { cueIds, sceneId }) => {
+    try {
+      const stmt = getDb().prepare('UPDATE cues SET scene_id = ? WHERE id = ?');
+      getDb().transaction(() => { for (const id of cueIds || []) stmt.run(sceneId, id); })();
+      event.returnValue = { success: true };
+    } catch(e) { event.returnValue = { success: false }; }
+  });
   ipcMain.on('db-restore-row', (event, { table, row }) => {
     try {
       if (!['scenes', 'characters'].includes(table)) throw new Error('table not allowed: ' + table);
