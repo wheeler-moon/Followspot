@@ -1125,7 +1125,7 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
       for (const spot of spots) {
         const prevSpotCue = prevSpotCues[spot.id] || null;
         const prevAction = prevSpotCue ? prevSpotCue.action : '';
-        const endsInOff = ['Fade Out', 'Bump Out', 'Fade In Place', 'Up & Out'].includes(prevAction);
+        const endsInOff = ['Fade Out', 'Bump Out', 'Fade In Place', 'Up & Out', 'Iris/Fade Out'].includes(prevAction);
         const wasOff = prevAction === 'Off';
         const startsOff = endsInOff || wasOff;
 

@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- A new cue after an Iris/Fade Out starts Off for that spot, like after a Fade Out
 - Characters screen: ⌘Z undoes adding, changing, deleting, reordering and the Print checkbox (⇧⌘Z redoes). Undoing a delete puts the character back in every cue that had them
 - Scenes screen: ⌘Z undoes adding, changing, deleting and reordering scenes (⇧⌘Z redoes). Undoing a delete puts its cues back in the scene. The up/down arrows are gone from Scenes and Characters; drag to reorder
 - A scene no longer needs a label: give it a label, a song, or both. A scene with only a song shows the song in its header, on prints and on the iPad

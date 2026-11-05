@@ -11,7 +11,7 @@
 const INTENSITIES = ['Full', '90%', '80%', '75%', '70%', '60%', '50%', '40%', '30%', '25%', '20%', '10%', 'Glow', 'Out'];
 const TIMES = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'Custom'];
 // Actions that leave the spot off at the end of the cue
-const ENDS_OFF = ['Off', 'Fade Out', 'Bump Out', 'Fade In Place', 'Up & Out'];
+const ENDS_OFF = ['Off', 'Fade Out', 'Bump Out', 'Fade In Place', 'Up & Out', 'Iris/Fade Out'];
 
 function cueDefaults(json) {
   let saved = {};
