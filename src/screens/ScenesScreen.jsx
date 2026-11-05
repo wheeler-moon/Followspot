@@ -53,15 +53,6 @@ export default function ScenesScreen({ show, navigate }) {
     load();
   };
 
-  const moveScene = (index, dir) => {
-    const newScenes = [...scenes];
-    const target = index + dir;
-    if (target < 0 || target >= newScenes.length) return;
-    [newScenes[index], newScenes[target]] = [newScenes[target], newScenes[index]];
-    const updates = newScenes.map((s, i) => ({ id: s.id, sort_order: (i + 1) * 1000 }));
-    ipcRenderer.sendSync('db-reorder-scenes', updates);
-    load();
-  };
 
   const handleDragStart = (e, index) => {
     dragItem.current = index;
@@ -212,10 +203,6 @@ export default function ScenesScreen({ show, navigate }) {
                             </div>
                             <div style={{ display: 'flex', flexShrink: 0 }}>
                               <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
-                                <button onClick={() => moveScene(index, -1)} disabled={index === 0}
-                                  style={{ background: 'transparent', border: 'none', borderRadius: '6px', color: index === 0 ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.52)', width: '24px', height: '24px', cursor: index === 0 ? 'default' : 'pointer', fontSize: '12px' }}>↑</button>
-                                <button onClick={() => moveScene(index, 1)} disabled={index === scenes.length - 1}
-                                  style={{ background: 'transparent', border: 'none', borderRadius: '6px', color: index === scenes.length - 1 ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.52)', width: '24px', height: '24px', cursor: index === scenes.length - 1 ? 'default' : 'pointer', fontSize: '12px' }}>↓</button>
                                 <button onClick={() => startEdit(scene)}
                                   style={{ background: 'transparent', border: 'none', borderRadius: '6px', color: '#409CFF', padding: '4px 8px', cursor: 'pointer', fontSize: '12px', fontWeight: '500' }}>Edit</button>
                                 <button onClick={() => deleteScene(scene.id)}
