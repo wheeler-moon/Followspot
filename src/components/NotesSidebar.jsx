@@ -46,7 +46,6 @@ export default function NotesSidebar({ spots, cues, spotCues, onAddNote, onCheck
     <div style={{ width: '300px', flexShrink: 0, background: C.panel, borderLeft: '1px solid rgba(0,0,0,0.45)', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
       <div style={{ height: '44px', padding: '0 12px 0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${C.separator}`, flexShrink: 0 }}>
         <span style={{ fontSize: '13px', fontWeight: '600', color: C.label1 }}>Notes <span style={{ color: C.label2, fontWeight: '400' }}>{open.length ? `· ${open.length} to give` : ''}</span></span>
-        <button onClick={onClose} title="Hide notes" style={{ background: 'none', border: 'none', color: C.label2, fontSize: '18px', cursor: 'pointer', lineHeight: 1 }}>×</button>
       </div>
 
       {/* New note: LQ, spot, note */}
