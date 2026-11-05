@@ -771,6 +771,8 @@ ipcMain.on('get-app-icon', (event) => {
       const database = getDb();
       database.transaction(() => {
         database.prepare('UPDATE spot_cues SET spot_id = CASE spot_id WHEN @a THEN @b ELSE @a END WHERE spot_id IN (@a, @b)').run({ a: spotAId, b: spotBId });
+        // Spot notes already given (the Given tray) move with their cues too
+        database.prepare('UPDATE given_notes SET spot_id = CASE spot_id WHEN @a THEN @b ELSE @a END WHERE spot_id IN (@a, @b)').run({ a: spotAId, b: spotBId });
       })();
       event.returnValue = { success: true };
     } catch(e) {

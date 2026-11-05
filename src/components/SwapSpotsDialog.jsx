@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import useEscape from '../useEscape';
 const { ipcRenderer } = window.require('electron');
 
@@ -25,9 +26,10 @@ export default function SwapSpotsDialog({ spots, onClose, onSwapped }) {
     onClose();
   };
 
-  return (
+  // Drawn on the page itself, so it centers in the window (not inside Show Settings)
+  return createPortal(
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 100000, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', padding: '20px', width: '340px', boxShadow: '0 18px 48px rgba(0,0,0,0.45)' }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', padding: '20px', width: '440px', maxWidth: 'calc(100vw - 32px)', boxSizing: 'border-box', boxShadow: '0 18px 48px rgba(0,0,0,0.45)' }}>
         {!confirming ? (
           <>
             <div style={{ fontSize: '15px', fontWeight: '600', color: '#FFFFFF', marginBottom: '4px' }}>Swap spots</div>
@@ -39,7 +41,7 @@ export default function SwapSpotsDialog({ spots, onClose, onSwapped }) {
                 <React.Fragment key={i}>
                   {i === 1 && <span style={{ color: '#409CFF', fontSize: '16px' }}>⇄</span>}
                   <select value={value} onChange={e => setValue(parseInt(e.target.value))}
-                    style={{ flex: 1, height: '28px', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', padding: '0 8px', outline: 'none' }}>
+                    style={{ flex: 1, minWidth: 0, height: '28px', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', padding: '0 8px', outline: 'none' }}>
                     {spots.map(s => <option key={s.id} value={s.id}>Spot {s.spot_number}{s.operator_name ? ' (' + s.operator_name + ')' : ''}</option>)}
                   </select>
                 </React.Fragment>
@@ -72,5 +74,5 @@ export default function SwapSpotsDialog({ spots, onClose, onSwapped }) {
         )}
       </div>
     </div>
-  );
+  , document.body);
 }
