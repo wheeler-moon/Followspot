@@ -36,6 +36,12 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 ## Desktop app (`followspot`)
 
 ### Next (0.5.1)
+- [ ] **Later today (Nov 5):**
+  - Custom Actions: rethink how the menu looks. Deleting an action asks what to put in the cues that use it (pick an existing action), so no cue is left with no action
+  - Custom Actions: an action with no image shows an empty spot, not the purple circle
+  - Console Connection page: replace the blue pill/oval ("Coming soon") with plain text, per DESIGN.md
+  - A show opened for the first time after import: the cue list starts at the very top
+  - Notes sidebar: find a cue by its number even when the LQ has extra text ("14*", "In 14"): typing 14 finds it (and 14* or "In 14" still work)
 - [ ] **Reminder, after the paperwork pass:** how to show operators what each iris size means, on prints and on the iPad (Wheeler has an idea)
 - [ ] Beta feedback: add items here as testers report them
 - [ ] ⌘C / ⌘V for a cue box without right-clicking (needs a way to select a box first)
