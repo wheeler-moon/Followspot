@@ -63,7 +63,7 @@ export default function NotesSidebar({ spots, cues, spotCues, onAddNote, onCheck
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); add(); } }}
           style={{ ...field, width: '100%', height: '64px', padding: '6px 8px', resize: 'vertical', lineHeight: '17px' }} />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '6px', gap: '8px' }}>
-          <span style={{ fontSize: '11px', color: error ? C.red : C.label3, lineHeight: '14px' }}>{error || 'Return adds the note'}</span>
+          <span style={{ fontSize: '11px', color: error ? C.red : C.label3, lineHeight: '14px' }}>{error}</span>
           <button onClick={add} disabled={!text.trim()}
             style={{ height: '24px', padding: '0 12px', borderRadius: '6px', border: 'none', background: C.accent, color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer', opacity: text.trim() ? 1 : 0.5, flexShrink: 0, fontFamily: 'inherit' }}>
             Add Note
