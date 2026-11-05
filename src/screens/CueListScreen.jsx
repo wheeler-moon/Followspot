@@ -859,6 +859,35 @@ function useNotesOpen() {
   return open;
 }
 
+// iPads connected to this show right now: one green dot each (past 6, one dot and the number), like the
+// dashboard's iPad Sync button. Only while this show lets iPads connect.
+function IpadDots({ showId }) {
+  const [state, setState] = useState({ enabled: false, online: 0 });
+  useEffect(() => {
+    const check = () => {
+      const st = ipcRenderer.sendSync('ipad-sync-state', showId);
+      setState({ enabled: !!st?.enabled, online: (st?.devices || []).filter(d => d.online).length });
+    };
+    check();
+    const timer = setInterval(check, 3000);
+    return () => clearInterval(timer);
+  }, [showId]);
+  if (!state.enabled) return null;
+  const n = state.online;
+  return (
+    <span title={n ? `${n} iPad${n === 1 ? '' : 's'} connected` : 'No iPads connected'}
+      style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', height: '28px', padding: '0 10px', background: 'rgba(255,255,255,0.06)', borderRadius: '6px', fontSize: '12px', color: 'rgba(255,255,255,0.62)', flexShrink: 0 }}>
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+        {Array.from({ length: n > 6 ? 1 : Math.max(n, 1) }).map((_, i) => (
+          <span key={i} style={{ width: '7px', height: '7px', borderRadius: '50%', background: n ? '#30D158' : 'rgba(255,255,255,0.35)' }} />
+        ))}
+        {n > 6 && <span style={{ fontWeight: '600', color: '#30D158', marginLeft: '2px', fontVariantNumeric: 'tabular-nums' }}>{n}</span>}
+      </span>
+      {n ? `${n} iPad${n === 1 ? '' : 's'}` : 'No iPads'}
+    </span>
+  );
+}
+
 function NotesButton({ count }) {
   const open = useNotesOpen();
   return (
@@ -1698,6 +1727,7 @@ const groupedCues = () => {
         <button onClick={() => setShowSceneModal(true)} style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>+ Scene</button>
         <button onClick={() => setShowCharModal(true)} style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>+ Character</button>
         </span>
+        <IpadDots showId={show.id} />
         <NotesButton count={openNoteCount} />
       </AppHeader>
 
