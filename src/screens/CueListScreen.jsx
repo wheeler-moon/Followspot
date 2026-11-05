@@ -783,7 +783,7 @@ function CueRow({ onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesB
             <select value={cue.scene_id || ''} onChange={e => onUpdateCue(cue.id, 'scene_id', e.target.value ? parseInt(e.target.value) : null)}
               style={{ width: '74px', height: '20px', background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '6px', color: 'rgba(255,255,255,0.45)', padding: '0 4px', fontSize: '10px', outline: 'none', marginTop: '4px' }}>
               <option value="">No scene</option>
-              {scenes.map(s => <option key={s.id} value={s.id}>{s.label}{s.song ? ' · ' + s.song : ''}</option>)}
+              {scenes.map(s => <option key={s.id} value={s.id}>{s.label || s.song}{s.label && s.song ? ' · ' + s.song : ''}</option>)}
             </select>
             <div onClick={() => { if (window.confirm('Delete this cue? It\'s removed for every spot. ⌘Z brings it back.')) onDelete(cue.id); }}
               style={{ fontSize: '10px', fontWeight: '500', color: '#FF453A', cursor: 'pointer', marginTop: '2px', padding: '1px 6px', borderRadius: '6px', opacity: 0.45 }}
@@ -1645,7 +1645,7 @@ export default function CueListScreen({ show, navigate }) {
   };
 
   const addScene = () => {
-    if (!newSceneLabel.trim()) return;
+    if (!newSceneLabel.trim() && !newSceneSong.trim()) return;   // a label, a song, or both
     const result = ipcRenderer.sendSync('db-create-scene', { showId: show.id, label: newSceneLabel, song: newSceneSong });
     if (result.success) { pushUndo({ type: 'scene-created', sceneId: result.id }); setSelectedSceneId(result.id); setNewSceneLabel(''); setNewSceneSong(''); setShowSceneModal(false); load(); }
   };
@@ -1707,7 +1707,7 @@ export default function CueListScreen({ show, navigate }) {
   const saveSceneName = (sceneId, label, song) => {
     setEditingScene(null);
     const scene = (data?.scenes || []).find(sc => sc.id === sceneId);
-    if (!scene || !label.trim() || (label.trim() === scene.label && song.trim() === (scene.song || ''))) return;
+    if (!scene || (!label.trim() && !song.trim()) || (label.trim() === scene.label && song.trim() === (scene.song || ''))) return;
     ipcRenderer.sendSync('db-update-scene', { sceneId: scene.id, label: label.trim(), song: song.trim(), actBreak: !!scene.act_break });
     pushUndo({ type: 'scene', sceneId: scene.id, label: scene.label, song: scene.song || '', actBreak: !!scene.act_break });
     setData(d => ({ ...d, scenes: (d?.scenes || []).map(sc => sc.id === scene.id ? { ...sc, label: label.trim(), song: song.trim() } : sc) }));
@@ -1770,7 +1770,7 @@ const groupedCues = () => {
         }}
           style={{ height: '28px', flex: '0 4 240px', minWidth: '110px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', padding: '0 8px', fontSize: '13px', outline: 'none' }}>
           <option value="">Jump to scene…</option>
-          {(data?.scenes || []).map(s => <option key={s.id} value={s.id}>{s.label}{s.song ? ' · ' + s.song : ''}</option>)}
+          {(data?.scenes || []).map(s => <option key={s.id} value={s.id}>{s.label || s.song}{s.label && s.song ? ' · ' + s.song : ''}</option>)}
         </select>
         <RenumberButton onClick={renumberTracks} />
         {/* Add to the show: a scene, a character. Icons in one small group */}
@@ -1850,9 +1850,10 @@ const groupedCues = () => {
                           onDoubleClick={() => group.sceneId && setEditingScene(group.sceneId)}
                           style={{ cursor: group.sceneId ? 'text' : 'default' }}>
                           <span style={{ fontSize: '12px', fontWeight: '700', color: group.actBreak ? '#FF9F0A' : '#30D158', letterSpacing: '0.01em' }}>
-                            {continuedScene === String(group.sceneId || 'unassigned') ? `[${group.sceneLabel}]` : group.sceneLabel}
+                            {/* A scene with only a song shows the song here */}
+                            {continuedScene === String(group.sceneId || 'unassigned') ? `[${group.sceneLabel || group.sceneSong}]` : (group.sceneLabel || group.sceneSong)}
                           </span>
-                          {group.sceneSong && <span style={{ fontSize: '12px', color: group.actBreak ? 'rgba(255,159,10,0.75)' : 'rgba(48,209,88,0.72)', marginLeft: '8px' }}>{group.sceneSong}</span>}
+                          {group.sceneLabel && group.sceneSong && <span style={{ fontSize: '12px', color: group.actBreak ? 'rgba(255,159,10,0.75)' : 'rgba(48,209,88,0.72)', marginLeft: '8px' }}>{group.sceneSong}</span>}
                         </span>
                       )}
                     </td>
@@ -2111,18 +2112,19 @@ const groupedCues = () => {
           <div style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.14)', borderRadius: '12px', padding: '24px', width: '360px' }}>
             <div style={{ fontSize: '15px', fontWeight: '600', marginBottom: '16px', color: '#FFFFFF' }}>Add Scene</div>
             <div style={{ marginBottom: '10px' }}>
-              <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.62)', display: 'block', marginBottom: '4px' }}>Scene label *</label>
+              <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.62)', display: 'block', marginBottom: '4px' }}>Scene label</label>
               <input autoFocus value={newSceneLabel} onChange={e => setNewSceneLabel(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addScene()}
                 style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: '#FFFFFF', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
                 placeholder="Scene name, e.g. Act 1, Scene 1" />
             </div>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.62)', display: 'block', marginBottom: '4px' }}>Song (optional)</label>
+              <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.62)', display: 'block', marginBottom: '4px' }}>Song</label>
               <input value={newSceneSong} onChange={e => setNewSceneSong(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addScene()}
                 style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: '#FFFFFF', padding: '7px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
-                placeholder="Song or title (optional)" />
+                placeholder="Song or title" />
+              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', marginTop: '4px' }}>A label, a song, or both.</div>
             </div>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <button onClick={() => setShowSceneModal(false)} style={{ padding: '7px 14px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>

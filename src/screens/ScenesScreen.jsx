@@ -26,7 +26,7 @@ export default function ScenesScreen({ show, navigate }) {
   useEffect(() => { load(); }, []);
 
   const addScene = () => {
-    if (!newLabel.trim()) return;
+    if (!newLabel.trim() && !newSong.trim()) return;   // a label, a song, or both
     ipcRenderer.sendSync('db-create-scene', { showId: show.id, label: newLabel, song: newSong, actBreak: newActBreak });
     setNewLabel(''); setNewSong(''); setNewActBreak(false);
     load();
@@ -41,6 +41,7 @@ export default function ScenesScreen({ show, navigate }) {
   };
 
   const saveEdit = () => {
+    if (!editLabel.trim() && !editSong.trim()) return;
     ipcRenderer.sendSync('db-update-scene', { sceneId: editingId, label: editLabel, song: editSong, actBreak: editActBreak });
     setEditingId(null);
     load();
@@ -102,14 +103,14 @@ export default function ScenesScreen({ show, navigate }) {
             <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Add scene</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
               <div>
-                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Scene label *</div>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Scene label</div>
                 <input ref={labelInputRef} style={{ ...inputStyle, width: '100%' }} value={newLabel}
                   onChange={e => setNewLabel(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addScene()}
                   placeholder="Scene name, e.g. Act 1, Scene 1" />
               </div>
               <div>
-                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Song (optional)</div>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Song</div>
                 <input style={{ ...inputStyle, width: '100%' }} value={newSong}
                   onChange={e => setNewSong(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addScene()}
@@ -204,10 +205,10 @@ export default function ScenesScreen({ show, navigate }) {
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
                                 <span style={{ fontSize: '11px', fontWeight: '500', color: 'rgba(255,255,255,0.35)', fontVariantNumeric: 'tabular-nums', minWidth: '18px', textAlign: 'right' }}>{index + 1}</span>
-                                <span style={{ fontSize: '13px', fontWeight: '600', color: '#FFFFFF' }}>{scene.label}</span>
+                                <span style={{ fontSize: '13px', fontWeight: '600', color: '#FFFFFF' }}>{scene.label || scene.song}</span>
                                 {scene.act_break ? <span style={{ fontSize: '10px', padding: '1px 6px', background: 'rgba(255,159,10,0.16)', color: '#FF9F0A', borderRadius: '6px', fontWeight: '600', whiteSpace: 'nowrap' }}>ACT BREAK</span> : null}
                               </div>
-                              {scene.song && <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginTop: '2px', marginLeft: '26px' }}>{scene.song}</div>}
+                              {scene.label && scene.song && <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginTop: '2px', marginLeft: '26px' }}>{scene.song}</div>}
                             </div>
                             <div style={{ display: 'flex', flexShrink: 0 }}>
                               <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>

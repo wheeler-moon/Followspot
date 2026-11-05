@@ -134,7 +134,7 @@ function emptyActBreaks(scenes, printedCues, { edges = true } = {}) {
 }
 const sceneRowHTML = (scene, colspan) => `
           <tr class="scene-row">
-            <td colspan="${colspan}">${scene.label}${scene.song ? ' · ' + scene.song : ''}</td>
+            <td colspan="${colspan}">${scene.label || scene.song || ''}${scene.label && scene.song ? ' · ' + scene.song : ''}</td>
           </tr>
         `;
 
@@ -1443,7 +1443,7 @@ function buildSpotNotesHTML({ show, spots, cues, scenes, spotCues, characters, l
                 <span class="lq">LQ ${cue.lq_number || '—'}</span>
                 <span class="track">T·${cue.track_number}</span>
                 ${pagePrint && cue.page ? `<span class="track">pg ${cue.page}</span>` : ''}
-                ${scene ? `<span class="scene">${scene.label}</span>` : ''}
+                ${scene ? `<span class="scene">${scene.label || scene.song || ''}</span>` : ''}
                 ${cue.all_spots_note_checked ? `<span class="done-badge">GIVEN</span>` : ''}
               </div>
               <div class="note-text">${cue.all_spots_note}</div>
@@ -1468,7 +1468,7 @@ function buildSpotNotesHTML({ show, spots, cues, scenes, spotCues, characters, l
                 <span class="lq">LQ ${cue.lq_number || '—'}</span>
                 <span class="track">T·${cue.track_number}</span>
                 ${pagePrint && cue.page ? `<span class="track">pg ${cue.page}</span>` : ''}
-                ${scene ? `<span class="scene">${scene.label}</span>` : ''}
+                ${scene ? `<span class="scene">${scene.label || scene.song || ''}</span>` : ''}
                 ${sc.action ? `<span class="action">${displayAction(sc.action, actionNames)}</span>` : ''}
                 ${charText ? `<span class="char">${charText}</span>` : ''}
                 ${sc.note_checked ? `<span class="done-badge">GIVEN</span>` : ''}

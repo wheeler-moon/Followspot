@@ -109,7 +109,7 @@ export default function SpotNotesScreen({ show, navigate }) {
     ...spots.map(spot => ({ key: spot.id, title: `Spot ${spot.spot_number}${spot.operator_name ? ' · ' + spot.operator_name : ''}`, notes: notesForSpot(spot.id) })),
   ];
   const cueLabel = (cue) => `LQ ${cue.lq_number || '—'}`;
-  const sceneLine = (scene) => scene ? `${scene.label}${scene.song ? ' · ' + scene.song : ''}` : '';
+  const sceneLine = (scene) => scene ? `${scene.label || scene.song || ''}${scene.label && scene.song ? ' · ' + scene.song : ''}` : '';
   const givenDate = (ts) => {
     const d = new Date(String(ts || '').replace(' ', 'T') + 'Z');
     return isNaN(d) ? '' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });

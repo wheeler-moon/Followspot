@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- A scene no longer needs a label: give it a label, a song, or both. A scene with only a song shows the song in its header, on prints and on the iPad
 - Cue list top bar stays on one line in a narrow window: Add Scene and Add Character are icon buttons, a long show name shortens with …, and the scene menu shrinks
 - Cue list: when a show lets iPads connect, the top bar shows a green dot for each connected iPad ("2 iPads") and a **Send to iPads** button. iPads only get your changes when you send them, so you can make lots of changes and send them in one go. Only changes an operator would see count (giving a Spot Note or other Mac-only settings don't)
 - **Page Setup** (Print → Page Setup…, or ⌘P): paper size (Letter or Legal), orientation, a page range or T· range, the sheet's options and which cue details print, with a preview you scroll through. Each kind of sheet keeps its own paper, orientation and range. Every sheet fits the paper you pick: Legal fits more cues on a spot sheet, gives the caller sheet more room and a spot sheet's cover a bigger logo. Spot sheets print portrait, the caller sheet landscape
@@ -67,6 +68,7 @@ Other
 
 Saved for the iPad app's first release (kept out of the Mac's What's New).
 
+- Scene headers are centered in their row
 - Caller is picked from the role menu like any spot. While you're the caller, the button next to the show's name chooses which spots show and their order
 - Switching roles: the Switch button is blue
 - Updates list one line per cue that reads like the cue itself ("Spot 2 — Bump Up Sandy @Full, 1/2 Body, F1+2, w/ LQ 13"), with what changed in bold. Tracked cues that just follow a change made above them aren't listed
