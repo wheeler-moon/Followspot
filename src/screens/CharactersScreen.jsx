@@ -86,16 +86,6 @@ export default function CharactersScreen({ show, navigate }) {
     if (result) setEditPhoto(result);
   };
 
-  const moveCharacter = (index, dir) => {
-    const newChars = [...characters];
-    const target = index + dir;
-    if (target < 0 || target >= newChars.length) return;
-    [newChars[index], newChars[target]] = [newChars[target], newChars[index]];
-    const updates = newChars.map((c, i) => ({ id: c.id, sort_order: (i + 1) * 1000 }));
-    ipcRenderer.sendSync('db-reorder-characters', updates);
-    load();
-  };
-
   const handleDragStart = (e, index) => {
     dragItem.current = index;
     e.dataTransfer.effectAllowed = 'move';
@@ -289,10 +279,6 @@ export default function CharactersScreen({ show, navigate }) {
                             style={{ width: '15px', height: '15px', accentColor: '#0A84FF', cursor: 'pointer', margin: 0 }} />
                           Print
                         </label>
-                        <button onClick={() => moveCharacter(index, -1)} disabled={index === 0}
-                          style={{ background: 'transparent', border: 'none', borderRadius: '6px', color: index === 0 ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.52)', width: '24px', height: '24px', cursor: index === 0 ? 'default' : 'pointer', fontSize: '12px' }}>↑</button>
-                        <button onClick={() => moveCharacter(index, 1)} disabled={index === characters.length - 1}
-                          style={{ background: 'transparent', border: 'none', borderRadius: '6px', color: index === characters.length - 1 ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.52)', width: '24px', height: '24px', cursor: index === characters.length - 1 ? 'default' : 'pointer', fontSize: '12px' }}>↓</button>
                         <button onClick={() => startEdit(char)}
                           style={{ background: 'transparent', border: 'none', borderRadius: '6px', color: '#409CFF', padding: '4px 8px', cursor: 'pointer', fontSize: '12px', fontWeight: '500' }}>Edit</button>
                         <button onClick={() => deleteCharacter(char.id)}

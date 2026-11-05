@@ -6,7 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
-- Scenes screen: ⌘Z undoes adding, changing, deleting and reordering scenes (⇧⌘Z redoes). Undoing a delete puts its cues back in the scene. The up/down arrows are gone; drag to reorder
+- Scenes screen: ⌘Z undoes adding, changing, deleting and reordering scenes (⇧⌘Z redoes). Undoing a delete puts its cues back in the scene. The up/down arrows are gone from Scenes and Characters; drag to reorder
 - A scene no longer needs a label: give it a label, a song, or both. A scene with only a song shows the song in its header, on prints and on the iPad
 - Cue list top bar stays on one line in a narrow window: Add Scene and Add Character are icon buttons, a long show name shortens with …, and the scene menu shrinks
 - Cue list: when a show lets iPads connect, the top bar shows a green dot for each connected iPad ("2 iPads") and a **Send to iPads** button. iPads only get your changes when you send them, so you can make lots of changes and send them in one go. Only changes an operator would see count (giving a Spot Note or other Mac-only settings don't)
