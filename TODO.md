@@ -36,7 +36,6 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 ## Desktop app (`followspot`)
 
 ### Next (0.5.1)
-- [ ] **Reminder:** Wheeler found a glitch in how Tracked cues carry character names; ask him for the details
 - [ ] **Reminder, after the paperwork pass:** how to show operators what each iris size means, on prints and on the iPad (Wheeler has an idea)
 - [ ] Beta feedback: add items here as testers report them
 - [ ] ⌘C / ⌘V for a cue box without right-clicking (needs a way to select a box first)

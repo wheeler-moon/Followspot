@@ -13,6 +13,7 @@ import { irisSizeList } from '../irisSizes';
 import { gelColor } from '../gelColors';
 import { MAX_CHARACTERS, extraCharacters, extraCharactersJSON } from '../characterNames';
 import { setUndoTarget } from '../undoTarget';
+import { followDown, FOLLOW_FIELDS } from '../characterTracking';
 const { ipcRenderer } = window.require('electron');
 // A gel's swatch color: the maker's color, white for a gel typed by hand, dark for an empty frame
 function getGelColor(gelNum) {
@@ -271,13 +272,6 @@ function ExtraCharacterBox({ value, characters, onChange, onRemove, onNewName, c
 const COPY_FIELDS = ['action', 'character_id', 'custom_character', 'extra_characters', 'frame_size', 'intensity', 'fade_time', 'active_frames',
   'description', 'with_lq', 'notes', 'no_color', 'highlight', 'when_highlight', 'notes_highlight'];
 let cueClipboard = null;
-// What a Tracked box carries on from the cue above, and keeps following until someone changes it
-const TRACK_FOLLOW_FIELDS = ['character_id', 'custom_character', 'extra_characters', 'frame_size', 'active_frames', 'no_color'];
-const isTrackedAction = (action) => !action || action === 'Tracked';
-const sameTrackValue = (a, b) => {
-  const n = (v) => (v == null || v === '' || v === 0 || v === '0') ? '' : String(v);
-  return n(a) === n(b);
-};
 // Copy Whole Cue / Paste Whole Cue: what every spot does in one cue, by spot id (same show only)
 let wholeCueClipboard = null;
 
@@ -1328,7 +1322,7 @@ export default function CueListScreen({ show, navigate }) {
     }
   };
 
-      const updateSpotCue = (spotCueId, field, value, skipUndo = false) => {
+      const updateSpotCue = (spotCueId, field, value, skipUndo = false, noFollow = false) => {
     const oldSpotCue = (data?.spotCues || []).find(sc => sc.id === spotCueId);
     const oldValue = oldSpotCue ? oldSpotCue[field] : null;
     ipcRenderer.sendSync('db-update-spot-cue', { spotCueId, field, value });
@@ -1336,15 +1330,14 @@ export default function CueListScreen({ show, navigate }) {
     if (!skipUndo) {
       pushUndo({ type: 'spot-cue', spotCueId, field, oldValue, newValue: value });
     }
-    // Tracked cues follow: the same spot's Tracked box in the next cue takes the change too (and on down
-    // the line), unless someone set that box to something else. Its own ⌘Z entry, grouped with this click.
-    if (oldSpotCue && TRACK_FOLLOW_FIELDS.includes(field)) {
+    // The change carries down this spot's later cues by the rules in src/characterTracking.js (a new
+    // character follows the person to their fade out; iris and color follow Tracked cues). Each box it
+    // changes gets its own ⌘Z entry, grouped with this click.
+    if (oldSpotCue && !noFollow && FOLLOW_FIELDS.includes(field)) {
       const cues = [...(data?.cues || [])].sort((a, b) => a.sort_order - b.sort_order);
-      const next = cues[cues.findIndex(c => c.id === oldSpotCue.cue_id) + 1];
-      const below = next && (data?.spotCues || []).find(x => x.cue_id === next.id && x.spot_id === oldSpotCue.spot_id);
-      if (below && isTrackedAction(below.action) && sameTrackValue(below[field], oldValue) && !sameTrackValue(below[field], value)) {
-        updateSpotCue(below.id, field, value);
-      }
+      const rows = cues.map(c => (data?.spotCues || []).find(x => x.cue_id === c.id && x.spot_id === oldSpotCue.spot_id) || null);
+      const from = cues.findIndex(c => c.id === oldSpotCue.cue_id);
+      for (const id of followDown(rows, from, field, oldValue, value)) updateSpotCue(id, field, value, false, true);
     }
   };
   const upsertSpotCue = (spotId, cueId, field, value) => {

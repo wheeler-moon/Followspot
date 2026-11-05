@@ -20,7 +20,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 - Shorter tips and settings descriptions, quicker to read
 - A new or inserted cue now brings each spot's iris size from the cue above, along with its character and color
 - Cue list: a spot's iris size shows bright blue in the cue where it changes and muted while it stays the same, like color frames
-- Changing a cue to **Tracked** now starts it clean (no time, intensity, When, w/LQ or notes) and carries on from that spot's cue above: the same character, iris size and color frames. It keeps following: change the character, iris or color in the cue above and the Tracked cues below it change too, except any you've set to something different
+- Changing a cue to **Tracked** now starts it clean (no time, intensity, When, w/LQ or notes) and carries on from that spot's cue above: the same character, iris size and color frames. It keeps following: change the iris or color in the cue above and the Tracked cues below change too. A new **character** follows the person all the way to their fade out: through Tracked cues and cues like Increase or Iris In, into the Fade Out / Bump Out, and stopping at Off, a new Pick Up, Swap To or Slide To, or a cue on someone else
 - Clearer action symbols: Bump Up and Bump Out are bold arrows hitting a bar (the light snaps straight to full or out), Ballyhoo is two overlapping circles, Iris In and Iris/Fade Out's arrows point inward (Iris Out's point out), new symbols for Swap To and Stay With, and a new purple for the iris actions. Prints and the Action Key match
 
 ## 0.5.0 (2026-11-04)
