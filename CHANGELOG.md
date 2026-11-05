@@ -6,7 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
-- Cue list: when a show lets iPads connect, the top bar shows a green dot for each connected iPad ("2 iPads")
+- Cue list: when a show lets iPads connect, the top bar shows a green dot for each connected iPad ("2 iPads") and a **Send to iPads** button. iPads only get your changes when you send them, so you can make lots of changes and send them in one go
 - **Page Setup** (Print → Page Setup…, or ⌘P): paper size (Letter or Legal), orientation, a page range or T· range, the sheet's options and which cue details print, with a preview you scroll through. Each kind of sheet keeps its own paper, orientation and range. Every sheet fits the paper you pick: Legal fits more cues on a spot sheet, gives the caller sheet more room and a spot sheet's cover a bigger logo. Spot sheets print portrait, the caller sheet landscape
 - Print remembers what you picked for each show: the sheet, label and every setting
 - Print preview opens showing a whole page
@@ -68,7 +68,7 @@ Saved for the iPad app's first release (kept out of the Mac's What's New).
 
 - Caller is picked from the role menu like any spot. While you're the caller, the button next to the show's name chooses which spots show and their order
 - Switching roles: the Switch button is blue
-- Updates list one line per cue, with everything that changed in it
+- Updates list one line per cue, with everything that changed in it. Tracked cues that just follow a change made above them aren't listed
 - Ignored cues go grey and faint, with a big IGNORE centered over the cue (spot and caller views)
 - Action symbols match SpotPlot for Mac's new ones (Bump Up / Bump Out as arrows hitting a bar, Ballyhoo, Iris In / Out, Swap To, Stay With, iris purple)
 - Shows list: each show has its logo (whole, never cropped), when it was last edited on the Mac and last opened on this iPad, and the show you opened most recently is at the top

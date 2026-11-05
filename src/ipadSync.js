@@ -6,6 +6,9 @@
 // seconds so the iPad Sync tab can show who's online.
 //
 // Settings live on this Mac (userData/ipad-sync.json), keyed by show id, not inside any show file.
+//
+// iPads get the show as it was last SENT (Send to iPads on the Mac), not every edit as it's typed: the
+// Mac keeps that copy and its PDFs in userData/ipad-sync-sent/<showId>/ and serves it until the next send.
 
 const http = require('http');
 const os = require('os');
@@ -80,9 +83,52 @@ function showVersion(db, showId) {
   return crypto.createHash('sha1').update(JSON.stringify(rows)).digest('hex').slice(0, 16);
 }
 
-function showList(db) {
-  return db.prepare('SELECT id, title, theatre, num_spots FROM shows ORDER BY created_at DESC').all()
-    .map(s => ({ ...s, version: showVersion(db, s.id) }));
+// ---- the copy iPads get: sent with Send to iPads ----
+
+const sentDir = (showId) => path.join(ctx.app.getPath('userData'), 'ipad-sync-sent', String(showId));
+function sentMeta(showId) {
+  try { return JSON.parse(fs.readFileSync(path.join(sentDir(showId), 'meta.json'), 'utf8')); } catch (e) { return null; }
+}
+
+// Freezes the show as it is now (data plus every spot sheet and the caller sheet) for the iPads.
+// Written to a new folder and swapped in, so an iPad never gets half of a send.
+const sending = new Map();   // showId -> promise, so two sends at once don't collide
+function sendToIpads(showId) {
+  if (sending.has(showId)) return sending.get(showId);
+  const job = (async () => {
+    const db = ctx.getDb();
+    const dir = sentDir(showId), tmp = dir + '.new-' + Date.now();
+    fs.mkdirSync(tmp, { recursive: true });
+    try {
+      const version = showVersion(db, showId);
+      fs.writeFileSync(path.join(tmp, 'show.json'), JSON.stringify(ctx.exportShow(db, showId)));
+      const spots = db.prepare('SELECT id FROM spots WHERE show_id = ?').all(showId);
+      for (const spot of spots) {
+        const sheet = ctx.buildSheet('spot', { showId, label: '', spotId: spot.id });
+        fs.writeFileSync(path.join(tmp, `spot-${spot.id}.pdf`), await ctx.renderPDFBuffer(sheet.html, sheet));
+      }
+      const caller = ctx.buildSheet('caller', { showId, label: '' });
+      fs.writeFileSync(path.join(tmp, 'caller.pdf'), await ctx.renderPDFBuffer(caller.html, caller));
+      fs.writeFileSync(path.join(tmp, 'meta.json'), JSON.stringify({ version, sentAt: new Date().toISOString() }));
+      fs.rmSync(dir, { recursive: true, force: true });
+      fs.renameSync(tmp, dir);
+      return sentMeta(showId);
+    } catch (e) {
+      fs.rmSync(tmp, { recursive: true, force: true });
+      throw e;
+    }
+  })().finally(() => sending.delete(showId));
+  sending.set(showId, job);
+  return job;
+}
+// A show that has never been sent gets sent the first time an iPad asks for it
+async function ensureSent(showId) { return sentMeta(showId) || sendToIpads(showId); }
+
+async function showList(db, showId) {
+  const row = db.prepare('SELECT id, title, theatre, num_spots FROM shows WHERE id = ?').get(showId);
+  if (!row) return [];
+  const meta = await ensureSent(showId);
+  return [{ ...row, version: meta.version }];
 }
 
 // ---- HTTP ----
@@ -160,24 +206,25 @@ async function handle(req, res) {
   }
 
   // Only the show this iPad paired with
-  if (route === 'GET /shows') return send(res, 200, { shows: showList(db).filter(x => x.id === auth.showId) });
+  if (route === 'GET /shows') return send(res, 200, { shows: await showList(db, auth.showId) });
 
   if (parts[1] === 'shows' && parts[2] && req.method === 'GET') {
     const showId = parseInt(parts[2], 10);
     if (showId !== auth.showId) return send(res, 404, { error: 'Show not found' });
 
+    // The last sent copy (see sendToIpads)
+    const meta = await ensureSent(showId);
     if (parts.length === 3) {
-      return send(res, 200, { ...ctx.exportShow(db, showId), sync_version: showVersion(db, showId) });
+      const data = JSON.parse(fs.readFileSync(path.join(sentDir(showId), 'show.json'), 'utf8'));
+      return send(res, 200, { ...data, sync_version: meta.version });
     }
     if (parts[3] === 'pdf') {
       // kind=spot&spotId=… or kind=caller
       const kind = url.searchParams.get('kind');
       if (!['spot', 'caller'].includes(kind)) return send(res, 400, { error: 'Unknown sheet' });
-      const opts = { showId, label: '' };
-      if (kind === 'spot') opts.spotId = parseInt(url.searchParams.get('spotId'), 10);
-      const sheet = ctx.buildSheet(kind, opts);
-      const pdf = await ctx.renderPDFBuffer(sheet.html, sheet);
-      return send(res, 200, pdf, 'application/pdf');
+      const file = kind === 'caller' ? 'caller.pdf' : `spot-${parseInt(url.searchParams.get('spotId'), 10)}.pdf`;
+      try { return send(res, 200, fs.readFileSync(path.join(sentDir(showId), file)), 'application/pdf'); }
+      catch (e) { return send(res, 404, { error: 'That sheet wasn\'t in the last send.' }); }
     }
   }
   return send(res, 404, { error: 'Not found' });
@@ -245,8 +292,15 @@ function syncState(showId) {
   const x = showSettings(s, showId);
   if (isNew) saveSettings(s); // a show gets its code the first time it's looked at
   const now = Date.now();
+  // Whether the show has changed since it was last sent to iPads
+  const meta = sentMeta(showId);
+  let unsent = false;
+  try { unsent = !!meta && meta.version !== showVersion(ctx.getDb(), showId); } catch (e) {}
   return {
     enabled: !!x.enabled,
+    sentAt: meta?.sentAt || null,
+    unsent,
+    sending: sending.has(showId),
     running: !!server,
     port,
     name: computerName(),
@@ -274,4 +328,4 @@ function forgetDevice(showId, id) {
   return syncState(showId);
 }
 
-module.exports = { initIpadSync, syncState, setEnabled, regenerateCode, forgetDevice };
+module.exports = { initIpadSync, syncState, setEnabled, regenerateCode, forgetDevice, sendToIpads };

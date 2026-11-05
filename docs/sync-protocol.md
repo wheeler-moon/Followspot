@@ -34,6 +34,7 @@ Auth: `Authorization: Bearer <token>` from pairing (one token per show). `401` m
 ## Show data notes
 
 - `version` / `sync_version`: a fingerprint of the show's rows (not images). Same value means the iPad's copy is current.
+- **What iPads get is the last SENT copy**, not the live show: the Mac freezes the show and its PDFs when the LD clicks **Send to iPads** (cue list top bar), in `userData/ipad-sync-sent/<showId>/`, and serves that until the next send. A show never sent is sent the first time an iPad asks. Same endpoints and fields as before, so no protocol bump.
 - Images are inside the export as base64 (`images[path]`).
 - **Sheets (`.spotplot` files only):** an exported file also carries the printed sheets as base64 PDFs: `sheets.spot[spotId]` (each spot sheet) and `sheets.caller`, so SpotPlot for iPad has the paperwork for a show opened from a file. Not sent by `/api/shows/:id` (iPads fetch PDFs from `/pdf`). Desktop import ignores it.
 - Spot numbers can have gaps (a show can have Spots 1 and 3): use each spot's `spot_number`, never its position in the list.

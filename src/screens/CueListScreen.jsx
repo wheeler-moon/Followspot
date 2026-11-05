@@ -860,30 +860,47 @@ function useNotesOpen() {
 }
 
 // iPads connected to this show right now: one green dot each (past 6, one dot and the number), like the
-// dashboard's iPad Sync button. Only while this show lets iPads connect.
+// dashboard's iPad Sync button, and Send to iPads: iPads only get changes when you send them.
+// Only while this show lets iPads connect.
 function IpadDots({ showId }) {
-  const [state, setState] = useState({ enabled: false, online: 0 });
+  const [state, setState] = useState({ enabled: false, online: 0, unsent: false });
+  const [sending, setSending] = useState(false);
+  const read = (st) => setState({ enabled: !!st?.enabled, online: (st?.devices || []).filter(d => d.online).length, unsent: !!st?.unsent || !st?.sentAt });
   useEffect(() => {
-    const check = () => {
-      const st = ipcRenderer.sendSync('ipad-sync-state', showId);
-      setState({ enabled: !!st?.enabled, online: (st?.devices || []).filter(d => d.online).length });
-    };
+    const check = () => read(ipcRenderer.sendSync('ipad-sync-state', showId));
     check();
     const timer = setInterval(check, 3000);
     return () => clearInterval(timer);
   }, [showId]);
   if (!state.enabled) return null;
   const n = state.online;
+  const send = async () => {
+    if (sending || !state.unsent) return;
+    setSending(true);
+    const result = await ipcRenderer.invoke('ipad-sync-send', showId);
+    setSending(false);
+    if (result?.success) read(result.state);
+    else window.alert('Could not send to the iPads: ' + (result?.error || 'unknown error'));
+  };
+  const ready = state.unsent && !sending;
   return (
-    <span title={n ? `${n} iPad${n === 1 ? '' : 's'} connected` : 'No iPads connected'}
-      style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', height: '28px', padding: '0 10px', background: 'rgba(255,255,255,0.06)', borderRadius: '6px', fontSize: '12px', color: 'rgba(255,255,255,0.62)', flexShrink: 0 }}>
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-        {Array.from({ length: n > 6 ? 1 : Math.max(n, 1) }).map((_, i) => (
-          <span key={i} style={{ width: '7px', height: '7px', borderRadius: '50%', background: n ? '#30D158' : 'rgba(255,255,255,0.35)' }} />
-        ))}
-        {n > 6 && <span style={{ fontWeight: '600', color: '#30D158', marginLeft: '2px', fontVariantNumeric: 'tabular-nums' }}>{n}</span>}
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+      <span title={n ? `${n} iPad${n === 1 ? '' : 's'} connected` : 'No iPads connected'}
+        style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', fontSize: '12px', color: 'rgba(255,255,255,0.62)' }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+          {Array.from({ length: n > 6 ? 1 : Math.max(n, 1) }).map((_, i) => (
+            <span key={i} style={{ width: '7px', height: '7px', borderRadius: '50%', background: n ? '#30D158' : 'rgba(255,255,255,0.35)' }} />
+          ))}
+          {n > 6 && <span style={{ fontWeight: '600', color: '#30D158', marginLeft: '2px', fontVariantNumeric: 'tabular-nums' }}>{n}</span>}
+        </span>
+        {n ? `${n} iPad${n === 1 ? '' : 's'}` : 'No iPads'}
       </span>
-      {n ? `${n} iPad${n === 1 ? '' : 's'}` : 'No iPads'}
+      <button onClick={send} disabled={!ready}
+        title={sending ? 'Sending…' : state.unsent ? 'Send your changes to the iPads. Operators choose when to update.' : 'The iPads have everything'}
+        style={{ height: '28px', padding: '0 12px', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '500',
+          background: ready ? '#0A84FF' : 'rgba(255,255,255,0.10)', color: ready ? '#FFFFFF' : 'rgba(255,255,255,0.45)', cursor: ready ? 'pointer' : 'default' }}>
+        {sending ? 'Sending…' : state.unsent ? 'Send to iPads' : 'Sent'}
+      </button>
     </span>
   );
 }

@@ -407,6 +407,11 @@ function setupIPC() {
   ipcMain.handle('ipad-sync-set-enabled', (event, { showId, enabled }) => ipadSync.setEnabled(showId, enabled));
   ipcMain.on('ipad-sync-new-code', (event, showId) => { event.returnValue = ipadSync.regenerateCode(showId); });
   ipcMain.on('ipad-sync-forget', (event, { showId, id }) => { event.returnValue = ipadSync.forgetDevice(showId, id); });
+  // Send to iPads: the iPads get the show as it is now (they still ask their operator before updating)
+  ipcMain.handle('ipad-sync-send', async (event, showId) => {
+    try { await ipadSync.sendToIpads(showId); return { success: true, state: ipadSync.syncState(showId) }; }
+    catch (e) { console.error('Send to iPads error:', e); return { success: false, error: e.message }; }
+  });
   // Live print preview: the real PDF, so page breaks show exactly as they'll print.
   // Async (invoke) so the screen stays responsive while it renders.
   ipcMain.handle('print-preview', async (event, { kind, ...opts }) => {
