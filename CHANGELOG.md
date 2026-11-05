@@ -6,7 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
-- Cue list: when a show lets iPads connect, the top bar shows a green dot for each connected iPad ("2 iPads") and a **Send to iPads** button. iPads only get your changes when you send them, so you can make lots of changes and send them in one go
+- Cue list: when a show lets iPads connect, the top bar shows a green dot for each connected iPad ("2 iPads") and a **Send to iPads** button. iPads only get your changes when you send them, so you can make lots of changes and send them in one go. Only changes an operator would see count (giving a Spot Note or other Mac-only settings don't)
 - **Page Setup** (Print → Page Setup…, or ⌘P): paper size (Letter or Legal), orientation, a page range or T· range, the sheet's options and which cue details print, with a preview you scroll through. Each kind of sheet keeps its own paper, orientation and range. Every sheet fits the paper you pick: Legal fits more cues on a spot sheet, gives the caller sheet more room and a spot sheet's cover a bigger logo. Spot sheets print portrait, the caller sheet landscape
 - Print remembers what you picked for each show: the sheet, label and every setting
 - Print preview opens showing a whole page

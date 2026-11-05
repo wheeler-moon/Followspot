@@ -68,17 +68,29 @@ function lanAddresses() {
 
 // ---- show data ----
 
-// A fingerprint of everything in a show (images aside), so an iPad can tell whether its copy is current
+// A fingerprint of what iPads show (images aside), so an iPad can tell whether its copy is current.
+// Only the columns an operator sees count: the show's "last modified" time, the LD's own Spot Notes and
+// their checkmarks, Cue Defaults and the like change often and mean nothing on an iPad.
+const VERSION_COLUMNS = {
+  shows: 'title, theatre, producer, designer, associate_ld, assistant_ld, production_electrician, programmer, logo_path, num_spots, iris_sizes, custom_actions, cue_fields, action_names',
+  spots: 'id, spot_number, fixture_type, location, operator_name, display_order',
+  color_slots: 'id, spot_id, slot_number, is_permanent, gel_number, gel_name',
+  scenes: 'id, sort_order, label, act_break, song',
+  characters: 'id, sort_order, name, actor_name, costume_notes, photo_path',
+  cues: 'id, lq_number, track_number, scene_id, sort_order, page',
+  spot_cues: 'sc.id, sc.cue_id, sc.spot_id, sc.action, sc.character_id, sc.frame_size, sc.intensity, sc.fade_time, sc.active_frames, sc.description, sc.notes, sc.ignored, sc.highlight, sc.no_color, sc.custom_character, sc.with_lq, sc.when_highlight, sc.notes_highlight, sc.extra_characters',
+};
 function showVersion(db, showId) {
   const q = (sql) => db.prepare(sql).all(showId);
+  const c = VERSION_COLUMNS;
   const rows = [
-    q('SELECT * FROM shows WHERE id = ?'),
-    q('SELECT * FROM spots WHERE show_id = ?'),
-    q('SELECT * FROM color_slots WHERE spot_id IN (SELECT id FROM spots WHERE show_id = ?)'),
-    q('SELECT * FROM scenes WHERE show_id = ?'),
-    q('SELECT * FROM characters WHERE show_id = ?'),
-    q('SELECT * FROM cues WHERE show_id = ?'),
-    q('SELECT sc.* FROM spot_cues sc JOIN cues c ON sc.cue_id = c.id WHERE c.show_id = ?'),
+    q(`SELECT ${c.shows} FROM shows WHERE id = ?`),
+    q(`SELECT ${c.spots} FROM spots WHERE show_id = ? ORDER BY id`),
+    q(`SELECT ${c.color_slots} FROM color_slots WHERE spot_id IN (SELECT id FROM spots WHERE show_id = ?) ORDER BY id`),
+    q(`SELECT ${c.scenes} FROM scenes WHERE show_id = ? ORDER BY id`),
+    q(`SELECT ${c.characters} FROM characters WHERE show_id = ? ORDER BY id`),
+    q(`SELECT ${c.cues} FROM cues WHERE show_id = ? ORDER BY id`),
+    q(`SELECT ${c.spot_cues} FROM spot_cues sc JOIN cues c ON sc.cue_id = c.id WHERE c.show_id = ? ORDER BY sc.id`),
   ];
   return crypto.createHash('sha1').update(JSON.stringify(rows)).digest('hex').slice(0, 16);
 }
