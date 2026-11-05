@@ -5,14 +5,27 @@ import { GelFramePicker } from './GelPicker';
 export const MAX_FRAMES = 6;
 
 // The color frames of one spot (Spot Settings and New Show). Each frame shows a small red ×
-// on hover to remove it; frames keep their numbers, so removing Frame 2 leaves 1, 3, 4…
-// "+ Add frame" fills the next grid spot while the spot has fewer than 6 frames.
+// on hover to remove it; frames keep their numbers and their place, so removing Frame 2 leaves an
+// empty Frame 2 slot ("+ Add back") between 1 and 3. "+ Add frame" adds the next one after the last.
+// onAdd(n): add Frame n.
 // frames: [{ key, slot, gel_number, gel_name }] in frame order.
 export default function FrameGrid({ frames, cardBackground, onGelChange, onRemove, onAdd }) {
   const [hovered, setHovered] = useState(null);
+  // A removed frame keeps its place: an empty slot that can be added back
+  const nums = frames.map(f => f.slot);
+  const max = nums.length ? Math.max(...nums) : 0;
+  const gaps = [];
+  for (let n = 1; n <= max; n++) if (!nums.includes(n)) gaps.push(n);
+  const cells = [...frames.map(f => ({ ...f, n: f.slot })), ...gaps.map(n => ({ gap: true, key: 'gap-' + n, n }))].sort((a, b) => a.n - b.n);
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', marginBottom: '8px' }}>
-      {frames.map(f => (
+      {cells.map(f => f.gap ? (
+        <button key={f.key} onClick={() => onAdd(f.n)} title={'Add Frame ' + f.n + ' back'}
+          style={{ minHeight: '54px', background: 'none', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '8px', color: 'rgba(255,255,255,0.4)', fontSize: '12px', cursor: 'pointer', textAlign: 'left', padding: '8px' }}>
+          <div style={{ fontSize: '10px', fontWeight: '600', marginBottom: '4px' }}>Frame {f.n}</div>
+          <span style={{ color: '#409CFF' }}>+ Add back</span>
+        </button>
+      ) : (
         <div key={f.key} onMouseEnter={() => setHovered(f.key)} onMouseLeave={() => setHovered(h => h === f.key ? null : h)}
           style={{ position: 'relative', background: cardBackground, borderRadius: '8px', padding: '8px' }}>
           <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', marginBottom: '4px', fontWeight: '600' }}>Frame {f.slot}</div>
@@ -26,8 +39,8 @@ export default function FrameGrid({ frames, cardBackground, onGelChange, onRemov
             placeholder="Gel number or name" />
         </div>
       ))}
-      {frames.length < MAX_FRAMES && (
-        <button onClick={onAdd}
+      {max < MAX_FRAMES && (
+        <button onClick={() => onAdd(max + 1)}
           style={{ minHeight: '54px', background: 'none', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '8px', color: '#409CFF', fontSize: '12px', cursor: 'pointer' }}>
           + Add frame
         </button>

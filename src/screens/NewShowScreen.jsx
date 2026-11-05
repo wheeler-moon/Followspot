@@ -91,9 +91,8 @@ function SpotSetup({ spot, spotNumber, onChange, onRemove, otherSpots, onCopyCol
           frames={spot.gels.map(g => ({ key: g.slot, ...g }))}
           onGelChange={(f, gelData) => updateGel(spot.gels.findIndex(g => g.slot === f.slot), gelData)}
           onRemove={f => onChange({ ...spot, gels: spot.gels.filter(g => g.slot !== f.slot) })}
-          onAdd={() => {
-            let n = 1;
-            while (spot.gels.some(g => g.slot === n)) n++;
+          onAdd={(n) => {
+            if (spot.gels.some(g => g.slot === n)) return;
             onChange({ ...spot, gels: [...spot.gels, { slot: n, gel_number: '', gel_name: '' }].sort((a, b) => a.slot - b.slot) });
           }} />
       </div>

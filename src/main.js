@@ -665,6 +665,29 @@ ipcMain.on('get-app-icon', (event) => {
   });
 
   // "Permanent color" checkbox: give a spot a permanent gel slot, or remove it. Returns the spot's slots.
+  // Undo in Spot Settings: a spot's colors as they are now (its frames, and which frames each cue uses),
+  // and putting them back exactly (same frame ids, so cues and prints line up again)
+  ipcMain.on('db-spot-colors-snapshot', (event, spotId) => {
+    try {
+      const db = getDb();
+      event.returnValue = {
+        slots: db.prepare('SELECT * FROM color_slots WHERE spot_id = ?').all(spotId),
+        cueFrames: db.prepare('SELECT id, active_frames, no_color FROM spot_cues WHERE spot_id = ?').all(spotId),
+      };
+    } catch(e) { event.returnValue = null; }
+  });
+  ipcMain.on('db-restore-spot-colors', (event, { spotId, snapshot }) => {
+    try {
+      const db = getDb();
+      db.transaction(() => {
+        db.prepare('DELETE FROM color_slots WHERE spot_id = ?').run(spotId);
+        for (const row of snapshot.slots || []) restoreRow(db, 'color_slots', row);
+        const set = db.prepare('UPDATE spot_cues SET active_frames = ?, no_color = ? WHERE id = ? AND spot_id = ?');
+        for (const c of snapshot.cueFrames || []) set.run(c.active_frames, c.no_color, c.id, spotId);
+      })();
+      event.returnValue = { success: true };
+    } catch(e) { console.error('restore spot colors:', e); event.returnValue = { success: false }; }
+  });
   ipcMain.on('db-set-perm-slot', (event, { spotId, enabled }) => {
     try {
       const database = getDb();

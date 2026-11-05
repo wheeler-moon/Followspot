@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import useEscape from '../../useEscape';
 import SwapSpotsDialog from '../../components/SwapSpotsDialog';
 import CopyColorsSelect from '../../components/CopyColorsSelect';
 import { GelFramePicker } from '../../components/GelPicker';
 import FrameGrid, { RemoveFrameDialog } from '../../components/FrameGrid';
+import { getUndoTarget, setUndoTarget } from '../../undoTarget';
 const { ipcRenderer } = window.require('electron');
 
 import { FIXTURES } from '../../fixtures';
@@ -14,13 +15,15 @@ const inputStyle = {
   fontSize: '13px', outline: 'none', boxSizing: 'border-box',
 };
 
-function SpotCard({ spot, spotNumbers, colorSlots, onUpdateSpot, onUpdateGel, onDelete, otherSpots, onCopyColorsFrom, onSetPermanent, onSlotsChanged }) {
+function SpotCard({ flash, spot, spotNumbers, colorSlots, onUpdateSpot, onUpdateGel, onDelete, otherSpots, onCopyColorsFrom, onSetPermanent, onSlotsChanged, onTrack }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   // The frame being removed when cues use it (asks what to do with those cues)
   const [removing, setRemoving] = useState(null);
   const removeFrame = (slot, replaceWith) => {
-    const slots = ipcRenderer.sendSync('db-remove-frame', { spotId: spot.id, slotId: slot.id, replaceWith });
-    if (Array.isArray(slots)) onSlotsChanged(spot.id, slots);
+    onTrack(spot.id, () => {
+      const slots = ipcRenderer.sendSync('db-remove-frame', { spotId: spot.id, slotId: slot.id, replaceWith });
+      if (Array.isArray(slots)) onSlotsChanged(spot.id, slots);
+    });
     setRemoving(null);
   };
   const askRemoveFrame = (slot) => {
@@ -28,10 +31,10 @@ function SpotCard({ spot, spotNumbers, colorSlots, onUpdateSpot, onUpdateGel, on
     if (cueCount > 0) setRemoving({ slot, cueCount });
     else removeFrame(slot, null);
   };
-  const addFrame = () => {
-    const slots = ipcRenderer.sendSync('db-add-frame', { spotId: spot.id });
+  const addFrame = (slotNumber) => onTrack(spot.id, () => {
+    const slots = ipcRenderer.sendSync('db-add-frame', { spotId: spot.id, slotNumber });
     if (Array.isArray(slots)) onSlotsChanged(spot.id, slots);
-  };
+  });
   const [permJustOn, setPermJustOn] = useState(false);
   // Bumped after a copy so the gel pickers re-read their values
   const [copyCount, setCopyCount] = useState(0);
@@ -44,7 +47,7 @@ function SpotCard({ spot, spotNumbers, colorSlots, onUpdateSpot, onUpdateGel, on
   const permSlot = slots.find(s => s.is_permanent);
 
   return (
-    <div data-tour="spot-card" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+    <div data-tour="spot-card" data-spot-card={spot.id} style={{ background: 'rgba(255,255,255,0.05)', border: flash ? '1px solid #0A84FF' : '1px solid rgba(255,255,255,0.1)', boxShadow: flash ? '0 0 0 3px rgba(10,132,255,0.35)' : 'none', transition: 'box-shadow 0.4s, border-color 0.4s', borderRadius: '12px', padding: '16px', marginBottom: '16px', scrollMarginTop: '12px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
         <div style={{ fontSize: '14px', fontWeight: '700', color: '#409CFF' }}>
           Spot {spot.spot_number}
@@ -172,7 +175,7 @@ function DeleteSpotDialog({ spotNumber, spotNumbers, onCancel, onDelete }) {
   );
 }
 
-export default function SpotSettingsPanel({ show }) {
+export default function SpotSettingsPanel({ show, focusSpotId = null }) {
   const [spots, setSpots] = useState([]);
   const [colorSlots, setColorSlots] = useState({});
   const [showSwap, setShowSwap] = useState(false);
@@ -189,6 +192,59 @@ export default function SpotSettingsPanel({ show }) {
   };
 
   useEffect(() => { load(); }, []);
+
+  // ⌘Z / ⇧⌘Z for everything here except deleting a spot (which asks first and says it can't be undone).
+  // Each change saves the spot as it was before and after (details, frames, and which frames its cues
+  // use), so undo and redo put it back exactly. Typing in a gel box is one step per frame, not per letter.
+  const undoStack = useRef([]), redoStack = useRef([]);
+  const [version, setVersion] = useState(0);   // re-reads the cards' boxes after an undo
+  const snapshot = (spotId) => {
+    const sp = (ipcRenderer.sendSync('db-get-spots', show.id) || []).find(s => s.id === spotId) || {};
+    return { spot: { operator_name: sp.operator_name || '', location: sp.location || '', fixture_type: sp.fixture_type || '' },
+      colors: ipcRenderer.sendSync('db-spot-colors-snapshot', spotId) };
+  };
+  const restore = (spotId, snap) => {
+    for (const [field, value] of Object.entries(snap.spot)) ipcRenderer.sendSync('db-update-spot', { spotId, [field]: value });
+    if (snap.colors) ipcRenderer.sendSync('db-restore-spot-colors', { spotId, snapshot: snap.colors });
+  };
+  const record = (step) => {
+    const last = undoStack.current[undoStack.current.length - 1];
+    if (step.key && last && last.key === step.key && Date.now() - last.at < 2500) { last.redo = step.redo; last.at = Date.now(); }
+    else undoStack.current.push({ ...step, at: Date.now() });
+    redoStack.current = [];
+  };
+  const track = (spotId, fn, key) => {
+    const before = snapshot(spotId);
+    const result = fn();
+    const after = snapshot(spotId);
+    record({ key, undo: () => restore(spotId, before), redo: () => restore(spotId, after) });
+    return result;
+  };
+  useEffect(() => {
+    const previous = getUndoTarget();   // Show Settings can open over the cue list, which has its own undo
+    setUndoTarget((what) => {
+      const from = what === 'redo' ? redoStack.current : undoStack.current;
+      const to = what === 'redo' ? undoStack.current : redoStack.current;
+      const step = from.pop();
+      if (!step) return;
+      (what === 'redo' ? step.redo : step.undo)();
+      to.push(step);
+      load();
+      setVersion(v => v + 1);
+    });
+    return () => setUndoTarget(previous);
+  }, []);
+  // Opened from a spot on the dashboard: scroll to that spot's card and outline it for a moment
+  const [flash, setFlash] = useState(null);
+  useEffect(() => {
+    if (!focusSpotId || !spots.length) return;
+    const el = document.querySelector(`[data-spot-card="${focusSpotId}"]`);
+    if (!el) return;
+    el.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    setFlash(focusSpotId);
+    const t = setTimeout(() => setFlash(null), 1600);
+    return () => clearTimeout(t);
+  }, [focusSpotId, spots.length]);
 
   const updateSpot = (spotId, field, value) => {
     ipcRenderer.sendSync('db-update-spot', { spotId, [field]: value });
@@ -243,19 +299,30 @@ export default function SpotSettingsPanel({ show }) {
           </button>
         </div>
       )}
-      {showSwap && <SwapSpotsDialog spots={spots} onClose={() => setShowSwap(false)} />}
+      {showSwap && <SwapSpotsDialog spots={spots} onClose={() => setShowSwap(false)}
+        onSwapped={(a, b) => {
+          // Swapping is its own undo: swapping the same two spots again puts everything back
+          const swap = () => ipcRenderer.sendSync('db-swap-spots', { spotAId: a, spotBId: b });
+          record({ undo: swap, redo: swap });
+          load(); setVersion(v => v + 1);
+        }} />}
       {spots.map(spot => (
         <SpotCard
-          key={spot.id}
+          key={spot.id + ':' + version}
+          flash={flash === spot.id}
+          onTrack={track}
           spot={spot}
           spotNumbers={spots.map(s => s.spot_number)}
           colorSlots={colorSlots[spot.id]}
-          onUpdateSpot={updateSpot}
-          onUpdateGel={updateGel}
+          onUpdateSpot={(spotId, field, value) => {
+            if ((spots.find(s => s.id === spotId)?.[field] || '') === (value || '')) return;
+            track(spotId, () => updateSpot(spotId, field, value));
+          }}
+          onUpdateGel={(spotId, slotId, gel) => track(spotId, () => updateGel(spotId, slotId, gel), 'gel:' + slotId)}
           onDelete={() => load()}
           otherSpots={spots.filter(s => s.id !== spot.id).map(s => ({ key: s.id, label: 'Spot ' + s.spot_number }))}
-          onCopyColorsFrom={sourceId => copyColors(spot.id, sourceId)}
-          onSetPermanent={setPermanent}
+          onCopyColorsFrom={sourceId => track(spot.id, () => copyColors(spot.id, sourceId))}
+          onSetPermanent={(spotId, enabled) => track(spotId, () => setPermanent(spotId, enabled))}
           onSlotsChanged={(spotId, slots) => setColorSlots(prev => ({ ...prev, [spotId]: slots }))}
         />
       ))}
@@ -265,7 +332,14 @@ export default function SpotSettingsPanel({ show }) {
           let newSpotNumber = 1;
           while (spots.some(s => s.spot_number === newSpotNumber)) newSpotNumber++;
           const result = ipcRenderer.sendSync('db-add-spot', { showId: show.id, spotNumber: newSpotNumber });
-          if (result.success) load();
+          if (result.success) {
+            const findNew = () => (ipcRenderer.sendSync('db-get-spots', show.id) || []).find(s => s.spot_number === newSpotNumber);
+            record({
+              undo: () => { const sp = findNew(); if (sp) ipcRenderer.sendSync('db-remove-spot', { spotId: sp.id, renumber: false }); },
+              redo: () => ipcRenderer.sendSync('db-add-spot', { showId: show.id, spotNumber: newSpotNumber }),
+            });
+            load();
+          }
         }} style={{ width: '100%', padding: '10px', background: 'none', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '10px', color: '#409CFF', fontSize: '13px', fontWeight: '600', cursor: 'pointer', marginTop: '8px' }}>
           + Add Spot
         </button>

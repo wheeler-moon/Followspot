@@ -21,7 +21,7 @@ export default function SwapSpotsDialog({ spots, onClose, onSwapped }) {
   const doSwap = () => {
     const result = ipcRenderer.sendSync('db-swap-spots', { spotAId: a, spotBId: b });
     if (!result?.success) { window.alert('Swap failed: ' + (result?.error || 'unknown error')); return; }
-    onSwapped?.();
+    onSwapped?.(a, b);
     onClose();
   };
 

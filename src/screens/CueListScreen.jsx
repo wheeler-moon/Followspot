@@ -14,6 +14,7 @@ import { gelColor } from '../gelColors';
 import { MAX_CHARACTERS, extraCharacters, extraCharactersJSON } from '../characterNames';
 import { setUndoTarget } from '../undoTarget';
 import { followDown, FOLLOW_FIELDS } from '../characterTracking';
+import { withGaps } from '../frames';
 const { ipcRenderer } = window.require('electron');
 // A gel's swatch color: the maker's color, white for a gel typed by hand, dark for an empty frame
 function getGelColor(gelNum) {
@@ -575,7 +576,9 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
               style={{ padding: '2px 6px', borderRadius: '6px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: spotCue.no_color ? (colorSame ? 'rgba(172,142,104,0.4)' : '#AC8E68') : '#2A2A2A', color: spotCue.no_color ? (colorSame ? 'rgba(255,255,255,0.6)' : '#FFFFFF') : 'rgba(255,255,255,0.45)', border: `1px solid ${spotCue.no_color ? (colorSame ? 'transparent' : '#AC8E68') : 'rgba(255,255,255,0.1)'}` }}>
               NC
             </div>
-            {colorSlots.map(slot => {
+            {withGaps(colorSlots).map(slot => {
+              // A removed frame keeps its place as a faint, empty slot
+              if (slot.gap) return <div key={slot.id} title={`Frame ${slot.slot_number} was removed`} style={{ padding: '1px 5px', borderRadius: '6px', fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.2)', border: '1px dashed rgba(255,255,255,0.18)' }}>F{slot.slot_number}</div>;
               const isActive = activeFrames.includes('F' + slot.slot_number);
               const isHovered = hoveredFrame === slot.id;
               return (
@@ -715,7 +718,7 @@ function HeaderColorLoad({ slots, perm }) {
   };
   return (
     <div style={{ display: 'flex', gap: '2px', marginTop: '7px' }}>
-      {slots.map(sl => chip(sl.id, 'F' + sl.slot_number, sl.gel_number, sl.gel_name, false))}
+      {withGaps(slots).map(sl => chip(sl.id, 'F' + sl.slot_number, sl.gap ? '' : sl.gel_number, sl.gap ? 'Removed' : sl.gel_name, false))}
       {perm && chip('perm', 'PERM', perm.gel_number, perm.gel_name, true)}
     </div>
   );

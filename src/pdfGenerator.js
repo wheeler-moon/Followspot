@@ -8,6 +8,7 @@ const { actionNameMap, displayAction } = require('./actionNames');
 const { gelColor } = require('./gelColors');
 const { characterLabel } = require('./characterNames');
 const { irisSizeList } = require('./irisSizes');
+const { withGaps } = require('./frames');
 
 // Style rules that hide the cue fields a show has unticked under "Show on print"
 function hiddenFieldCSS(cueFields, selectors) {
@@ -194,9 +195,10 @@ const sceneOrderMap = {};
   }
 
   // Gel numbers only in the header (names live on the Color Load sheet)
-  const gelFramesHTML = colorSlots.filter(s => !s.is_permanent).map(slot => `
-    <div class="gel-slot">
-      <span class="gel-num">${slot.gel_number || '—'}</span>
+  // A removed frame keeps its place as an empty slot (src/frames.js)
+  const gelFramesHTML = withGaps(colorSlots).map(slot => `
+    <div class="gel-slot"${slot.gap ? ' style="opacity:0.35;border-style:dashed;"' : ''}>
+      <span class="gel-num">${slot.gap ? '&nbsp;' : (slot.gel_number || '—')}</span>
       <span class="gel-label">F${slot.slot_number}</span>
     </div>
   `).join('');
@@ -693,12 +695,12 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
   const actionNames = actionNameMap(show && show.action_names);
 
   const spotsHeaderHTML = spots.map(spot => {
-    const slots = (colorSlotsBySpot[spot.id] || []).filter(s => !s.is_permanent);
+    const slots = withGaps(colorSlotsBySpot[spot.id] || []);   // a removed frame keeps its place, empty
     const perm = (colorSlotsBySpot[spot.id] || []).find(s => s.is_permanent && (s.gel_number || s.gel_name));
     const gelHTML = slots.map(slot => `
-      <div class="gel-slot">
+      <div class="gel-slot"${slot.gap ? ' style="opacity:0.35;border-style:dashed;"' : ''}>
         <span class="gel-label">F${slot.slot_number}</span>
-        <span class="gel-num">${slot.gel_number || '—'}</span>
+        <span class="gel-num">${slot.gap ? '&nbsp;' : (slot.gel_number || '—')}</span>
       </div>
     `).join('') + (perm ? `
       <div class="gel-slot perm">
@@ -1265,7 +1267,10 @@ function buildColorLoadHTML({ show, spots, colorSlotsBySpot, label }) {
       return `<div class="${cls}${gels.length > 1 ? ' multi' : ''}">${gels.map(band).join('')}</div>`;
     };
 
-    const framesHTML = regularSlots.map(slot => frameCard(slot, `Frame ${slot.slot_number}`, 'frame-card', 'Empty')).join('');
+    // A removed frame keeps its place: an empty, dashed card that says so
+    const framesHTML = withGaps(slots).map(slot => slot.gap
+      ? `<div class="frame-card" style="border:1.5px dashed #c8c8c8;background:#fff;"><div class="frame-band" style="background:#fff;"><div class="frame-label" style="color:#aaa;">Frame ${slot.slot_number}</div><div class="frame-gel-name" style="color:#aaa;">Removed</div></div></div>`
+      : frameCard(slot, `Frame ${slot.slot_number}`, 'frame-card', 'Empty')).join('');
     const permHTML = permSlot && permSlot.gel_number ? frameCard(permSlot, 'Permanent', 'perm-card', '') : '';
 
     return `
@@ -1785,14 +1790,16 @@ function coverPageHTML({ show, label, sheetName, spots, colorSlotsBySpot, spotCu
   };
   // Every spot's frames sit on one shared grid: a column per frame number (and one for PERM), the same
   // width for every spot, so Frame 1 lines up with Frame 1. A spot missing a frame leaves that space empty.
-  const frameNumbers = [...new Set(spots.flatMap(sp => (colorSlotsBySpot[sp.id] || []).filter(sl => !sl.is_permanent).map(sl => sl.slot_number)))].sort((a, b) => a - b);
+  const most = Math.max(0, ...spots.map(sp => withGaps(colorSlotsBySpot[sp.id] || []).length));
+  const frameNumbers = Array.from({ length: most }, (_, i) => i + 1);
   const permFor = (sp) => (colorSlotsBySpot[sp.id] || []).find(sl => sl.is_permanent && (sl.gel_number || sl.gel_name));
   const anyPerm = spots.some(permFor);
   const columns = frameNumbers.length + (anyPerm ? 1 : 0);
   const spotBlocks = spots.map(spot => {
     const slots = colorSlotsBySpot[spot.id] || [];
     const perm = permFor(spot);
-    const cells = frameNumbers.map(n => { const sl = slots.find(x => !x.is_permanent && x.slot_number === n); return sl ? frame('F' + n, sl.gel_number, false) : '<div></div>'; });
+    const own = withGaps(slots);   // a removed frame (below this spot's last) shows as an empty frame
+    const cells = frameNumbers.map(n => { const sl = own.find(x => x.slot_number === n); return !sl ? '<div></div>' : sl.gap ? `<div style="opacity:0.35">${frame('F' + n, '', false)}</div>` : frame('F' + n, sl.gel_number, false); });
     if (anyPerm) cells.push(perm ? frame('PERM', perm.gel_number, true) : '<div></div>');
     const title = [`Spot ${spot.spot_number}`, spot.operator_name, spot.location].filter(Boolean).map(escapeText).join(' · ');
     return `<div class="cv-spot">

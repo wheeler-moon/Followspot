@@ -5,6 +5,7 @@ import ShowSettingsModal from './ShowSettingsModal';
 import Tips from '../components/Tips';
 import { TIPS } from '../tips';
 import { gelColor } from '../gelColors';
+import { withGaps } from '../frames';
 
 // One color frame on the dashboard: a small rectangle in the gel's color with its number on it
 // (several gels side by side). Same width for every frame, so F1, F2… line up down the list.
@@ -15,7 +16,8 @@ const isDark = (hex) => {
   return r * 0.299 + g * 0.587 + b * 0.114 < 140;
 };
 function FrameChip({ slot, label }) {
-  if (!slot) return <div style={{ width: FRAME_W, flexShrink: 0 }} />;   // this spot has fewer frames
+  if (!slot) return <div style={{ width: FRAME_W, flexShrink: 0 }} />;   // past this spot's last frame
+  if (slot.gap) return <div title={label + ' · removed'} style={{ width: FRAME_W, height: '22px', flexShrink: 0, borderRadius: '5px', boxSizing: 'border-box', border: '1px dashed rgba(255,255,255,0.22)' }} />;
   const nums = (slot.gel_number || '').split('+').map(g => g.trim()).filter(Boolean);
   const colors = nums.map(n => gelColor(n) || '#FFFFFF');
   const bg = !nums.length ? 'transparent' : colors.length === 1 ? colors[0]
@@ -54,6 +56,7 @@ export default function ShowDashboard({ show: initialShow, navigate }) {
   const [stats, setStats] = useState({ cues: 0, scenes: 0, characters: 0, spots: [] });
   const [editing, setEditing] = useState(false);
   const [showSettings, setShowSettings] = useState(false); // false, or the settings tab to open
+  const [focusSpot, setFocusSpot] = useState(null);         // the spot to scroll to in Spot Settings
   const [editForm, setEditForm] = useState({});
   const [saving, setSaving] = useState(false);
 
@@ -306,9 +309,10 @@ const startEdit = () => {
             {(() => {
               // Every spot's frames sit in the same columns (F1 under F1…), PERM last; click a row to edit the spot
               const spotsInOrder = [...stats.spots].sort((a, b) => a.spot_number - b.spot_number);
-              const frames = (id) => (slotsBySpot[id] || []).filter(sl => !sl.is_permanent);
+              const frames = (id) => withGaps(slotsBySpot[id] || []);   // a removed frame stays as an empty slot
               const perm = (id) => (slotsBySpot[id] || []).find(sl => sl.is_permanent && (sl.gel_number || sl.gel_name));
-              const numbers = [...new Set(spotsInOrder.flatMap(sp => frames(sp.id).map(sl => sl.slot_number)))].sort((a, b) => a - b);
+              const most = Math.max(0, ...spotsInOrder.map(sp => frames(sp.id).length));
+              const numbers = Array.from({ length: most }, (_, i) => i + 1);
               const anyPerm = spotsInOrder.some(sp => perm(sp.id));
               const colLabel = { width: FRAME_W, flexShrink: 0, textAlign: 'center', fontSize: '10px', fontWeight: '600', color: 'rgba(255,255,255,0.4)' };
               return (
@@ -324,7 +328,7 @@ const startEdit = () => {
                   )}
                   {spotsInOrder.map((spot, i) => (
                     <div key={spot.id} style={{ ...row(i), cursor: 'pointer', minHeight: '50px' }} title="Edit this spot in Show Settings"
-                      onClick={() => setShowSettings('spot-settings')}
+                      onClick={() => { setFocusSpot(spot.id); setShowSettings('spot-settings'); }}
                       onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
                       onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
                       <div style={{ width: '52px', fontSize: '13px', fontWeight: '600', color: '#409CFF', flexShrink: 0 }}>Spot {spot.spot_number}</div>
@@ -371,7 +375,8 @@ const startEdit = () => {
         <ShowSettingsModal
           show={show}
           initialSection={showSettings}
-          onClose={() => { setShowSettings(false); reloadStats(); }}
+          focusSpotId={focusSpot}
+          onClose={() => { setShowSettings(false); setFocusSpot(null); reloadStats(); }}
           onShowUpdate={(updated) => { setCurrentShow(updated); }}
         />
       )}

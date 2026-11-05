@@ -25,7 +25,7 @@ const SECTIONS = [
   { id: 'ipad-sync', label: 'iPad Sync' },
 ];
 
-export default function ShowSettingsModal({ show, onClose, onShowUpdate, initialSection = 'show-info' }) {
+export default function ShowSettingsModal({ show, onClose, onShowUpdate, initialSection = 'show-info', focusSpotId = null }) {
   const [activeSection, setActiveSection] = useState(initialSection);
   useEscape(onClose);
 
@@ -61,7 +61,7 @@ export default function ShowSettingsModal({ show, onClose, onShowUpdate, initial
           </div>
           <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
             {activeSection === 'show-info' && <ShowInfoPanel show={show} onShowUpdate={onShowUpdate} onClose={onClose} />}
-            {activeSection === 'spot-settings' && <SpotSettingsPanel show={show} />}
+            {activeSection === 'spot-settings' && <SpotSettingsPanel show={show} focusSpotId={focusSpotId} />}
             {activeSection === 'spot-order' && <SpotOrderPanel show={show} />}
             {activeSection === 'cue-settings' && <CueSettingsPanel show={show} />}
             {activeSection === 'cue-defaults' && <CueDefaultsPanel show={show} />}
