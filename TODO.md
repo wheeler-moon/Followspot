@@ -42,6 +42,14 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
   - Console Connection page: replace the blue pill/oval ("Coming soon") with plain text, per DESIGN.md
   - A show opened for the first time after import: the cue list starts at the very top
   - Notes sidebar: find a cue by its number even when the LQ has extra text ("14*", "In 14"): typing 14 finds it (and 14* or "In 14" still work)
+  - Characters screen: double-click a character to edit everything about them; no Edit button. The Add character box at the top is shorter (less empty space at the bottom)
+  - Spot Notes screen: double-click a note to edit it; no Edit button
+  - Show Settings → Spot Settings: Swap spots moves into the page's header (still on the right), so the spot cards start at the top
+  - Show Settings: rename "Cue Settings" to "Cue Visibility"?
+  - **Cue list in a narrow window (big one):** with every frame button on each cue, the iris chips get squeezed until they can't be clicked (see 2026-11-05 screenshot: iris strip shows only ‹ ›). Needs a layout that stays sleek and easy to pick from at half-screen
+  - iPad Sync tab: show each paired iPad's name (the device name, e.g. "Dana's iPad") instead of just "iPad", so it's clear which are connected. Mind App Store privacy answers (device name is sent only to the Mac on the local network)
+  - Console Connection page says "Coming soon" twice
+  - **Iris size pictures (Wheeler's idea):** in Show Settings → Iris Sizes, each size gets a small stick figure (in the iris purple). Clicking opens a simple window with a white circle outline you drag and resize over the figure to show how big that size is and where it lands. Wheeler will help set the defaults. Then it can be shown in print headers and switched on/off on the iPad
 - [ ] **Reminder, after the paperwork pass:** how to show operators what each iris size means, on prints and on the iPad (Wheeler has an idea)
 - [ ] Beta feedback: add items here as testers report them
 - [ ] ⌘C / ⌘V for a cue box without right-clicking (needs a way to select a box first)
@@ -52,6 +60,7 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 - [ ] "Track down" button: carry a spot's details from one cue down the cue list until its next change. Wheeler will explain in more detail before we build it
 
 ### Before launch (not features)
+- [ ] **Policy for after release:** when an update changes something in people's existing shows (an action icon, how something prints), decide whether they can keep the old way in shows they already wrote, or choose when they update. Think it through before the first post-launch change
 - [ ] **Apple signing certificate expires Feb 1, 2027** (Developer ID Application, team 299TQ9H5QB). Make a new one in December so 1.0 and its first updates are signed with it. If the developer account moves to the LLC, convert the existing account rather than opening a new one: auto-update needs the same Team ID
 - [ ] Make the app's code private (steps below, under Later) before launch, with a release
 
