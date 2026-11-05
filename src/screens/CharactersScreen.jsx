@@ -3,6 +3,7 @@ import { dropSlot, moveTo, moveItem, dropLineStyle } from '../dropLine';
 import Tips from '../components/Tips';
 import { TIPS } from '../tips';
 import AppHeader from '../components/AppHeader';
+import { setUndoTarget } from '../undoTarget';
 const { ipcRenderer, webUtils } = window.require('electron');
 const getDroppedImagePath = (e) => {
   const file = e.dataTransfer.files[0];
@@ -36,8 +37,29 @@ export default function CharactersScreen({ show, navigate }) {
   const dragItem = useRef(null);
   const nameInputRef = useRef(null);
 
+  // ⌘Z / ⇧⌘Z: everything on this screen can be undone and redone (each step knows both ways)
+  const undoStack = useRef([]), redoStack = useRef([]);
+  const record = (step) => { undoStack.current.push(step); redoStack.current = []; };
+  useEffect(() => {
+    setUndoTarget((what) => {
+      const from = what === 'redo' ? redoStack.current : undoStack.current;
+      const to = what === 'redo' ? undoStack.current : redoStack.current;
+      const step = from.pop();
+      if (!step) return;
+      (what === 'redo' ? step.redo : step.undo)();
+      to.push(step);
+      setEditingId(null);
+      load();
+    });
+    return () => setUndoTarget(null);
+  }, []);
+  const getRow = (id) => (ipcRenderer.sendSync('db-get-characters', show.id) || []).find(c => c.id === id);
+  const fields = (c) => ({ characterId: c.id, name: c.name, actorName: c.actor_name || '', costumeNotes: c.costume_notes || '', photoPath: c.photo_path || '' });
+
   const togglePrint = (char, value) => {
-    ipcRenderer.sendSync('db-set-character-print', { characterId: char.id, value });
+    const set = (v) => ipcRenderer.sendSync('db-set-character-print', { characterId: char.id, value: v });
+    set(value);
+    record({ undo: () => set(!value), redo: () => set(value) });
     setCharacters(cs => cs.map(c => c.id === char.id ? { ...c, print_on_sheet: value ? 1 : 0 } : c));
   };
 
@@ -50,12 +72,13 @@ export default function CharactersScreen({ show, navigate }) {
 
   const addCharacter = () => {
     if (!newName.trim()) return;
-    ipcRenderer.sendSync('db-create-character', { showId: show.id, name: newName, actorName: newActor });
-    if (newNotes.trim() || newPhoto) {
-      const chars = ipcRenderer.sendSync('db-get-characters', show.id);
-      const newest = chars[chars.length - 1];
-      if (newest) ipcRenderer.sendSync('db-update-character', { characterId: newest.id, name: newName, actorName: newActor, costumeNotes: newNotes, photoPath: newPhoto });
+    const created = ipcRenderer.sendSync('db-create-character', { showId: show.id, name: newName, actorName: newActor });
+    const newId = created?.id ?? (ipcRenderer.sendSync('db-get-characters', show.id) || []).slice(-1)[0]?.id;
+    if (newId && (newNotes.trim() || newPhoto)) {
+      ipcRenderer.sendSync('db-update-character', { characterId: newId, name: newName, actorName: newActor, costumeNotes: newNotes, photoPath: newPhoto });
     }
+    const row = newId && getRow(newId);
+    if (row) record({ undo: () => ipcRenderer.sendSync('db-delete-character', row.id), redo: () => ipcRenderer.sendSync('db-restore-row', { table: 'characters', row }) });
     setNewName(''); setNewActor(''); setNewNotes(''); setNewPhoto('');
     load();
     setTimeout(() => nameInputRef.current?.focus(), 50);
@@ -70,14 +93,24 @@ export default function CharactersScreen({ show, navigate }) {
   };
 
   const saveEdit = () => {
-    ipcRenderer.sendSync('db-update-character', { characterId: editingId, name: editName, actorName: editActor, costumeNotes: editNotes, photoPath: editPhoto });
+    const was = characters.find(c => c.id === editingId);
+    const after = { characterId: editingId, name: editName, actorName: editActor, costumeNotes: editNotes, photoPath: editPhoto };
+    ipcRenderer.sendSync('db-update-character', after);
+    if (was) { const before = fields(was); record({ undo: () => ipcRenderer.sendSync('db-update-character', before), redo: () => ipcRenderer.sendSync('db-update-character', after) }); }
     setEditingId(null);
     load();
   };
 
   const deleteCharacter = (id) => {
-    if (!window.confirm('Delete this character? They will be removed from all cues.')) return;
-    ipcRenderer.sendSync('db-delete-character', id);
+    if (!window.confirm('Delete this character? They come out of every cue. ⌘Z brings them back.')) return;
+    const result = ipcRenderer.sendSync('db-delete-character', id);
+    if (result?.success && result.row) {
+      const { row, firstIn, extrasBefore } = result;
+      record({
+        undo: () => { ipcRenderer.sendSync('db-restore-row', { table: 'characters', row }); ipcRenderer.sendSync('db-restore-character-refs', { characterId: row.id, firstIn, extrasBefore }); },
+        redo: () => ipcRenderer.sendSync('db-delete-character', row.id),
+      });
+    }
     load();
   };
 
@@ -102,8 +135,10 @@ export default function CharactersScreen({ show, navigate }) {
     const slot = dragOverId || dropSlot(e, index);
     if (dragItem.current === null || moveTo(dragItem.current, slot) === dragItem.current) { dragItem.current = null; setDragOverId(null); return; }
     const newChars = moveItem(characters, dragItem.current, slot);
+    const before = characters.map((c, i) => ({ id: c.id, sort_order: c.sort_order ?? (i + 1) * 1000 }));
     const updates = newChars.map((c, i) => ({ id: c.id, sort_order: (i + 1) * 1000 }));
     ipcRenderer.sendSync('db-reorder-characters', updates);
+    record({ undo: () => ipcRenderer.sendSync('db-reorder-characters', before), redo: () => ipcRenderer.sendSync('db-reorder-characters', updates) });
     dragItem.current = null;
     setDragOverId(null);
     load();

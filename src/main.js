@@ -823,14 +823,21 @@ ipcMain.on('get-app-icon', (event) => {
 
   ipcMain.on('db-delete-character', (event, characterId) => {
     try {
+      // What's needed to undo it: the character's row, and the cues that had them (db-restore-character-refs)
+      const row = getDb().prepare('SELECT * FROM characters WHERE id = ?').get(characterId);
+      const firstIn = getDb().prepare('SELECT id FROM spot_cues WHERE character_id = ?').all(characterId).map(r => r.id);
+      const extrasBefore = [];
       getDb().prepare('UPDATE spot_cues SET character_id = NULL WHERE character_id = ?').run(characterId);
       // Take it out of any cue that has it as a second or third character
       for (const sc of getDb().prepare("SELECT id, extra_characters FROM spot_cues WHERE extra_characters IS NOT NULL AND extra_characters != ''").all()) {
         const list = extraCharacters(sc.extra_characters);
-        if (list.includes(Number(characterId))) getDb().prepare('UPDATE spot_cues SET extra_characters = ? WHERE id = ?').run(extraCharactersJSON(list.filter(x => x !== Number(characterId))), sc.id);
+        if (list.includes(Number(characterId))) {
+          extrasBefore.push({ id: sc.id, extra_characters: sc.extra_characters });
+          getDb().prepare('UPDATE spot_cues SET extra_characters = ? WHERE id = ?').run(extraCharactersJSON(list.filter(x => x !== Number(characterId))), sc.id);
+        }
       }
       getDb().prepare('DELETE FROM characters WHERE id = ?').run(characterId);
-      event.returnValue = { success: true };
+      event.returnValue = { success: true, row, firstIn, extrasBefore };
     } catch(e) { event.returnValue = { success: false }; }
   });
 
@@ -1291,6 +1298,17 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
     } catch(e) { console.error('restore cue:', e); event.returnValue = { success: false }; }
   });
   // A scene or character taken away by undo, put back by redo
+  // Undoing a character's delete: put them back in the cues that had them
+  ipcMain.on('db-restore-character-refs', (event, { characterId, firstIn, extrasBefore }) => {
+    try {
+      const db = getDb();
+      db.transaction(() => {
+        for (const id of firstIn || []) db.prepare('UPDATE spot_cues SET character_id = ? WHERE id = ?').run(characterId, id);
+        for (const x of extrasBefore || []) db.prepare('UPDATE spot_cues SET extra_characters = ? WHERE id = ?').run(x.extra_characters, x.id);
+      })();
+      event.returnValue = { success: true };
+    } catch(e) { event.returnValue = { success: false }; }
+  });
   // Undoing a scene's delete: its cues go back into it
   ipcMain.on('db-set-cue-scene', (event, { cueIds, sceneId }) => {
     try {
