@@ -65,6 +65,9 @@ Other
 
 Saved for the iPad app's first release (kept out of the Mac's What's New).
 
+- Caller is picked from the role menu like any spot. While you're the caller, the button next to the show's name chooses which spots show and their order
+- Switching roles: the Switch button is blue
+- Updates list one line per cue, with everything that changed in it
 - Ignored cues go grey and faint, with a big IGNORE centered over the cue (spot and caller views)
 - Action symbols match SpotPlot for Mac's new ones (Bump Up / Bump Out as arrows hitting a bar, Ballyhoo, Iris In / Out, Swap To, Stay With, iris purple)
 - Shows list: each show has its logo (whole, never cropped), when it was last edited on the Mac and last opened on this iPad, and the show you opened most recently is at the top
