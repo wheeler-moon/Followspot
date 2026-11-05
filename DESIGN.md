@@ -182,6 +182,9 @@ Everything in the top bar stays on one line. Words that are nice-to-have drop fi
 ### Act breaks in lists
 An act break is shown the way the cue list shows it: its name in orange (`#FF9F0A`), with "Act break" as quiet orange text (75%) beside it. No tinted pill or capital-letter badge.
 
+### Color load chips (dashboard)
+A frame as a small rectangle (36–50px × 22, radius 5) in its gel's color with the gel number on it (dark text on light gels, white on dark; several gels side by side). Every spot's frames sit in the same columns with F1, F2… labels over them, PERM last with a gold border; an empty frame is a dashed outline, a frame the spot doesn't have is blank space so the columns still line up.
+
 ### Corner notice
 A short status that matters on every screen (an update downloading or ready): bottom-right, 16px from the edges, `#2A2A2A`, 12px radius, soft shadow, 13px text, an optional small accent button and a × to hide it. A spinner while something is in progress, a green dot when it's done. Don't use it for anything that needs an answer; that's a Mac alert.
 

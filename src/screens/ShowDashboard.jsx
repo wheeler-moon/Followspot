@@ -4,6 +4,34 @@ import AppHeader from '../components/AppHeader';
 import ShowSettingsModal from './ShowSettingsModal';
 import Tips from '../components/Tips';
 import { TIPS } from '../tips';
+import { gelColor } from '../gelColors';
+
+// One color frame on the dashboard: a small rectangle in the gel's color with its number on it
+// (several gels side by side). Same width for every frame, so F1, F2… line up down the list.
+const FRAME_W = 'clamp(36px, 3.6vw, 50px)';   // a bit narrower in a small window, so names keep their room
+const isDark = (hex) => {
+  const h = (hex || '#FFFFFF').replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+  return r * 0.299 + g * 0.587 + b * 0.114 < 140;
+};
+function FrameChip({ slot, label }) {
+  if (!slot) return <div style={{ width: FRAME_W, flexShrink: 0 }} />;   // this spot has fewer frames
+  const nums = (slot.gel_number || '').split('+').map(g => g.trim()).filter(Boolean);
+  const colors = nums.map(n => gelColor(n) || '#FFFFFF');
+  const bg = !nums.length ? 'transparent' : colors.length === 1 ? colors[0]
+    : `linear-gradient(to right, ${colors.map((c, i) => `${c} ${(i * 100) / colors.length}% ${((i + 1) * 100) / colors.length}%`).join(', ')})`;
+  const dark = colors.length && isDark(colors[0]);
+  return (
+    <div title={[label, slot.gel_number, slot.gel_name].filter(Boolean).join(' · ') || label + ' · Empty'}
+      style={{ width: FRAME_W, height: '22px', flexShrink: 0, borderRadius: '5px', background: bg, boxSizing: 'border-box',
+        border: nums.length ? (slot.is_permanent ? '1.5px solid #E3C04A' : '1px solid rgba(0,0,0,0.25)') : '1px dashed rgba(255,255,255,0.22)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+        fontSize: nums.join('+').length > 6 ? '8px' : nums.join('+').length > 4 ? '9.5px' : '10.5px', fontWeight: '600', whiteSpace: 'nowrap', letterSpacing: '-0.02em',
+        color: !nums.length ? 'rgba(255,255,255,0.3)' : dark ? '#FFFFFF' : '#1A1A1A' }}>
+      {nums.length ? nums.join('+') : '—'}
+    </div>
+  );
+}
 const getImageSrc = (path) => {
   if (!path) return null;
   try {
@@ -37,6 +65,14 @@ export default function ShowDashboard({ show: initialShow, navigate }) {
   useEffect(() => {
     reloadStats();
   }, [show.id]);
+
+  // Each spot's color frames, for the little color load on each spot's row
+  const [slotsBySpot, setSlotsBySpot] = useState({});
+  useEffect(() => {
+    const out = {};
+    for (const spot of stats.spots || []) out[spot.id] = ipcRenderer.sendSync('db-get-color-slots-all', spot.id) || [];
+    setSlotsBySpot(out);
+  }, [stats]);
 
   // iPad Sync dots: how many iPads are connected to this show right now
   const [ipadsOnline, setIpadsOnline] = useState(0);
@@ -267,16 +303,46 @@ const startEdit = () => {
 
           <div style={sectionLabel}>Spots</div>
           <div style={group}>
-            {/* Always in spot-number order here, whatever order is set in Show Settings → Spot Order */}
-            {[...stats.spots].sort((a, b) => a.spot_number - b.spot_number).map((spot, i) => (
-              <div key={spot.id} style={row(i)}>
-                <div style={{ width: '52px', fontSize: '13px', fontWeight: '600', color: '#409CFF', flexShrink: 0 }}>Spot {spot.spot_number}</div>
-                <div style={{ flex: 1, fontSize: '14px', color: spot.operator_name ? '#FFFFFF' : 'rgba(255,255,255,0.35)' }}>{spot.operator_name || 'No operator'}</div>
-                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', textAlign: 'right' }}>
-                  {[spot.location, spot.fixture_type].filter(Boolean).join(' · ') || 'No location or fixture'}
-                </div>
-              </div>
-            ))}
+            {(() => {
+              // Every spot's frames sit in the same columns (F1 under F1…), PERM last; click a row to edit the spot
+              const spotsInOrder = [...stats.spots].sort((a, b) => a.spot_number - b.spot_number);
+              const frames = (id) => (slotsBySpot[id] || []).filter(sl => !sl.is_permanent);
+              const perm = (id) => (slotsBySpot[id] || []).find(sl => sl.is_permanent && (sl.gel_number || sl.gel_name));
+              const numbers = [...new Set(spotsInOrder.flatMap(sp => frames(sp.id).map(sl => sl.slot_number)))].sort((a, b) => a - b);
+              const anyPerm = spotsInOrder.some(sp => perm(sp.id));
+              const colLabel = { width: FRAME_W, flexShrink: 0, textAlign: 'center', fontSize: '10px', fontWeight: '600', color: 'rgba(255,255,255,0.4)' };
+              return (
+                <>
+                  {numbers.length > 0 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 14px 0' }}>
+                      <div style={{ flex: 1 }} />
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        {numbers.map(n => <div key={n} style={colLabel}>F{n}</div>)}
+                        {anyPerm && <div style={{ ...colLabel, color: '#C8A26B' }}>PERM</div>}
+                      </div>
+                    </div>
+                  )}
+                  {spotsInOrder.map((spot, i) => (
+                    <div key={spot.id} style={{ ...row(i), cursor: 'pointer', minHeight: '50px' }} title="Edit this spot in Show Settings"
+                      onClick={() => setShowSettings('spot-settings')}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
+                      <div style={{ width: '52px', fontSize: '13px', fontWeight: '600', color: '#409CFF', flexShrink: 0 }}>Spot {spot.spot_number}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '14px', color: spot.operator_name ? '#FFFFFF' : 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{spot.operator_name || 'No operator'}</div>
+                        <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {[spot.location, spot.fixture_type].filter(Boolean).join(' · ') || 'No location or fixture'}
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                        {numbers.map(n => <FrameChip key={n} label={'F' + n} slot={frames(spot.id).find(sl => sl.slot_number === n)} />)}
+                        {anyPerm && <FrameChip label="PERM" slot={perm(spot.id)} />}
+                      </div>
+                    </div>
+                  ))}
+                </>
+              );
+            })()}
           </div>
 
           {[show.designer, show.associate_ld, show.assistant_ld, show.production_electrician, show.programmer].some(Boolean) && (

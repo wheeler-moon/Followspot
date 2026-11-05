@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- Show dashboard: each spot shows its color load as little colored boxes, lined up F1 under F1 down the list (PERM last). Click a spot to edit it in Show Settings
 - A new cue after an Iris/Fade Out starts Off for that spot, like after a Fade Out
 - Characters screen: ⌘Z undoes adding, changing, deleting, reordering and the Print checkbox (⇧⌘Z redoes). Undoing a delete puts the character back in every cue that had them
 - Scenes screen: ⌘Z undoes adding, changing, deleting and reordering scenes (⇧⌘Z redoes). Undoing a delete puts its cues back in the scene. The up/down arrows are gone from Scenes and Characters; drag to reorder
