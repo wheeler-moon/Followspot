@@ -862,9 +862,44 @@ function useNotesOpen() {
 // iPads connected to this show right now: one green dot each (past 6, one dot and the number), like the
 // dashboard's iPad Sync button, and Send to iPads: iPads only get changes when you send them.
 // Only while this show lets iPads connect.
+// Renumber T·: just "Renumber" when the window is narrow
+function RenumberButton({ onClick }) {
+  const narrow = useNarrowWindow(900);
+  return (
+    <button onClick={onClick} title="Renumber T· 1, 2, 3… top to bottom. Cue order doesn't change."
+      style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+      {narrow ? 'Renumber' : 'Renumber T·'}
+    </button>
+  );
+}
+
+// A small icon button for the top bar (an SVG drawn in a 20×20 box)
+function HeaderIconButton({ title, onClick, children }) {
+  return (
+    <button onClick={onClick} title={title} aria-label={title}
+      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+      style={{ width: '32px', height: '24px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', borderRadius: '6px', color: '#FFFFFF', cursor: 'pointer' }}>
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{children}</svg>
+    </button>
+  );
+}
+
+// True when the window is narrow (half a screen): the top bar drops words it can do without
+function useNarrowWindow(limit = 1150) {
+  const [narrow, setNarrow] = useState(() => window.innerWidth < limit);
+  useEffect(() => {
+    const onResize = () => setNarrow(window.innerWidth < limit);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [limit]);
+  return narrow;
+}
+
 function IpadDots({ showId }) {
   const [state, setState] = useState({ enabled: false, online: 0, unsent: false });
   const [sending, setSending] = useState(false);
+  const narrow = useNarrowWindow();
   const read = (st) => setState({ enabled: !!st?.enabled, online: (st?.devices || []).filter(d => d.online).length, unsent: !!st?.unsent || !st?.sentAt });
   useEffect(() => {
     const check = () => read(ipcRenderer.sendSync('ipad-sync-state', showId));
@@ -884,7 +919,7 @@ function IpadDots({ showId }) {
   };
   const ready = state.unsent && !sending;
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', flexShrink: 0, whiteSpace: 'nowrap' }}>
       <span title={n ? `${n} iPad${n === 1 ? '' : 's'} connected` : 'No iPads connected'}
         style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', fontSize: '12px', color: 'rgba(255,255,255,0.62)' }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
@@ -893,13 +928,13 @@ function IpadDots({ showId }) {
           ))}
           {n > 6 && <span style={{ fontWeight: '600', color: '#30D158', marginLeft: '2px', fontVariantNumeric: 'tabular-nums' }}>{n}</span>}
         </span>
-        {n ? `${n} iPad${n === 1 ? '' : 's'}` : 'No iPads'}
+        {narrow ? (n || '') : n ? `${n} iPad${n === 1 ? '' : 's'}` : 'No iPads'}
       </span>
       <button onClick={send} disabled={!ready}
         title={sending ? 'Sending…' : state.unsent ? 'Send your changes to the iPads. Operators choose when to update.' : 'The iPads have everything'}
         style={{ height: '28px', padding: '0 12px', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '500',
           background: ready ? '#0A84FF' : 'rgba(255,255,255,0.10)', color: ready ? '#FFFFFF' : 'rgba(255,255,255,0.45)', cursor: ready ? 'pointer' : 'default' }}>
-        {sending ? 'Sending…' : state.unsent ? 'Send to iPads' : 'Sent'}
+        {sending ? 'Sending…' : state.unsent ? (narrow ? 'Send' : 'Send to iPads') : 'Sent'}
       </button>
     </span>
   );
@@ -909,7 +944,7 @@ function NotesButton({ count }) {
   const open = useNotesOpen();
   return (
     <button data-tour="notes-toggle" aria-label="Notes" onClick={() => notesOpen.set(!notesOpen.value)} title={open ? 'Hide notes' : 'Show notes, and take notes during a run'}
-      style={{ height: '28px', padding: '0 8px', background: open ? 'rgba(10,132,255,0.22)' : 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: open ? '#409CFF' : '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+      style={{ flexShrink: 0, height: '28px', padding: '0 8px', background: open ? 'rgba(10,132,255,0.22)' : 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: open ? '#409CFF' : '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
       {/* A page with a pen: the Notes sidebar */}
       <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M12.5 2.5H5a1.5 1.5 0 0 0-1.5 1.5v12A1.5 1.5 0 0 0 5 17.5h9a1.5 1.5 0 0 0 1.5-1.5v-3" />
@@ -1718,7 +1753,6 @@ const groupedCues = () => {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#1E1E1E' }}>
     <AppHeader title="Cue List" onBack={() => navigate('show', show)} backLabel={show.title}>
         <div style={{ flex: 1 }} />
-         <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)' }}>Jump to</span>
         <select value={jumpSceneId} onChange={e => {
           const sceneId = e.target.value ? parseInt(e.target.value) : null;
           setSelectedSceneId(sceneId);
@@ -1734,15 +1768,21 @@ const groupedCues = () => {
             }
           }
         }}
-          style={{ height: '28px', maxWidth: '260px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', padding: '0 8px', fontSize: '13px', outline: 'none' }}>
-          <option value="">Jump to scene...</option>
+          style={{ height: '28px', flex: '0 4 240px', minWidth: '110px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', padding: '0 8px', fontSize: '13px', outline: 'none' }}>
+          <option value="">Jump to scene…</option>
           {(data?.scenes || []).map(s => <option key={s.id} value={s.id}>{s.label}{s.song ? ' · ' + s.song : ''}</option>)}
         </select>
-        <button onClick={renumberTracks} title="Renumber T· 1, 2, 3… top to bottom. Cue order doesn't change."
-          style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>Renumber T·</button>
-        <span data-tour="add-scene" style={{ display: 'inline-flex', gap: '12px' }}>
-        <button onClick={() => setShowSceneModal(true)} style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>+ Scene</button>
-        <button onClick={() => setShowCharModal(true)} style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>+ Character</button>
+        <RenumberButton onClick={renumberTracks} />
+        {/* Add to the show: a scene, a character. Icons in one small group */}
+        <span data-tour="add-scene" style={{ display: 'inline-flex', gap: '2px', padding: '2px', background: 'rgba(255,255,255,0.06)', borderRadius: '8px', flexShrink: 0 }}>
+          <HeaderIconButton title="Add Scene" onClick={() => setShowSceneModal(true)}>
+            {/* a scene: a stack of rows */}
+            <path d="M3 5.5h9M3 9.5h9M3 13.5h6" /><path d="M15.5 11v6M12.5 14h6" />
+          </HeaderIconButton>
+          <HeaderIconButton title="Add Character" onClick={() => setShowCharModal(true)}>
+            {/* a character: a person */}
+            <circle cx="8" cy="6" r="2.6" /><path d="M3 16c0-2.8 2.2-4.6 5-4.6s5 1.8 5 4.6" /><path d="M15.5 8v6M12.5 11h6" />
+          </HeaderIconButton>
         </span>
         <IpadDots showId={show.id} />
         <NotesButton count={openNoteCount} />

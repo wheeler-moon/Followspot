@@ -35,11 +35,14 @@ export default function AppHeader({ title, onBack, backLabel, children }) {
         <button onClick={onBack}
           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
           onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
-          style={{ display: 'flex', alignItems: 'center', gap: '4px', height: '28px', padding: '0 8px 0 4px', background: 'none', border: 'none', borderRadius: '6px', color: 'rgba(255,255,255,0.62)', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
-          <span style={{ fontSize: '17px', lineHeight: 1, marginTop: '-1px' }}>‹</span> {backLabel || 'Back'}
+          title={backLabel || 'Back'}
+          style={{ display: 'flex', alignItems: 'center', gap: '4px', height: '28px', padding: '0 8px 0 4px', background: 'none', border: 'none', borderRadius: '6px', color: 'rgba(255,255,255,0.62)', fontSize: '13px', fontWeight: '500', cursor: 'pointer', minWidth: 0, maxWidth: '200px', flexShrink: 1 }}>
+          <span style={{ fontSize: '17px', lineHeight: 1, marginTop: '-1px' }}>‹</span>
+          {/* One line; a long show name shortens with … in a narrow window */}
+          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{backLabel || 'Back'}</span>
         </button>
       )}
-      <span style={{ fontSize: '15px', fontWeight: '600', color: '#FFFFFF' }}>{title}</span>
+      <span style={{ fontSize: '15px', fontWeight: '600', color: '#FFFFFF', whiteSpace: 'nowrap', flexShrink: 0 }}>{title}</span>
       {children}
     </div>
   );

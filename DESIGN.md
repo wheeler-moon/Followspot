@@ -176,6 +176,9 @@ A feature that works but isn't settled yet gets a small orange pill at the top o
 ### Setup dialog (Page Setup)
 A large dialog like Pages' print window: the page preview on the left on its own grey (`#38383A`), every page in a scrolling column with a "Page 3 of 12" capsule floating at the bottom; settings on the right in a 340px column. Extra settings fold away under a disclosure row (chevron + semibold 13). Title (15 semibold) and what it's for (12, secondary) at the top; rows with right-aligned labels; Cancel and a blue Save (28px capsules) at the bottom right. Escape cancels, Return saves. Panel `#2A2A2A`, radius 16.
 
+### Top bar in a narrow window
+Everything in the top bar stays on one line. Words that are nice-to-have drop first (below ~1150px: "iPad", "Send to iPads" → "Send"; below ~900px: "Renumber T·" → "Renumber"), menus shrink before the show name does, and a long back label ends with … . Related add buttons sit together as icons in a small group (`rgba(255,255,255,0.06)`, radius 8), each with a tooltip.
+
 ### Corner notice
 A short status that matters on every screen (an update downloading or ready): bottom-right, 16px from the edges, `#2A2A2A`, 12px radius, soft shadow, 13px text, an optional small accent button and a × to hide it. A spinner while something is in progress, a green dot when it's done. Don't use it for anything that needs an answer; that's a Mac alert.
 
