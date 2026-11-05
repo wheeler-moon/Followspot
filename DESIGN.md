@@ -179,6 +179,9 @@ A large dialog like Pages' print window: the page preview on the left on its own
 ### Top bar in a narrow window
 Everything in the top bar stays on one line. Words that are nice-to-have drop first (below ~1150px: "iPad", "Send to iPads" → "Send"; below ~900px: "Renumber T·" → "Renumber"), menus shrink before the show name does, and a long back label ends with … . Related add buttons sit together as icons in a small group (`rgba(255,255,255,0.06)`, radius 8), each with a tooltip.
 
+### Act breaks in lists
+An act break is shown the way the cue list shows it: its name in orange (`#FF9F0A`), with "Act break" as quiet orange text (75%) beside it. No tinted pill or capital-letter badge.
+
 ### Corner notice
 A short status that matters on every screen (an update downloading or ready): bottom-right, 16px from the edges, `#2A2A2A`, 12px radius, soft shadow, 13px text, an optional small accent button and a × to hide it. A spinner while something is in progress, a green dot when it's done. Don't use it for anything that needs an answer; that's a Mac alert.
 

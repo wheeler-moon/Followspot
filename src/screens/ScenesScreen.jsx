@@ -196,8 +196,9 @@ export default function ScenesScreen({ show, navigate }) {
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
                                 <span style={{ fontSize: '11px', fontWeight: '500', color: 'rgba(255,255,255,0.35)', fontVariantNumeric: 'tabular-nums', minWidth: '18px', textAlign: 'right' }}>{index + 1}</span>
-                                <span style={{ fontSize: '13px', fontWeight: '600', color: '#FFFFFF' }}>{scene.label || scene.song}</span>
-                                {scene.act_break ? <span style={{ fontSize: '10px', padding: '1px 6px', background: 'rgba(255,159,10,0.16)', color: '#FF9F0A', borderRadius: '6px', fontWeight: '600', whiteSpace: 'nowrap' }}>ACT BREAK</span> : null}
+                                <span style={{ fontSize: '13px', fontWeight: '600', color: scene.act_break ? '#FF9F0A' : '#FFFFFF' }}>{scene.label || scene.song}</span>
+                                {/* An act break reads like it does in the cue list: its name in orange, with a quiet note */}
+                                {scene.act_break ? <span style={{ fontSize: '12px', color: 'rgba(255,159,10,0.75)', whiteSpace: 'nowrap' }}>Act break</span> : null}
                               </div>
                               {scene.label && scene.song && <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginTop: '2px', marginLeft: '26px' }}>{scene.song}</div>}
                             </div>
