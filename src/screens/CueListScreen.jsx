@@ -1943,6 +1943,11 @@ const groupedCues = () => {
                 key={cuePopup.spotCue?.id}
                 defaultValue={cuePopup.spotCue?.spot_note || ''}
                 id="popup-note-textarea"
+                // Ready to type as soon as the box opens (cursor after any note already there);
+                // Return saves the note and closes, Shift-Return starts a new line
+                autoFocus
+                onFocus={e => e.target.setSelectionRange(e.target.value.length, e.target.value.length)}
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); closeCuePopup(); } }}
                 onBlur={e => {
                   if (cuePopup.spotCue?.id) {
                     updateSpotCue(cuePopup.spotCue.id, 'spot_note', e.target.value);
