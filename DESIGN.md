@@ -191,6 +191,9 @@ Frames keep their numbers, and a removed one keeps its place wherever frames are
 ### Corner notice
 A short status that matters on every screen (an update downloading or ready): bottom-right, 16px from the edges, `#2A2A2A`, 12px radius, soft shadow, 13px text, an optional small accent button and a × to hide it. A spinner while something is in progress, a green dot when it's done. Don't use it for anything that needs an answer; that's a Mac alert.
 
+### Reading lists (Spot Notes)
+Text people read down, like notes per spot: a plain list, not a card per item. Rows divided by hairlines, the LQ bold on the left (it's the link to the cue), the text in 14pt primary, one quiet 11pt line of context under it. Row actions are icons, not words: a green check for done, always shown; a red trash can that appears on hover. Double-click a row to edit it in place.
+
 ### Bottom tray
 A list of finished items that stays out of the way (Spot Notes → Given): a 36px bar along the bottom (`#232323`, hairline above) with a title, count and Show ▴ / Hide ▾; open, it shows compact rows up to about a third of the window, scrolling on its own. Whether it's open is remembered.
 

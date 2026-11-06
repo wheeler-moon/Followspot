@@ -37,6 +37,7 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 
 ### Next (0.5.1)
 - [ ] **Later today (Nov 5):**
+  - Cue list: Control-G jumps to a cue number (type the LQ, go to that cue)
   - Custom Actions: rethink how the menu looks. Deleting an action asks what to put in the cues that use it (pick an existing action), so no cue is left with no action
   - Custom Actions: an action with no image shows an empty spot, not the purple circle
   - A show opened for the first time after import: the cue list starts at the very top

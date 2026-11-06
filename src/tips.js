@@ -82,6 +82,6 @@ export const TIPS = {
   ],
   spotNotes: [
     { id: 'notes-about', target: 'spot-notes', title: 'Notes for operators',
-      body: 'Notes for each operator. ✓ Given moves a note to the tray at the bottom.' },
+      body: 'Notes for each operator. The green ✓ moves a note to Given at the bottom.' },
   ],
 };

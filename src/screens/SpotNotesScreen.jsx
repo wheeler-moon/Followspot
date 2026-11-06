@@ -17,6 +17,24 @@ const C = {
 const linkButton = (color) => ({ background: 'transparent', border: 'none', borderRadius: '6px', color, padding: '3px 6px', fontSize: '12px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' });
 const TRAY_KEY = 'spotplot_given_tray_open';
 
+// Small line icons for the note rows (SF Symbols style)
+const CheckIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.5" /></svg>
+);
+const TrashIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2.5 4h11M6 4V2.5h4V4M4 4l.7 9.5h6.6L12 4M6.6 6.5v4.5M9.4 6.5v4.5" /></svg>
+);
+const iconButton = (color) => ({ width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', borderRadius: '6px', color, cursor: 'pointer', padding: 0, flexShrink: 0 });
+// Delete shows when the pointer is over a note; the check is always there. The LQ is the Go to Cue link.
+const ROW_CSS = `
+.note-row .note-more { opacity: 0; transition: opacity 0.1s; }
+.note-row:hover .note-more, .note-row:focus-within .note-more { opacity: 1; }
+.note-row:hover { background: rgba(255,255,255,0.03); }
+.note-icon:hover { background: rgba(255,255,255,0.08) !important; }
+.note-lq { color: #FFFFFF; }
+.note-lq:hover { color: #409CFF; }
+`;
+
 export default function SpotNotesScreen({ show, navigate }) {
   const [spots, setSpots] = useState([]);
   const [cues, setCues] = useState([]);
@@ -89,7 +107,7 @@ export default function SpotNotesScreen({ show, navigate }) {
       setSpotCues(prev => prev.map(sc => sc.id === n.sc.id ? { ...sc, spot_note: text } : sc));
     }
   };
-  const deleteNote = (n) => setText(n, '');
+  const deleteNote = (n) => { if (window.confirm('Delete this note?')) setText(n, ''); };
   const saveEdit = (n) => { setText(n, editText); setEditingId(null); };
   const giveNote = (n) => {
     ipcRenderer.sendSync('db-give-note', n.allSpots ? { cueId: n.cue.id } : { spotCueId: n.sc.id });
@@ -123,13 +141,14 @@ export default function SpotNotesScreen({ show, navigate }) {
         </span>
       </AppHeader>
 
+      <style>{ROW_CSS}</style>
       <div style={{ flex: 1, overflowY: 'auto', padding: '24px', minHeight: 0 }}>
         {toGive === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px', color: 'rgba(255,255,255,0.28)', fontSize: '14px' }}>
             {givenList.length ? 'Every note has been given.' : 'No notes yet. Double-click any cue to add a note, or use Notes in the cue list.'}
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`, gap: '16px', alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`, gap: '28px', alignItems: 'start' }}>
             {columns.map(col => (
               <div key={col.key} style={{ minWidth: 0 }}>
                 <div style={{ fontSize: '13px', fontWeight: '700', color: col.key === 'all' ? C.yellow : C.label1, marginBottom: '12px', paddingBottom: '8px', borderBottom: `1px solid ${C.separator}` }}>
@@ -138,59 +157,47 @@ export default function SpotNotesScreen({ show, navigate }) {
                 {col.notes.length === 0 ? (
                   <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.28)', fontStyle: 'italic' }}>Nothing to give</div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {col.notes.map(n => {
+                  <div>
+                    {col.notes.map((n, i) => {
                       const { sc, cue } = n;
                       const scene = sceneMap[cue.scene_id];
                       const char = sc && characterLabel(sc, charMap);
                       const action = sc?.action && sc.action !== 'Tracked' ? displayAction(sc.action, actionNames) : '';
                       const isEditing = editingId === n.id;
+                      const context = [sceneLine(scene), [action, char].filter(Boolean).join(' ')].filter(Boolean).join(' · ');
                       return (
-                        <div key={n.id} title={isEditing ? undefined : 'Double-click to edit'}
+                        // One line per note, like a list of cue notes: LQ on the left, the note, then a quiet line of context
+                        <div key={n.id} className="note-row" title={isEditing ? undefined : 'Double-click to edit'}
                           onDoubleClick={e => { if (!isEditing && !e.target.closest('button')) { setEditingId(n.id); setEditText(n.text); } }}
-                          style={{ background: C.card, border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '12px 14px' }}>
-                          {/* LQ, then the scene, what the spot is doing and the note; the buttons along the bottom */}
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: '16px', fontWeight: '700', color: C.label1, fontVariantNumeric: 'tabular-nums' }}>{cueLabel(cue)}</span>
-                            <span style={{ fontSize: '11px', color: C.label3, fontVariantNumeric: 'tabular-nums' }}>T·{cue.track_number}{cue.page ? ` · pg ${cue.page}` : ''}</span>
+                          style={{ display: 'flex', gap: '10px', padding: '9px 6px', margin: '0 -6px', borderTop: i > 0 ? `1px solid ${C.separator}` : 'none', borderRadius: '4px' }}>
+                          <div style={{ width: '58px', flexShrink: 0 }}>
+                            <button className="note-lq" onClick={() => goToCue(n)} title="Go to Cue"
+                              style={{ display: 'block', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', fontSize: '14px', fontWeight: '700', lineHeight: '20px', fontVariantNumeric: 'tabular-nums' }}>{cueLabel(cue)}</button>
+                            <div style={{ fontSize: '11px', color: C.label3, lineHeight: '14px', fontVariantNumeric: 'tabular-nums' }}>T·{cue.track_number}{cue.page ? ` pg ${cue.page}` : ''}</div>
                           </div>
-                          {scene && (
-                            <div style={{ fontSize: '10px', fontWeight: '600', color: C.label3, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '6px', lineHeight: '14px' }}>
-                              {sceneLine(scene)}
-                            </div>
-                          )}
-                          {(action || char) && (
-                            <div style={{ fontSize: '12px', color: C.label2, marginTop: '3px', lineHeight: '16px' }}>
-                              {action}{action && char ? ' · ' : ''}{char && <span style={{ fontWeight: '600', color: 'rgba(255,255,255,0.78)' }}>{char}</span>}
-                            </div>
-                          )}
-                          {isEditing ? (
-                            <div style={{ marginTop: '8px' }}>
-                              <textarea autoFocus value={editText} onChange={e => setEditText(e.target.value)}
-                                onFocus={e => e.target.setSelectionRange(e.target.value.length, e.target.value.length)}
-                                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveEdit(n); } if (e.key === 'Escape') setEditingId(null); }}
-                                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid #0A84FF', borderRadius: '6px', color: '#FFFFFF', padding: '8px 10px', fontSize: '13px', outline: 'none', resize: 'vertical', minHeight: '60px', boxSizing: 'border-box', fontFamily: 'inherit' }} />
-                              <div style={{ display: 'flex', gap: '6px', marginTop: '6px', justifyContent: 'flex-end' }}>
-                                <button onClick={() => setEditingId(null)}
-                                  style={{ background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', padding: '4px 12px', fontSize: '12px', cursor: 'pointer' }}>Cancel</button>
-                                <button onClick={() => saveEdit(n)}
-                                  style={{ background: '#0A84FF', border: 'none', borderRadius: '6px', color: '#FFFFFF', padding: '4px 12px', fontSize: '12px', cursor: 'pointer' }}>Save</button>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            {isEditing ? (
+                              <div>
+                                <textarea autoFocus value={editText} onChange={e => setEditText(e.target.value)}
+                                  onFocus={e => e.target.setSelectionRange(e.target.value.length, e.target.value.length)}
+                                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveEdit(n); } if (e.key === 'Escape') setEditingId(null); }}
+                                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid #0A84FF', borderRadius: '6px', color: '#FFFFFF', padding: '6px 8px', fontSize: '14px', lineHeight: '20px', outline: 'none', resize: 'vertical', minHeight: '54px', boxSizing: 'border-box', fontFamily: 'inherit' }} />
+                                <div style={{ display: 'flex', gap: '6px', marginTop: '6px', justifyContent: 'flex-end' }}>
+                                  <button onClick={() => setEditingId(null)}
+                                    style={{ background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', padding: '4px 12px', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
+                                  <button onClick={() => saveEdit(n)}
+                                    style={{ background: '#0A84FF', border: 'none', borderRadius: '6px', color: '#FFFFFF', padding: '4px 12px', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }}>Save</button>
+                                </div>
                               </div>
-                            </div>
-                          ) : (
-                            <div style={{ fontSize: '14px', color: C.label1, lineHeight: '20px', whiteSpace: 'pre-wrap', wordBreak: 'break-word', marginTop: '8px' }}>
-                              {n.text}
-                            </div>
-                          )}
+                            ) : (
+                              <div style={{ fontSize: '14px', color: C.label1, lineHeight: '20px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{n.text}</div>
+                            )}
+                            {context && <div style={{ fontSize: '11px', color: C.label3, lineHeight: '15px', marginTop: '2px' }}>{context}</div>}
+                          </div>
                           {!isEditing && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '2px', marginTop: '10px', paddingTop: '8px', borderTop: `1px solid ${C.separator}`, marginLeft: '-6px' }}>
-                              <button onClick={() => goToCue(n)} title="Show this cue in the cue list" style={linkButton(C.accentText)}>Go to Cue ›</button>
-                              <span style={{ flex: 1 }} />
-                              <button onClick={() => deleteNote(n)} style={linkButton(C.red)}>Delete</button>
-                              <button onClick={() => giveNote(n)} title="Mark as given: moves it to Given at the bottom"
-                                style={{ background: 'rgba(48,209,88,0.16)', border: 'none', borderRadius: '6px', color: C.green, padding: '3px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', marginLeft: '4px' }}>
-                                ✓ Given
-                              </button>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flexShrink: 0, marginRight: '-4px', marginTop: '-3px' }}>
+                              <button className="note-icon" onClick={() => giveNote(n)} title="Given: moves it to Given at the bottom" style={iconButton(C.green)}><CheckIcon /></button>
+                              <button className="note-more note-icon" onClick={() => deleteNote(n)} title="Delete" style={iconButton(C.red)}><TrashIcon /></button>
                             </div>
                           )}
                         </div>
@@ -219,13 +226,13 @@ export default function SpotNotesScreen({ show, navigate }) {
                 const cue = cueById.get(g.cue_id);
                 const spot = g.spot_id === null ? null : spotById.get(g.spot_id);
                 return (
-                  <div key={g.id} style={{ display: 'flex', alignItems: 'baseline', gap: '12px', padding: '7px 0', borderTop: `1px solid ${C.separator}` }}>
+                  <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '7px 0', borderTop: `1px solid ${C.separator}` }}>
                     <span style={{ fontSize: '12px', fontWeight: '700', color: C.label2, width: '64px', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{cueLabel(cue)}</span>
                     <span style={{ fontSize: '11px', fontWeight: '600', color: g.spot_id === null ? C.yellow : C.label3, width: '72px', flexShrink: 0 }}>{g.spot_id === null ? 'All Spots' : `Spot ${spot?.spot_number ?? '?'}`}</span>
                     <span style={{ flex: 1, minWidth: 0, fontSize: '13px', color: C.label2, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{g.note}</span>
                     <span style={{ fontSize: '11px', color: C.label3, flexShrink: 0 }}>{givenDate(g.given_at)}</span>
                     <button onClick={() => restoreGiven(g)} title="Put this note back on its cue" style={linkButton(C.accentText)}>Restore</button>
-                    <button onClick={() => deleteGiven(g)} style={linkButton(C.red)}>Delete</button>
+                    <button className="note-icon" onClick={() => deleteGiven(g)} title="Delete" style={iconButton(C.red)}><TrashIcon /></button>
                   </div>
                 );
               })}
