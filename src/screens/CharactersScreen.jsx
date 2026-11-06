@@ -93,6 +93,7 @@ export default function CharactersScreen({ show, navigate }) {
   };
 
   const saveEdit = () => {
+    if (!editName.trim()) return;
     const was = characters.find(c => c.id === editingId);
     const after = { characterId: editingId, name: editName, actorName: editActor, costumeNotes: editNotes, photoPath: editPhoto };
     ipcRenderer.sendSync('db-update-character', after);
@@ -112,11 +113,6 @@ export default function CharactersScreen({ show, navigate }) {
       });
     }
     load();
-  };
-
-  const choosePhoto = () => {
-    const result = ipcRenderer.sendSync('dialog-open-image');
-    if (result) setEditPhoto(result);
   };
 
   const handleDragStart = (e, index) => {
@@ -144,10 +140,10 @@ export default function CharactersScreen({ show, navigate }) {
     load();
   };
 
-  const inputStyle = {
-    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px',
-    color: '#FFFFFF', padding: '7px 10px', fontSize: '13px', outline: 'none', width: '100%',
-  };
+  const addForm = { name: newName, actor: newActor, notes: newNotes, photo: newPhoto };
+  const setAddForm = (f) => { setNewName(f.name); setNewActor(f.actor); setNewNotes(f.notes); setNewPhoto(f.photo); };
+  const editForm = { name: editName, actor: editActor, notes: editNotes, photo: editPhoto };
+  const setEditForm = (f) => { setEditName(f.name); setEditActor(f.actor); setEditNotes(f.notes); setEditPhoto(f.photo); };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#1E1E1E' }}>
@@ -158,63 +154,14 @@ export default function CharactersScreen({ show, navigate }) {
       <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
         <div style={{ maxWidth: '700px', margin: '0 auto' }}>
 
-          <div data-tour="add-character" style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
-            <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Add character</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
-              <div>
-                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Character name *</div>
-                  <input ref={nameInputRef} style={inputStyle} value={newName} onChange={e => setNewName(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && addCharacter()} placeholder="Character name" />
-              </div>
-              <div>
-                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Performer</div>
-                <input style={inputStyle} value={newActor} onChange={e => setNewActor(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && addCharacter()} placeholder="Performer's name" />
-              </div>
-            </div>
-<div style={{ marginBottom: '12px' }}>
-              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Costume notes</div>
-              <input style={inputStyle} value={newNotes} onChange={e => setNewNotes(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && addCharacter()}
-                placeholder="e.g. red jacket, black hat" />
-            </div>
-            <div style={{ marginBottom: '14px' }}>
-              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '6px' }}>Photo (optional)</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div
-                  onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = '#0A84FF'; }}
-                  onDragLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
-                  onDrop={e => {
-                    e.preventDefault();
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
-                    const droppedPath = getDroppedImagePath(e);
-                    if (droppedPath) setNewPhoto(droppedPath);
-                  }}
-                  style={{ width: '70px', height: '70px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', border: '2px dashed rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, transition: 'border-color 0.15s', cursor: 'pointer' }}
-                  onClick={() => { const result = ipcRenderer.sendSync('dialog-open-image'); if (result) setNewPhoto(result); }}>
-                  {newPhoto ? (
-                    <img src={getImageSrc(newPhoto)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                    <div style={{ textAlign: 'center', padding: '6px' }}>
-                      <div style={{ fontSize: '18px', color: 'rgba(255,255,255,0.28)' }}>+</div>
-                      <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.28)', marginTop: '2px' }}>Drop or click</div>
-                    </div>
-                  )}
-                </div>
-                {newPhoto && (
-                  <button onClick={() => setNewPhoto('')} style={{ padding: '5px 10px', background: 'rgba(255,69,58,0.14)', border: 'none', borderRadius: '6px', color: '#FF453A', fontSize: '11px', cursor: 'pointer' }}>Remove</button>
-                )}
-              </div>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button onClick={addCharacter} style={{ padding: '7px 18px', background: '#0A84FF', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
-                Add Character
-              </button>
-            </div>
+          <div data-tour="add-character" style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '14px 16px', marginBottom: '24px' }}>
+            <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Add character</div>
+            <CharacterForm form={addForm} onChange={setAddForm} nameRef={nameInputRef}
+              onSubmit={addCharacter} submitLabel="Add Character" />
           </div>
 
           <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Character list — drag to reorder
+            Character list — drag to reorder, double-click to edit
           </div>
 
           {characters.length === 0 ? (
@@ -226,7 +173,9 @@ export default function CharactersScreen({ show, navigate }) {
             <div style={{ display: 'flex', flexDirection: 'column', background: '#2A2A2A', borderRadius: '10px', overflow: 'hidden' }}>
               {characters.map((char, index) => (
                 <div key={char.id}
-                  draggable
+                  draggable={editingId !== char.id}
+                  onDoubleClick={e => { if (editingId !== char.id && !e.target.closest('label, button')) startEdit(char); }}
+                  title={editingId === char.id ? undefined : 'Double-click to edit'}
                   onDragStart={e => handleDragStart(e, index)}
                   onDragOver={e => handleDragOver(e, index)}
                   onDrop={e => handleDrop(e, index)}
@@ -236,60 +185,11 @@ export default function CharactersScreen({ show, navigate }) {
                     borderTop: index > 0 ? '1px solid rgba(255,255,255,0.07)' : 'none',
                     ...dropLineStyle(dragOverId, index, dragItem.current),
                     padding: '10px 14px',
-                    cursor: 'grab', transition: 'background 0.1s',
+                    cursor: editingId === char.id ? 'default' : 'grab', transition: 'background 0.1s',
                   }}>
                   {editingId === char.id ? (
-                    <div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
-                        <div>
-                          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Character name</div>
-                          <input style={inputStyle} value={editName} onChange={e => setEditName(e.target.value)} />
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Performer</div>
-                          <input style={inputStyle} value={editActor} onChange={e => setEditActor(e.target.value)} />
-                        </div>
-                      </div>
-                      <div style={{ marginBottom: '10px' }}>
-                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Costume notes</div>
-                        <input style={inputStyle} value={editNotes} onChange={e => setEditNotes(e.target.value)} placeholder="e.g. red jacket, black hat" />
-                      </div>
-                      <div style={{ marginBottom: '14px' }}>
-                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '6px' }}>Photo (optional)</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div
-                    onDragEnter={e => { e.preventDefault(); e.stopPropagation(); e.currentTarget.style.borderColor = '#0A84FF'; }}
-                    onDragOver={e => { e.preventDefault(); e.stopPropagation(); e.currentTarget.style.borderColor = '#0A84FF'; }}
-                    onDragLeave={e => { e.preventDefault(); e.stopPropagation(); e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
-                    onDrop={e => { 
-                      e.preventDefault(); 
-                      e.stopPropagation();
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
-                      const droppedPath = getDroppedImagePath(e);
-                      if (droppedPath) setEditPhoto(droppedPath);
-                    }}
-                    style={{ width: '60px', height: '60px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', border: '2px dashed rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, cursor: 'pointer' }}
-                    onClick={() => { const result = ipcRenderer.sendSync('dialog-open-image'); if (result) setEditPhoto(result); }}>
-                    {editPhoto ? (
-                      <img src={getImageSrc(editPhoto)}style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : (
-                      <div style={{ textAlign: 'center', padding: '4px' }}>
-                        <div style={{ fontSize: '16px', color: 'rgba(255,255,255,0.28)' }}>+</div>
-                        <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.28)' }}>Drop or click</div>
-                      </div>
-                    )}
-                  </div>
-                          <button onClick={choosePhoto} style={{ padding: '6px 12px', background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '6px', color: 'rgba(255,255,255,0.62)', fontSize: '12px', cursor: 'pointer' }}>
-                            Choose photo...
-                          </button>
-                          {editPhoto && <button onClick={() => setEditPhoto('')} style={{ padding: '6px 12px', background: 'rgba(255,69,58,0.14)', border: 'none', borderRadius: '6px', color: '#FF453A', fontSize: '12px', cursor: 'pointer' }}>Remove</button>}
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                        <button onClick={() => setEditingId(null)} style={{ padding: '6px 14px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '12px', cursor: 'pointer' }}>Cancel</button>
-                        <button onClick={saveEdit} style={{ padding: '6px 14px', background: '#0A84FF', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '12px', cursor: 'pointer' }}>Save</button>
-                      </div>
-                    </div>
+                    <CharacterForm form={editForm} onChange={setEditForm} autoFocus
+                      onSubmit={saveEdit} submitLabel="Save" onCancel={() => setEditingId(null)} />
                   ) : (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <div style={{ color: 'rgba(255,255,255,0.28)', fontSize: '18px', cursor: 'grab', flexShrink: 0 }}>⠿</div>
@@ -314,8 +214,6 @@ export default function CharactersScreen({ show, navigate }) {
                             style={{ width: '15px', height: '15px', accentColor: '#0A84FF', cursor: 'pointer', margin: 0 }} />
                           Print
                         </label>
-                        <button onClick={() => startEdit(char)}
-                          style={{ background: 'transparent', border: 'none', borderRadius: '6px', color: '#409CFF', padding: '4px 8px', cursor: 'pointer', fontSize: '12px', fontWeight: '500' }}>Edit</button>
                         <button onClick={() => deleteCharacter(char.id)}
                           style={{ background: 'transparent', border: 'none', borderRadius: '6px', color: '#FF453A', padding: '4px 8px', cursor: 'pointer', fontSize: '12px', fontWeight: '500' }}>Delete</button>
                       </div>
@@ -328,6 +226,63 @@ export default function CharactersScreen({ show, navigate }) {
         </div>
       </div>
       <Tips steps={TIPS.characters} />
+    </div>
+  );
+}
+
+const inputStyle = {
+  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px',
+  color: '#FFFFFF', padding: '0 10px', height: '28px', fontSize: '13px', outline: 'none', width: '100%', boxSizing: 'border-box', fontFamily: 'inherit',
+};
+
+// One compact form for adding and editing: photo on the left, name / performer / costume notes beside it.
+// Return saves, Escape cancels (when editing).
+function CharacterForm({ form, onChange, onSubmit, submitLabel, onCancel, nameRef, autoFocus }) {
+  const set = (k) => (e) => onChange({ ...form, [k]: e.target.value });
+  const keys = (e) => { if (e.key === 'Enter') onSubmit(); if (e.key === 'Escape' && onCancel) onCancel(); };
+  const pick = () => { const result = ipcRenderer.sendSync('dialog-open-image'); if (result) onChange({ ...form, photo: result }); };
+  const idle = 'rgba(255,255,255,0.1)';
+  return (
+    <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch' }} onDoubleClick={e => e.stopPropagation()}>
+      <div title={form.photo ? 'Click to change the photo' : 'Photo: drop an image or click'}
+        onDragEnter={e => { e.preventDefault(); e.stopPropagation(); e.currentTarget.style.borderColor = '#0A84FF'; }}
+        onDragOver={e => { e.preventDefault(); e.stopPropagation(); e.currentTarget.style.borderColor = '#0A84FF'; }}
+        onDragLeave={e => { e.stopPropagation(); e.currentTarget.style.borderColor = idle; }}
+        onDrop={e => {
+          e.preventDefault(); e.stopPropagation();
+          e.currentTarget.style.borderColor = idle;
+          const dropped = getDroppedImagePath(e);
+          if (dropped) onChange({ ...form, photo: dropped });
+        }}
+        onClick={pick}
+        style={{ position: 'relative', width: '64px', height: '64px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', border: `2px dashed ${idle}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer', transition: 'border-color 0.15s', boxSizing: 'border-box' }}>
+        {form.photo ? (
+          <>
+            <img src={getImageSrc(form.photo)} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px' }} />
+            <div title="Remove photo" onClick={e => { e.stopPropagation(); onChange({ ...form, photo: '' }); }}
+              style={{ position: 'absolute', top: '-7px', right: '-7px', width: '18px', height: '18px', borderRadius: '9px', background: '#3A3A3A', border: '1px solid rgba(255,255,255,0.2)', color: '#FFFFFF', fontSize: '12px', lineHeight: '16px', textAlign: 'center' }}>×</div>
+          </>
+        ) : (
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '16px', color: 'rgba(255,255,255,0.28)', lineHeight: '16px' }}>+</div>
+            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.28)', marginTop: '2px' }}>Photo</div>
+          </div>
+        )}
+      </div>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', minWidth: 0 }}>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <input ref={nameRef} autoFocus={autoFocus} style={inputStyle} value={form.name} onChange={set('name')} onKeyDown={keys} placeholder="Character name" />
+          <input style={inputStyle} value={form.actor} onChange={set('actor')} onKeyDown={keys} placeholder="Performer" />
+        </div>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <input style={inputStyle} value={form.notes} onChange={set('notes')} onKeyDown={keys} placeholder="Costume notes" />
+          {onCancel && (
+            <button onClick={onCancel} style={{ height: '28px', padding: '0 12px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit' }}>Cancel</button>
+          )}
+          <button onClick={onSubmit} disabled={!form.name.trim()}
+            style={{ height: '28px', padding: '0 14px', background: '#0A84FF', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: form.name.trim() ? 'pointer' : 'default', opacity: form.name.trim() ? 1 : 0.4, flexShrink: 0, fontFamily: 'inherit' }}>{submitLabel}</button>
+        </div>
+      </div>
     </div>
   );
 }

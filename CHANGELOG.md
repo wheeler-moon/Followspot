@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- Characters screen: double-click a character to edit it (no more Edit button). The Add character box is smaller
 - Swap spots: the dialog fits long operator names and sits in the middle of the window, and spot notes you've already given (the Given tray) swap with their cues too. A new **Also swap operator, location, fixture and gels** box (off to start) moves everything
 - A removed color frame keeps its place everywhere as an empty slot (Frame 4 removed leaves a gap between 3 and 5): in Spot Settings (with **+ Add back**), the cue list, the dashboard, every printed sheet and the iPad
 - Clicking a spot on the show dashboard opens Show Settings right at that spot

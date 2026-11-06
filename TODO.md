@@ -42,7 +42,6 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
   - Console Connection page: replace the blue pill/oval ("Coming soon") with plain text, per DESIGN.md
   - A show opened for the first time after import: the cue list starts at the very top
   - Notes sidebar: find a cue by its number even when the LQ has extra text ("14*", "In 14"): typing 14 finds it (and 14* or "In 14" still work)
-  - Characters screen: double-click a character to edit everything about them; no Edit button. The Add character box at the top is shorter (less empty space at the bottom)
   - Spot Notes screen: double-click a note to edit it; no Edit button
   - Show Settings → Spot Settings: Swap spots moves into the page's header (still on the right), so the spot cards start at the top
   - Show Settings: rename "Cue Settings" to "Cue Visibility"?
