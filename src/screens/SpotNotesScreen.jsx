@@ -30,7 +30,7 @@ const iconButton = (color) => ({ width: '26px', height: '26px', display: 'flex',
 const ROW_CSS = `
 .note-row .note-more { opacity: 0; transition: opacity 0.1s; }
 .note-row:hover .note-more, .note-row:focus-within .note-more { opacity: 1; }
-.note-row:hover { background: rgba(255,255,255,0.03); }
+.note-row:hover { background: rgba(255,255,255,0.04); }
 .note-icon:hover { background: rgba(255,255,255,0.08) !important; }
 .note-lq { color: #FFFFFF; }
 .note-lq:hover { color: #409CFF; }
@@ -147,20 +147,20 @@ export default function SpotNotesScreen({ show, navigate }) {
       </AppHeader>
 
       <style>{ROW_CSS}</style>
-      <div style={{ flex: 1, overflowY: 'auto', padding: '24px', minHeight: 0 }}>
+      <div style={{ flex: 1, overflow: 'auto', padding: '20px', minHeight: 0 }}>
         {toGive === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px', color: 'rgba(255,255,255,0.28)', fontSize: '14px' }}>
             {givenList.length ? 'Every note has been given.' : 'No notes yet. Double-click any cue to add a note, or use Notes in the cue list.'}
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '28px 32px', alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${columns.length}, minmax(230px, 1fr))`, gap: '12px', alignItems: 'start' }}>
             {columns.map(col => (
-              <div key={col.key} style={{ minWidth: 0 }}>
-                <div style={{ fontSize: '13px', fontWeight: '700', color: col.key === 'all' ? C.yellow : C.label1, marginBottom: '12px', paddingBottom: '8px', borderBottom: `1px solid ${C.separator}` }}>
+              <div key={col.key} style={{ minWidth: 0, background: C.card, borderRadius: '10px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ fontSize: '14px', fontWeight: '700', color: col.key === 'all' ? C.yellow : C.label1, padding: '11px 14px', background: '#323232', borderBottom: '1px solid rgba(0,0,0,0.35)' }}>
                   {col.title}
                 </div>
                 {col.notes.length === 0 ? (
-                  <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.28)', fontStyle: 'italic' }}>Nothing to give</div>
+                  <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.28)', fontStyle: 'italic', padding: '12px 14px' }}>Nothing to give</div>
                 ) : (
                   <div>
                     {col.notes.map((n, i) => {
@@ -174,51 +174,48 @@ export default function SpotNotesScreen({ show, navigate }) {
                       return (
                         <React.Fragment key={n.id}>
                         {newScene && scene && (
-                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', margin: i === 0 ? '0 0 4px' : '18px 0 4px', minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', padding: '5px 14px', background: '#242424', borderTop: i === 0 ? 'none' : '1px solid rgba(0,0,0,0.35)', borderBottom: '1px solid rgba(0,0,0,0.25)', minWidth: 0 }}>
                             {scene.label && <span style={{ fontSize: '11px', fontWeight: '700', color: C.label2, textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0 }}>{scene.label}</span>}
                             {scene.song && <span style={{ fontSize: '12px', fontStyle: 'italic', color: C.label3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{scene.song}</span>}
                           </div>
                         )}
-                        {/* One line per note: LQ on the left, the note, then what the spot is doing */}
+                        {/* A note: the cue and what the spot is doing on top, the note under it at full width */}
                         <div className="note-row" title={isEditing ? undefined : 'Double-click to edit'}
                           onDoubleClick={e => { if (!isEditing && !e.target.closest('button')) { setEditingId(n.id); setEditText(n.text); } }}
-                          style={{ display: 'flex', gap: '10px', padding: '11px 6px', margin: '0 -6px', borderTop: newScene ? 'none' : `1px solid ${C.separator}`, borderRadius: '4px' }}>
-                          <div style={{ width: '58px', flexShrink: 0 }}>
-                            <button className="note-lq" onClick={() => goToCue(n)} title="Go to Cue"
-                              style={{ display: 'block', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', fontSize: '14px', fontWeight: '700', lineHeight: '17px', fontVariantNumeric: 'tabular-nums' }}>{cueLabel(cue)}</button>
-                            <div style={{ fontSize: '11px', color: C.label3, lineHeight: '14px', marginTop: '2px', fontVariantNumeric: 'tabular-nums' }}>T·{cue.track_number}{cue.page ? ` pg ${cue.page}` : ''}</div>
-                          </div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            {isEditing ? (
-                              <div>
-                                <textarea autoFocus value={editText} onChange={e => setEditText(e.target.value)}
-                                  onFocus={e => e.target.setSelectionRange(e.target.value.length, e.target.value.length)}
-                                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveEdit(n); } if (e.key === 'Escape') setEditingId(null); }}
-                                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid #0A84FF', borderRadius: '6px', color: '#FFFFFF', padding: '6px 8px', fontSize: '14px', lineHeight: '20px', outline: 'none', resize: 'vertical', minHeight: '54px', boxSizing: 'border-box', fontFamily: 'inherit' }} />
-                                <div style={{ display: 'flex', gap: '6px', marginTop: '6px', justifyContent: 'flex-end' }}>
-                                  <button onClick={() => setEditingId(null)}
-                                    style={{ background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', padding: '4px 12px', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
-                                  <button onClick={() => saveEdit(n)}
-                                    style={{ background: '#0A84FF', border: 'none', borderRadius: '6px', color: '#FFFFFF', padding: '4px 12px', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }}>Save</button>
-                                </div>
-                              </div>
-                            ) : (
-                              <div style={{ fontSize: '14px', color: C.label1, lineHeight: '17px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{n.text}</div>
-                            )}
+                          style={{ padding: '9px 8px 11px 14px', borderTop: newScene ? 'none' : `1px solid ${C.separator}` }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, height: '24px' }}>
+                            <button className="note-lq" onClick={() => goToCue(n)} title={`Go to Cue (T·${cue.track_number}${cue.page ? `, page ${cue.page}` : ''})`}
+                              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: '14px', fontWeight: '700', lineHeight: '17px', fontVariantNumeric: 'tabular-nums', flexShrink: 0, whiteSpace: 'nowrap' }}>{cueLabel(cue)}</button>
                             {(action || char) && (
-                              // What the spot is doing: its action symbol, the action, then who
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '5px', fontSize: '12px', lineHeight: '15px', minWidth: 0 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', lineHeight: '15px', minWidth: 0, overflow: 'hidden' }}>
                                 {action && <CueActionIcon action={sc.action} customActions={customActions} size={14} />}
                                 {action && <span style={{ color: C.label2, whiteSpace: 'nowrap' }}>{action}</span>}
                                 {char && <span style={{ color: 'rgba(255,255,255,0.85)', fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{char}</span>}
                               </div>
                             )}
+                            <span style={{ flex: 1 }} />
+                            {!isEditing && (
+                              <>
+                                <button className="note-more note-icon" onClick={() => deleteNote(n)} title="Delete" style={iconButton(C.red)}><TrashIcon /></button>
+                                <button className="note-icon" onClick={() => giveNote(n)} title="Given: moves it to Given at the bottom" style={iconButton(C.green)}><CheckIcon /></button>
+                              </>
+                            )}
                           </div>
-                          {!isEditing && (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flexShrink: 0, marginRight: '-4px', marginTop: '-3px' }}>
-                              <button className="note-icon" onClick={() => giveNote(n)} title="Given: moves it to Given at the bottom" style={iconButton(C.green)}><CheckIcon /></button>
-                              <button className="note-more note-icon" onClick={() => deleteNote(n)} title="Delete" style={iconButton(C.red)}><TrashIcon /></button>
+                          {isEditing ? (
+                            <div style={{ marginTop: '4px', paddingRight: '6px' }}>
+                              <textarea autoFocus value={editText} onChange={e => setEditText(e.target.value)}
+                                onFocus={e => e.target.setSelectionRange(e.target.value.length, e.target.value.length)}
+                                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveEdit(n); } if (e.key === 'Escape') setEditingId(null); }}
+                                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid #0A84FF', borderRadius: '6px', color: '#FFFFFF', padding: '6px 8px', fontSize: '14px', lineHeight: '18px', outline: 'none', resize: 'vertical', minHeight: '54px', boxSizing: 'border-box', fontFamily: 'inherit' }} />
+                              <div style={{ display: 'flex', gap: '6px', marginTop: '6px', justifyContent: 'flex-end' }}>
+                                <button onClick={() => setEditingId(null)}
+                                  style={{ background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', padding: '4px 12px', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
+                                <button onClick={() => saveEdit(n)}
+                                  style={{ background: '#0A84FF', border: 'none', borderRadius: '6px', color: '#FFFFFF', padding: '4px 12px', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }}>Save</button>
+                              </div>
                             </div>
+                          ) : (
+                            <div style={{ fontSize: '14px', color: C.label1, lineHeight: '18px', whiteSpace: 'pre-wrap', wordBreak: 'break-word', marginTop: '3px', paddingRight: '6px' }}>{n.text}</div>
                           )}
                         </div>
                         </React.Fragment>
