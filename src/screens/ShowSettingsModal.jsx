@@ -56,8 +56,12 @@ export default function ShowSettingsModal({ show, onClose, onShowUpdate, initial
             <div style={{ fontSize: '16px', fontWeight: '700', color: '#FFFFFF' }}>
               {SECTIONS.find(s => s.id === activeSection)?.label}
             </div>
-            <button onClick={onClose}
-              style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.45)', fontSize: '22px', cursor: 'pointer', lineHeight: 1 }}>×</button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              {/* A panel can put its own buttons here (Spot Settings: Swap spots) */}
+              <div id="settings-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }} />
+              <button onClick={onClose}
+                style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.45)', fontSize: '22px', cursor: 'pointer', lineHeight: 1 }}>×</button>
+            </div>
           </div>
           <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
             {activeSection === 'show-info' && <ShowInfoPanel show={show} onShowUpdate={onShowUpdate} onClose={onClose} />}

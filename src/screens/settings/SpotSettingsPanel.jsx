@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import useEscape from '../../useEscape';
 import SwapSpotsDialog from '../../components/SwapSpotsDialog';
 import CopyColorsSelect from '../../components/CopyColorsSelect';
@@ -179,6 +180,8 @@ export default function SpotSettingsPanel({ show, focusSpotId = null }) {
   const [spots, setSpots] = useState([]);
   const [colorSlots, setColorSlots] = useState({});
   const [showSwap, setShowSwap] = useState(false);
+  const [headerSlot, setHeaderSlot] = useState(null);
+  useEffect(() => { setHeaderSlot(document.getElementById('settings-header-actions')); }, []);
 
   const load = () => {
     const s = ipcRenderer.sendSync('db-get-spots', show.id);
@@ -292,13 +295,11 @@ export default function SpotSettingsPanel({ show, focusSpotId = null }) {
 
   return (
     <div>
-      {spots.length >= 2 && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
-          <button data-tour="swap-spots" onClick={() => setShowSwap(true)} style={{ height: '28px', padding: '0 14px', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: '14px', color: '#FFFFFF', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
-            ⇄ Swap spots
-          </button>
-        </div>
-      )}
+      {/* Swap spots sits in the Show Settings header, so the spot cards start at the top */}
+      {spots.length >= 2 && headerSlot && createPortal(
+        <button data-tour="swap-spots" onClick={() => setShowSwap(true)} style={{ height: '24px', padding: '0 10px', background: 'rgba(255,255,255,0.10)', border: 'none', borderRadius: '6px', color: '#FFFFFF', fontSize: '12px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>
+          ⇄ Swap spots
+        </button>, headerSlot)}
       {showSwap && <SwapSpotsDialog spots={spots} onClose={() => setShowSwap(false)}
         onSwapped={(a, b, everything) => {
           // Swapping is its own undo: swapping the same two spots again puts everything back
