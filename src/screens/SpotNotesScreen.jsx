@@ -33,6 +33,10 @@ const ROW_CSS = `
 .note-row:hover { background: rgba(255,255,255,0.04); }
 .note-icon:hover { background: rgba(255,255,255,0.08) !important; }
 .note-lq { color: #FFFFFF; }
+.note-tip { position: absolute; left: -6px; bottom: calc(100% + 5px); z-index: 20; white-space: nowrap; pointer-events: none;
+  background: #3A3A3A; color: #FFFFFF; font-size: 11px; font-weight: 500; padding: 3px 7px; border-radius: 5px;
+  border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 2px 8px rgba(0,0,0,0.4); opacity: 0; transition: opacity 0.08s; }
+.note-lq-wrap:hover .note-tip { opacity: 1; }
 .note-lq:hover { color: #409CFF; }
 `;
 
@@ -185,8 +189,12 @@ export default function SpotNotesScreen({ show, navigate }) {
                           onDoubleClick={e => { if (!isEditing && !e.target.closest('button')) { setEditingId(n.id); setEditText(n.text); } }}
                           style={{ padding: '9px 8px 11px 14px', borderTop: newScene ? 'none' : `1px solid ${C.separator}` }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, height: '24px' }}>
-                            <button className="note-lq" onClick={() => goToCue(n)} title={`Go to Cue (T·${cue.track_number}${cue.page ? `, page ${cue.page}` : ''})`}
-                              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: '14px', fontWeight: '700', lineHeight: '17px', fontVariantNumeric: 'tabular-nums', flexShrink: 0, whiteSpace: 'nowrap' }}>{cueLabel(cue)}</button>
+                            <span className="note-lq-wrap" style={{ position: 'relative', flexShrink: 0 }}>
+                              <button className="note-lq" onClick={() => goToCue(n)}
+                                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: '14px', fontWeight: '700', lineHeight: '17px', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{cueLabel(cue)}</button>
+                              {/* Shows right away on hover (a normal tooltip waits about a second) */}
+                              <span className="note-tip">Go to Cue · T·{cue.track_number}{cue.page ? ` · pg ${cue.page}` : ''}</span>
+                            </span>
                             {(action || char) && (
                               <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', lineHeight: '15px', minWidth: 0, overflow: 'hidden' }}>
                                 {action && <CueActionIcon action={sc.action} customActions={customActions} size={14} />}
