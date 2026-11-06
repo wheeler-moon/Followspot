@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { dropSlot, moveTo, moveItem, dropLineStyle } from '../../dropLine';
-import { irisSizeList, DEFAULT_IRIS_SIZES } from '../../irisSizes';
+import { irisSizeList, DEFAULT_IRIS_SIZES, DEFAULT_IRIS_PICS, irisPic } from '../../irisSizes';
+import { IrisFigure, IrisPictureEditor } from '../../components/IrisFigure';
 const { ipcRenderer } = window.require('electron');
 
 // The show's iris sizes, in the order they appear on the cue list. Every size can be renamed and
@@ -12,6 +13,7 @@ export default function IrisSizesPanel({ show }) {
   const [newLabel, setNewLabel] = useState('');
   const [newValue, setNewValue] = useState('');
   const [message, setMessage] = useState('');
+  const [picFor, setPicFor] = useState(null);   // the row whose picture window is open
 
   const save = (list) => {
     ipcRenderer.sendSync('db-update-show', { showId: show.id, iris_sizes: JSON.stringify(list) });
@@ -47,6 +49,12 @@ export default function IrisSizesPanel({ show }) {
     setDragFrom(null); setDragOver(null); setDragArmed(null);
   };
 
+  // A size's picture: null goes back to the built-in default (or no picture, for a custom size)
+  const savePic = (i, pic) => {
+    save(saved.current.map((s, j) => { if (j !== i) return s; const { pic: _old, ...rest } = s; return pic ? { ...rest, pic } : rest; }));
+    setPicFor(null);
+  };
+
   const remove = (i) => save(sizes.filter((_, j) => j !== i));
 
   // A renamed built-in size can go back to its original name (cues using it follow, like any rename)
@@ -80,10 +88,10 @@ export default function IrisSizesPanel({ show }) {
   return (
     <div>
       <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)', marginBottom: '16px', lineHeight: '18px' }}>
-        Your cue list's iris buttons, in order. The label goes on the button; the full name prints.
+        Your cue list's iris buttons, in order. The label goes on the button; the full name prints. Click a figure to show how big a size is.
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 14px 6px 48px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 14px 6px 98px' }}>
         <div style={{ ...colHead, width: '72px' }}>Button</div>
         <div style={{ ...colHead, flex: 1 }}>Full name</div>
       </div>
@@ -100,6 +108,10 @@ export default function IrisSizesPanel({ show }) {
               ...dropLineStyle(dragOver, i, dragFrom), opacity: dragFrom === i ? 0.5 : 1 }}>
             <div title="Drag to reorder" onMouseDown={() => setDragArmed(i)} onMouseUp={() => setDragArmed(null)}
               style={{ width: '24px', textAlign: 'center', fontSize: '15px', color: 'rgba(255,255,255,0.35)', cursor: 'grab', userSelect: 'none' }}>⠿</div>
+            <div data-tour={i === 0 ? 'iris-picture' : undefined} onClick={() => setPicFor(i)} title="Show how big this size is"
+              style={{ width: '40px', height: '36px', display: 'flex', justifyContent: 'center', cursor: 'pointer', borderRadius: '4px' }}>
+              <IrisFigure pic={irisPic(saved.current[i] || s)} height={36} />
+            </div>
             <input value={s.label} onChange={e => edit(i, 'label', e.target.value)} onBlur={() => commit(i)}
               onKeyDown={e => e.key === 'Enter' && e.target.blur()} style={{ ...field, width: '72px', fontWeight: '600' }} />
             <input value={s.value} onChange={e => edit(i, 'value', e.target.value)} onBlur={() => commit(i)}
@@ -114,6 +126,11 @@ export default function IrisSizesPanel({ show }) {
         ))}
       </div>
       <div style={{ fontSize: '12px', color: '#30D158', minHeight: '18px', margin: '0 0 16px 14px' }}>{message}</div>
+      {picFor !== null && sizes[picFor] && (
+        <IrisPictureEditor size={sizes[picFor]} pic={irisPic(saved.current[picFor])}
+          defaultPic={saved.current[picFor]?.builtin ? DEFAULT_IRIS_PICS[saved.current[picFor].key] || null : null}
+          onSave={pic => savePic(picFor, pic)} onClose={() => setPicFor(null)} />
+      )}
 
       <div style={{ fontSize: '13px', fontWeight: '600', color: 'rgba(255,255,255,0.55)', margin: '0 0 6px 14px' }}>Add a size</div>
       <div data-tour="iris-add" style={{ background: '#2A2A2A', borderRadius: '10px', padding: '12px 14px', display: 'flex', gap: '10px', alignItems: 'center' }}>

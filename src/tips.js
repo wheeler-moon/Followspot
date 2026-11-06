@@ -65,6 +65,8 @@ export const TIPS = {
       body: 'Trades everything two spots do, in every cue.' },
     { id: 'settings-iris', target: 'iris-list', title: 'Your iris buttons',
       body: 'Your cue list\'s iris buttons. Drag ⠿ to reorder.' },
+    { id: 'settings-iris-pic', target: 'iris-picture', title: 'Show the size',
+      body: 'Click a figure, then drag the circle to show how much each size lights.' },
     { id: 'settings-iris-add', target: 'iris-add', title: 'Add your own sizes',
       body: 'A short label and a full name, like Ks for Knees.' },
     { id: 'settings-cue-fields', target: 'cue-fields', title: 'What shows where',

@@ -68,7 +68,7 @@ Only use these when the color carries meaning.
 | Yellow | `#FFD60A` | The yellow cue highlight |
 | Green | `#30D158` | Success, confirmations |
 | Brown | `#AC8E68` | No-color (NC) and color-change actions |
-| Cyan / Amethyst | `#64D2FF` / `#A066D3` (print `#185FA5` / `#6A2C9E`) | Action families only: swap/slide/stay, and iris moves |
+| Cyan / Amethyst | `#64D2FF` / `#A066D3` (print `#185FA5` / `#6A2C9E`) | Action families only: swap/slide/stay, and iris moves. Also the iris size stick figure (Iris Sizes), with its circle in white |
 
 For highlight **backgrounds**, use the color at 15% opacity (for example `rgba(255,66,69,0.15)`) so the text stays readable.
 
