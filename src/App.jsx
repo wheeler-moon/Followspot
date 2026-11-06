@@ -127,6 +127,18 @@ export default function App() {
     return () => ipcRenderer.removeListener('menu-print', onPrint);
   }, [screen, currentShow]);
 
+  // Edit → Go to Cue… (⌘G) from anywhere in a show: the cue list opens its Go to Cue box (src/cueSearch.js)
+  useEffect(() => {
+    const { ipcRenderer } = window.require('electron');
+    const onGoTo = () => {
+      if (screen === 'cue-list' || !currentShow) return;   // the cue list handles it itself
+      sessionStorage.setItem(`cueGoTo_${currentShow.id}`, '1');
+      navigate('cue-list', currentShow);
+    };
+    ipcRenderer.on('menu-go-to-cue', onGoTo);
+    return () => ipcRenderer.removeListener('menu-go-to-cue', onGoTo);
+  }, [screen, currentShow]);
+
   const navigate = (dest, data) => {
     setCurrentShow(data || null);
     setScreen(dest);

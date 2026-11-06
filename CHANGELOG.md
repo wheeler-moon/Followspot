@@ -6,6 +6,8 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- Cue list: ⌘G (Edit → Go to Cue…) jumps to a cue. Type the LQ and press Return; it finds "14*" or "In 14" from 14, or the nearest cue
+- Notes sidebar: typing 14 finds a cue whose LQ is "14*" or "In 14"
 - Cue list: double-click a cue and start typing the note right away. Return saves it and closes the box (Shift-Return for a new line)
 - Characters screen: double-click a character to edit it (no more Edit button). The Add character box is smaller
 - Spot Notes screen: easier to read. Each spot is one panel of notes grouped by scene (green and gold, like the cue list), each note under its LQ with the action symbol and character. A green ✓ gives a note, the trash can deletes it, click the LQ to go to the cue, and double-click a note to edit it

@@ -37,11 +37,9 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 
 ### Next (0.5.1)
 - [ ] **Later today (Nov 5):**
-  - Cue list: Control-G jumps to a cue number (type the LQ, go to that cue)
   - Custom Actions: rethink how the menu looks. Deleting an action asks what to put in the cues that use it (pick an existing action), so no cue is left with no action
   - Custom Actions: an action with no image shows an empty spot, not the purple circle
   - A show opened for the first time after import: the cue list starts at the very top
-  - Notes sidebar: find a cue by its number even when the LQ has extra text ("14*", "In 14"): typing 14 finds it (and 14* or "In 14" still work)
   - Show Settings → Spot Settings: Swap spots moves into the page's header (still on the right), so the spot cards start at the top
   - Show Settings: rename "Cue Settings" to "Cue Visibility"?
   - **Cue list in a narrow window (big one):** with every frame button on each cue, the iris chips get squeezed until they can't be clicked (see 2026-11-05 screenshot: iris strip shows only ‹ ›). Needs a layout that stays sleek and easy to pick from at half-screen

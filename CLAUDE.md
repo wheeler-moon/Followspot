@@ -49,7 +49,7 @@ There are no tests and no linter (`npm run lint` is a no-op). To verify a change
 
 `nodeIntegration: true`, `contextIsolation: false`, so renderer code calls `window.require('electron').ipcRenderer` directly and `preload.js` is empty. Almost every call is **synchronous**: the renderer calls `ipcRenderer.sendSync('db-…', args)` and the handler in `main.js` sets `event.returnValue`. Even the async handlers (PDF export, show export/import) end by setting `event.returnValue`. To add a feature, add an `ipcMain.on('db-…')` handler inside `setupIPC()` and call it with `sendSync` from the screen.
 
-Main → renderer messages come from the menu bar: `menu-new-show`, `menu-export-show`, `menu-import-show`, `menu-add-cue` (Cmd+=). Screens subscribe with `ipcRenderer.on` and must remove the listener on unmount. `setupIPC()` must only run once, because running it twice caused double cue inserts.
+Main → renderer messages come from the menu bar: `menu-new-show`, `menu-export-show`, `menu-import-show`, `menu-add-cue` (Cmd+=), `menu-go-to-cue` (Cmd+G; cue matching in `src/cueSearch.js`). Screens subscribe with `ipcRenderer.on` and must remove the listener on unmount. `setupIPC()` must only run once, because running it twice caused double cue inserts.
 
 ### Undo and redo in the cue list (and the Scenes and Characters screens)
 

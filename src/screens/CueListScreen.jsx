@@ -16,6 +16,7 @@ import { setUndoTarget } from '../undoTarget';
 import { followDown, FOLLOW_FIELDS } from '../characterTracking';
 import { withGaps } from '../frames';
 import ActionIcon from '../components/ActionIcon';
+import { findCue } from '../cueSearch';
 const { ipcRenderer } = window.require('electron');
 // A gel's swatch color: the maker's color, white for a gel typed by hand, dark for an empty frame
 function getGelColor(gelNum) {
@@ -1483,8 +1484,7 @@ export default function CueListScreen({ show, navigate }) {
   // A note typed in the sidebar: found by its LQ, saved as that cue's spot note (added under any note already there)
   const addRunNote = (lqText, spotId, text) => {
     if (!lqText) return 'Type the LQ first.';
-    const cue = [...(data?.cues || [])].sort((a, b) => a.sort_order - b.sort_order)
-      .find(c => String(c.lq_number || '').trim().toLowerCase() === lqText.toLowerCase());
+    const cue = findCue(data?.cues, lqText, { nearest: false });   // "14" also finds "14*" or "In 14"
     if (!cue) return `There's no LQ ${lqText} in this show.`;
     if (spotId === 'all') {   // a note for every spot, kept on the cue
       const existing = (cue.all_spots_note || '').trim();
@@ -1514,6 +1514,25 @@ export default function CueListScreen({ show, navigate }) {
     el.scrollTo({ top: el.scrollTop + row.getBoundingClientRect().top - el.getBoundingClientRect().top - (el.clientHeight - row.offsetHeight) / 2, behavior: 'smooth' });
     setMenuCell({ cueId, spotId });
     setTimeout(() => setMenuCell(m => (m && m.cueId === cueId ? null : m)), 1800);
+  };
+
+  // Edit → Go to Cue… (⌘G): type an LQ, Return scrolls to it, or to the nearest cue (src/cueSearch.js)
+  const [goTo, setGoTo] = useState(() => {
+    const asked = sessionStorage.getItem(`cueGoTo_${show.id}`);   // ⌘G pressed on another screen of this show
+    sessionStorage.removeItem(`cueGoTo_${show.id}`);
+    return asked ? { text: '', problem: null } : null;
+  });
+  useEffect(() => {
+    const open = () => setGoTo({ text: '', problem: null });
+    ipcRenderer.on('menu-go-to-cue', open);
+    return () => ipcRenderer.removeListener('menu-go-to-cue', open);
+  }, []);
+  const goToCue = () => {
+    const cue = findCue(data?.cues, goTo?.text);
+    if (!goTo?.text.trim()) return;
+    if (!cue) { setGoTo(g => ({ ...g, problem: 'No cues to go to.' })); return; }
+    setGoTo(null);
+    showCue(cue.id, 'all');
   };
 
   // Copy / Paste Whole Cue items (in both right-click menus)
@@ -1873,6 +1892,20 @@ const groupedCues = () => {
               </tr>
             </tbody>
           </table>
+        )}
+        {goTo && (
+          // Go to Cue: a small box under the top bar; click outside or Escape closes it
+          <div style={{ position: 'fixed', inset: 0, zIndex: 99998 }} onMouseDown={() => setGoTo(null)}>
+            <div onMouseDown={e => e.stopPropagation()}
+              style={{ position: 'absolute', top: '64px', left: '50%', transform: 'translateX(-50%)', width: '260px', background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', boxShadow: '0 8px 28px rgba(0,0,0,0.5)', padding: '12px' }}>
+              <div style={{ fontSize: '13px', fontWeight: '600', color: '#FFFFFF', marginBottom: '8px' }}>Go to Cue</div>
+              <input autoFocus value={goTo.text} placeholder="LQ"
+                onChange={e => setGoTo({ text: e.target.value, problem: null })}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); goToCue(); } if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setGoTo(null); } }}
+                style={{ width: '100%', height: '28px', boxSizing: 'border-box', background: 'rgba(255,255,255,0.05)', border: '1px solid #0A84FF', borderRadius: '6px', color: '#FFFFFF', padding: '0 10px', fontSize: '13px', outline: 'none', fontFamily: 'inherit' }} />
+              {goTo.problem && <div style={{ fontSize: '12px', color: '#FF453A', marginTop: '6px' }}>{goTo.problem}</div>}
+            </div>
+          </div>
         )}
         {cuePopup && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}

@@ -1292,7 +1292,7 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
   // View → Ask About New Characters Again: only works while a show is open (the renderer says when)
   ipcMain.on('show-open', (event, isOpen) => {
     const menu = require('electron').Menu.getApplicationMenu();
-    for (const id of ['reset-character-choice', 'print']) {
+    for (const id of ['reset-character-choice', 'print', 'go-to-cue']) {
       const item = menu?.getMenuItemById(id);
       if (item) item.enabled = !!isOpen;
     }
@@ -1468,6 +1468,7 @@ app.whenReady().then(async () => {
         { label: 'Select All', role: 'selectAll' },
         { type: 'separator' },
         { label: 'Add Cue', accelerator: 'CmdOrCtrl+=', click: () => { mainWindow.webContents.send('menu-add-cue'); } },
+        { id: 'go-to-cue', label: 'Go to Cue…', accelerator: 'CmdOrCtrl+G', enabled: false, click: () => { mainWindow.webContents.send('menu-go-to-cue'); } },
       ],
     },
     {
