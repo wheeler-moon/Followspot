@@ -174,9 +174,10 @@ export default function SpotNotesScreen({ show, navigate }) {
                       return (
                         <React.Fragment key={n.id}>
                         {newScene && scene && (
-                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', padding: '5px 14px', background: '#242424', borderTop: i === 0 ? 'none' : '1px solid rgba(0,0,0,0.35)', borderBottom: '1px solid rgba(0,0,0,0.25)', minWidth: 0 }}>
-                            {scene.label && <span style={{ fontSize: '11px', fontWeight: '700', color: C.label2, textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0 }}>{scene.label}</span>}
-                            {scene.song && <span style={{ fontSize: '12px', fontStyle: 'italic', color: C.label3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{scene.song}</span>}
+                          // Colored like the cue list's scene bands: green, gold for an act break
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', padding: '5px 14px', background: scene.act_break ? '#3E301B' : '#203A2A', boxShadow: `inset 0 1px 0 ${scene.act_break ? 'rgba(255,159,10,0.35)' : 'rgba(48,209,88,0.32)'}, inset 0 -1px 0 ${scene.act_break ? 'rgba(255,159,10,0.35)' : 'rgba(48,209,88,0.32)'}`, minWidth: 0 }}>
+                            {scene.label && <span style={{ fontSize: '12px', fontWeight: '700', color: scene.act_break ? '#FF9F0A' : '#30D158', flexShrink: 0 }}>{scene.label}</span>}
+                            {scene.song && <span style={{ fontSize: '12px', color: scene.act_break ? 'rgba(255,159,10,0.75)' : 'rgba(48,209,88,0.72)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{scene.song}</span>}
                           </div>
                         )}
                         {/* A note: the cue and what the spot is doing on top, the note under it at full width */}
@@ -190,7 +191,7 @@ export default function SpotNotesScreen({ show, navigate }) {
                               <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', lineHeight: '15px', minWidth: 0, overflow: 'hidden' }}>
                                 {action && <CueActionIcon action={sc.action} customActions={customActions} size={14} />}
                                 {action && <span style={{ color: C.label2, whiteSpace: 'nowrap' }}>{action}</span>}
-                                {char && <span style={{ color: 'rgba(255,255,255,0.85)', fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{char}</span>}
+                                {char && <span style={{ color: C.label2, fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{char}</span>}
                               </div>
                             )}
                             <span style={{ flex: 1 }} />
