@@ -146,7 +146,9 @@ export default function SpotNotesScreen({ show, navigate }) {
                       const action = sc?.action && sc.action !== 'Tracked' ? displayAction(sc.action, actionNames) : '';
                       const isEditing = editingId === n.id;
                       return (
-                        <div key={n.id} style={{ background: C.card, border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '12px 14px' }}>
+                        <div key={n.id} title={isEditing ? undefined : 'Double-click to edit'}
+                          onDoubleClick={e => { if (!isEditing && !e.target.closest('button')) { setEditingId(n.id); setEditText(n.text); } }}
+                          style={{ background: C.card, border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '12px 14px' }}>
                           {/* LQ, then the scene, what the spot is doing and the note; the buttons along the bottom */}
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                             <span style={{ fontSize: '16px', fontWeight: '700', color: C.label1, fontVariantNumeric: 'tabular-nums' }}>{cueLabel(cue)}</span>
@@ -165,6 +167,8 @@ export default function SpotNotesScreen({ show, navigate }) {
                           {isEditing ? (
                             <div style={{ marginTop: '8px' }}>
                               <textarea autoFocus value={editText} onChange={e => setEditText(e.target.value)}
+                                onFocus={e => e.target.setSelectionRange(e.target.value.length, e.target.value.length)}
+                                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveEdit(n); } if (e.key === 'Escape') setEditingId(null); }}
                                 style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid #0A84FF', borderRadius: '6px', color: '#FFFFFF', padding: '8px 10px', fontSize: '13px', outline: 'none', resize: 'vertical', minHeight: '60px', boxSizing: 'border-box', fontFamily: 'inherit' }} />
                               <div style={{ display: 'flex', gap: '6px', marginTop: '6px', justifyContent: 'flex-end' }}>
                                 <button onClick={() => setEditingId(null)}
@@ -182,7 +186,6 @@ export default function SpotNotesScreen({ show, navigate }) {
                             <div style={{ display: 'flex', alignItems: 'center', gap: '2px', marginTop: '10px', paddingTop: '8px', borderTop: `1px solid ${C.separator}`, marginLeft: '-6px' }}>
                               <button onClick={() => goToCue(n)} title="Show this cue in the cue list" style={linkButton(C.accentText)}>Go to Cue ›</button>
                               <span style={{ flex: 1 }} />
-                              <button onClick={() => { setEditingId(n.id); setEditText(n.text); }} style={linkButton(C.accentText)}>Edit</button>
                               <button onClick={() => deleteNote(n)} style={linkButton(C.red)}>Delete</button>
                               <button onClick={() => giveNote(n)} title="Mark as given: moves it to Given at the bottom"
                                 style={{ background: 'rgba(48,209,88,0.16)', border: 'none', borderRadius: '6px', color: C.green, padding: '3px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', marginLeft: '4px' }}>
