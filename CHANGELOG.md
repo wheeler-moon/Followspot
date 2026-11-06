@@ -11,6 +11,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 - Cue list: double-click a cue and start typing the note right away. Return saves it and closes the box (Shift-Return for a new line)
 - Characters screen: double-click a character to edit it (no more Edit button). The Add character box is smaller
 - Spot Notes screen: easier to read. Each spot is one panel of notes grouped by scene (green and gold, like the cue list), each note under its LQ with the action symbol and character. A green ✓ gives a note, the trash can deletes it, click the LQ to go to the cue, and double-click a note to edit it
+- Show Settings: **Cue Settings** is now called **Cue Visibility**
 - Spot Settings: **Swap spots** is now at the top right, next to the title, so the spots start at the top of the page
 - Swap spots: the dialog fits long operator names and sits in the middle of the window, and spot notes you've already given (the Given tray) swap with their cues too. A new **Also swap operator, location, fixture and gels** box (off to start) moves everything
 - A removed color frame keeps its place everywhere as an empty slot (Frame 4 removed leaves a gap between 3 and 5): in Spot Settings (with **+ Add back**), the cue list, the dashboard, every printed sheet and the iPad

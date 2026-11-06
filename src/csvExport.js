@@ -10,7 +10,7 @@
 //   Spot Notes.csv  every spot note (and All Spots note), still to give or already given
 //
 // Ids are turned into names (characters, scenes, frames → gels), actions use this show's names,
-// When/Notes formatting is dropped, and everything is exported, even details hidden in Cue Settings.
+// When/Notes formatting is dropped, and everything is exported, even details hidden in Cue Visibility.
 // Files are UTF-8 with a byte-order mark and Windows line endings, which Excel opens correctly.
 
 const { actionNameMap, displayAction } = require('./actionNames');

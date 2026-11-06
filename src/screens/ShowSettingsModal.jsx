@@ -17,7 +17,7 @@ const SECTIONS = [
   { id: 'show-info', label: 'Show Info' },
   { id: 'spot-settings', label: 'Spot Settings' },
   { id: 'spot-order', label: 'Spot Order' },
-  { id: 'cue-settings', label: 'Cue Settings' },
+  { id: 'cue-settings', label: 'Cue Visibility' },
   { id: 'cue-defaults', label: 'Cue Defaults' },
   { id: 'iris-sizes', label: 'Iris Sizes' },
   { id: 'custom-actions', label: 'Custom Actions' },

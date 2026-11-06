@@ -350,7 +350,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
     if (name && name !== (spotCue.custom_character || '').trim()) onNewCustomCharacter(spotCue.id, name);
   };
 
-  // Which top boxes show (Show Settings → Cue Settings) and where the character box sits in the grid
+  // Which top boxes show (Show Settings → Cue Visibility) and where the character box sits in the grid
   const showAction = fieldsShown.action !== false;
   const showChar = fieldsShown.character !== false;
   const charColumn = showAction ? '2' : '1 / 3';
@@ -1043,7 +1043,7 @@ export default function CueListScreen({ show, navigate }) {
     setContinuedScene(current);
   };
   const [irisSizes, setIrisSizes] = useState([]);
-  // Which cue fields this show shows on the cue list (Show Settings > Cue Settings)
+  // Which cue fields this show shows on the cue list (Show Settings > Cue Visibility)
   const [listFields, setListFields] = useState({});
   const [customActions, setCustomActions] = useState([]);
   const [actionNames, setActionNames] = useState({});   // built-in actions renamed for this show

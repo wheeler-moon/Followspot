@@ -139,7 +139,7 @@ The look: an Apple app, not a generic one. Native SwiftUI controls, SF Pro, SF S
 - **Appearance:** always dark.
 - **Layout:** full screen, one show at a time. A top bar with the show and role as the title ("The Lighthouse · Spot 1"); tap it to change show or role. Changing role asks to confirm ("Switch to Spot 2?") so a bumped iPad doesn't change role mid-show. The iPad remembers its show and role.
 - **Two views:** Cue List and Paperwork, switched with a segmented control. Opens to whichever the operator used last.
-- **Cue list:** large type, dark. Which details show (action, character, intensity, iris, color, time, When, Notes) defaults to the Mac's Cue Settings → Show on print, and each operator can turn details on or off on their iPad. Off cues show as slim, dimmed rows (a switch hides them). Color shows the frame number only ("F2"), with the yellow color-change highlight from the printed sheets. Scene headers and T· numbers match the paperwork.
+- **Cue list:** large type, dark. Which details show (action, character, intensity, iris, color, time, When, Notes) defaults to the Mac's Cue Visibility → Show on print, and each operator can turn details on or off on their iPad. Off cues show as slim, dimmed rows (a switch hides them). Color shows the frame number only ("F2"), with the yellow color-change highlight from the printed sheets. Scene headers and T· numbers match the paperwork.
 - **Caller role:** side by side like the caller sheet, a column for each spot the caller chose.
 - **Color load:** this spot's frames in one row at the top of the cue list (like the Mac's header color load); tap to show or hide, remembered.
 - **Text size:** pinch, or a text-size control; remembered per iPad.

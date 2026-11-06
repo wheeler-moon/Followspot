@@ -306,7 +306,7 @@ function buildSheet(kind, opts) {
   const characters = database.prepare('SELECT * FROM characters WHERE show_id = ?').all(opts.showId);
   const scenes = database.prepare('SELECT * FROM scenes WHERE show_id = ? ORDER BY sort_order').all(opts.showId);
   const customActions = show.custom_actions ? JSON.parse(show.custom_actions) : [];
-  // Which cue details print: the show's Cue Settings, or Page Setup's unsaved choices while it's open
+  // Which cue details print: the show's Cue Visibility, or Page Setup's unsaved choices while it's open
   const cueFields = opts.cueFields ? JSON.stringify(opts.cueFields) : show.cue_fields;
   const slotsFor = id => database.prepare('SELECT * FROM color_slots WHERE spot_id = ? ORDER BY is_permanent, slot_number').all(id);
   const label = opts.label || '';

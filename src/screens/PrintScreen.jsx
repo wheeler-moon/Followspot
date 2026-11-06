@@ -219,7 +219,7 @@ const PageIcon = ({ landscape }) => (
 function PageSetup({ selected, options, label, show, spots, onSave, onCancel }) {
   const [draft, setDraft] = useState(options);
   const set = (patch) => setDraft(d => ({ ...d, ...patch }));
-  // Cue Details: the show's "Show on print" boxes from Show Settings → Cue Settings
+  // Cue Details: the show's "Show on print" boxes from Show Settings → Cue Visibility
   const [cueFields, setCueFields] = useState(() => cueFieldSettings(ipcRenderer.sendSync('db-get-show', show.id)?.cue_fields));
   const [cueFieldsChanged, setCueFieldsChanged] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -333,7 +333,7 @@ function PageSetup({ selected, options, label, show, spots, onSave, onCancel }) 
                 </div>
                 {detailsOpen && (
                   <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '6px 12px', marginLeft: '16px' }}>
-                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)', margin: '4px 0 6px' }}>What prints. Same as Cue Settings.</div>
+                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)', margin: '4px 0 6px' }}>What prints. Same as Cue Visibility.</div>
                     {CUE_FIELDS.map(({ key, label: fieldLabel }) => (
                       <label key={key} style={{ display: 'flex', alignItems: 'center', gap: '8px', height: '26px', fontSize: '13px', color: '#FFFFFF', cursor: 'pointer' }}>
                         <input type="checkbox" checked={cueFields[key].print} onChange={() => toggleField(key)}
