@@ -86,6 +86,7 @@ Other
 Saved for the iPad app's first release (kept out of the Mac's What's New).
 
 - A color frame removed on the Mac keeps its place as an empty slot
+- Details → **Iris Pictures** shows each iris size's stick figure and circle (set on the Mac) above the cue list
 - Scene headers are centered in their row
 - Caller is picked from the role menu like any spot. While you're the caller, the button next to the show's name chooses which spots show and their order
 - Switching roles: the Switch button is blue
