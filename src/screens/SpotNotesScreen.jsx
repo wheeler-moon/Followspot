@@ -4,6 +4,7 @@ import { TIPS } from '../tips';
 import AppHeader from '../components/AppHeader';
 import { actionNameMap, displayAction } from '../actionNames';
 import { characterLabel } from '../characterNames';
+import { CueActionIcon } from '../components/ActionIcon';
 const { ipcRenderer } = window.require('electron');
 
 // Spot Notes: the notes still to give, a column per spot (plus All Spots when there are any), in cue
@@ -69,7 +70,12 @@ export default function SpotNotesScreen({ show, navigate }) {
     navigate('cue-list', show);
   };
 
-  const [actionNames] = useState(() => actionNameMap(ipcRenderer.sendSync('db-get-show', show.id)?.action_names));
+  const [{ actionNames, customActions }] = useState(() => {
+    const row = ipcRenderer.sendSync('db-get-show', show.id);
+    let custom = [];
+    try { custom = JSON.parse(row?.custom_actions || '[]'); } catch (e) {}
+    return { actionNames: actionNameMap(row?.action_names), customActions: Array.isArray(custom) ? custom : [] };
+  });
 
   const sceneMap = {};
   scenes.forEach(s => { sceneMap[s.id] = s; });
@@ -127,7 +133,6 @@ export default function SpotNotesScreen({ show, navigate }) {
     ...spots.map(spot => ({ key: spot.id, title: `Spot ${spot.spot_number}${spot.operator_name ? ' · ' + spot.operator_name : ''}`, notes: notesForSpot(spot.id) })),
   ];
   const cueLabel = (cue) => `LQ ${cue.lq_number || '—'}`;
-  const sceneLine = (scene) => scene ? `${scene.label || scene.song || ''}${scene.label && scene.song ? ' · ' + scene.song : ''}` : '';
   const givenDate = (ts) => {
     const d = new Date(String(ts || '').replace(' ', 'T') + 'Z');
     return isNaN(d) ? '' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
@@ -148,7 +153,7 @@ export default function SpotNotesScreen({ show, navigate }) {
             {givenList.length ? 'Every note has been given.' : 'No notes yet. Double-click any cue to add a note, or use Notes in the cue list.'}
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`, gap: '28px', alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '28px 32px', alignItems: 'start' }}>
             {columns.map(col => (
               <div key={col.key} style={{ minWidth: 0 }}>
                 <div style={{ fontSize: '13px', fontWeight: '700', color: col.key === 'all' ? C.yellow : C.label1, marginBottom: '12px', paddingBottom: '8px', borderBottom: `1px solid ${C.separator}` }}>
@@ -164,16 +169,24 @@ export default function SpotNotesScreen({ show, navigate }) {
                       const char = sc && characterLabel(sc, charMap);
                       const action = sc?.action && sc.action !== 'Tracked' ? displayAction(sc.action, actionNames) : '';
                       const isEditing = editingId === n.id;
-                      const context = [sceneLine(scene), [action, char].filter(Boolean).join(' ')].filter(Boolean).join(' · ');
+                      // A small scene heading wherever the scene changes down the column
+                      const newScene = i === 0 || col.notes[i - 1].cue.scene_id !== cue.scene_id;
                       return (
-                        // One line per note, like a list of cue notes: LQ on the left, the note, then a quiet line of context
-                        <div key={n.id} className="note-row" title={isEditing ? undefined : 'Double-click to edit'}
+                        <React.Fragment key={n.id}>
+                        {newScene && scene && (
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', margin: i === 0 ? '0 0 4px' : '18px 0 4px', minWidth: 0 }}>
+                            {scene.label && <span style={{ fontSize: '11px', fontWeight: '700', color: C.label2, textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0 }}>{scene.label}</span>}
+                            {scene.song && <span style={{ fontSize: '12px', fontStyle: 'italic', color: C.label3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{scene.song}</span>}
+                          </div>
+                        )}
+                        {/* One line per note: LQ on the left, the note, then what the spot is doing */}
+                        <div className="note-row" title={isEditing ? undefined : 'Double-click to edit'}
                           onDoubleClick={e => { if (!isEditing && !e.target.closest('button')) { setEditingId(n.id); setEditText(n.text); } }}
-                          style={{ display: 'flex', gap: '10px', padding: '9px 6px', margin: '0 -6px', borderTop: i > 0 ? `1px solid ${C.separator}` : 'none', borderRadius: '4px' }}>
+                          style={{ display: 'flex', gap: '10px', padding: '11px 6px', margin: '0 -6px', borderTop: newScene ? 'none' : `1px solid ${C.separator}`, borderRadius: '4px' }}>
                           <div style={{ width: '58px', flexShrink: 0 }}>
                             <button className="note-lq" onClick={() => goToCue(n)} title="Go to Cue"
-                              style={{ display: 'block', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', fontSize: '14px', fontWeight: '700', lineHeight: '20px', fontVariantNumeric: 'tabular-nums' }}>{cueLabel(cue)}</button>
-                            <div style={{ fontSize: '11px', color: C.label3, lineHeight: '14px', fontVariantNumeric: 'tabular-nums' }}>T·{cue.track_number}{cue.page ? ` pg ${cue.page}` : ''}</div>
+                              style={{ display: 'block', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', fontSize: '14px', fontWeight: '700', lineHeight: '17px', fontVariantNumeric: 'tabular-nums' }}>{cueLabel(cue)}</button>
+                            <div style={{ fontSize: '11px', color: C.label3, lineHeight: '14px', marginTop: '2px', fontVariantNumeric: 'tabular-nums' }}>T·{cue.track_number}{cue.page ? ` pg ${cue.page}` : ''}</div>
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             {isEditing ? (
@@ -190,9 +203,16 @@ export default function SpotNotesScreen({ show, navigate }) {
                                 </div>
                               </div>
                             ) : (
-                              <div style={{ fontSize: '14px', color: C.label1, lineHeight: '20px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{n.text}</div>
+                              <div style={{ fontSize: '14px', color: C.label1, lineHeight: '17px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{n.text}</div>
                             )}
-                            {context && <div style={{ fontSize: '11px', color: C.label3, lineHeight: '15px', marginTop: '2px' }}>{context}</div>}
+                            {(action || char) && (
+                              // What the spot is doing: its action symbol, the action, then who
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '5px', fontSize: '12px', lineHeight: '15px', minWidth: 0 }}>
+                                {action && <CueActionIcon action={sc.action} customActions={customActions} size={14} />}
+                                {action && <span style={{ color: C.label2, whiteSpace: 'nowrap' }}>{action}</span>}
+                                {char && <span style={{ color: 'rgba(255,255,255,0.85)', fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{char}</span>}
+                              </div>
+                            )}
                           </div>
                           {!isEditing && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flexShrink: 0, marginRight: '-4px', marginTop: '-3px' }}>
@@ -201,6 +221,7 @@ export default function SpotNotesScreen({ show, navigate }) {
                             </div>
                           )}
                         </div>
+                        </React.Fragment>
                       );
                     })}
                   </div>
