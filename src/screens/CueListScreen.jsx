@@ -61,6 +61,27 @@ const selectStyle = {
 };
 
 
+// Edit → Go to Cue… (⌘G): a small box under the top bar. It keeps what's typed to itself, so typing
+// doesn't redraw the whole cue list. Return goes (onGo returns a problem to show, or null); Escape or a
+// click outside closes it.
+function GoToCueBox({ onGo, onClose }) {
+  const [text, setText] = useState('');
+  const [problem, setProblem] = useState(null);
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 99998 }} onMouseDown={onClose}>
+      <div onMouseDown={e => e.stopPropagation()}
+        style={{ position: 'absolute', top: '64px', left: '50%', transform: 'translateX(-50%)', width: '260px', background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', boxShadow: '0 8px 28px rgba(0,0,0,0.5)', padding: '12px' }}>
+        <div style={{ fontSize: '13px', fontWeight: '600', color: '#FFFFFF', marginBottom: '8px' }}>Go to Cue</div>
+        <input autoFocus value={text} placeholder="LQ"
+          onChange={e => { setText(e.target.value); setProblem(null); }}
+          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); setProblem(onGo(text)); } if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); onClose(); } }}
+          style={{ width: '100%', height: '28px', boxSizing: 'border-box', background: 'rgba(255,255,255,0.05)', border: '1px solid #0A84FF', borderRadius: '6px', color: '#FFFFFF', padding: '0 10px', fontSize: '13px', outline: 'none', fontFamily: 'inherit' }} />
+        {problem && <div style={{ fontSize: '12px', color: '#FF453A', marginTop: '6px' }}>{problem}</div>}
+      </div>
+    </div>
+  );
+}
+
 // The action menu, attached to its cue's action button (anchorRef). It sits inside the cue's box
 // (position absolute), so it scrolls with the list smoothly on its own. When it opens it goes below the
 // button if it fits in the visible cue list, else above, else on the roomier side with its own scroll.
@@ -1520,19 +1541,21 @@ export default function CueListScreen({ show, navigate }) {
   const [goTo, setGoTo] = useState(() => {
     const asked = sessionStorage.getItem(`cueGoTo_${show.id}`);   // ⌘G pressed on another screen of this show
     sessionStorage.removeItem(`cueGoTo_${show.id}`);
-    return asked ? { text: '', problem: null } : null;
+    return !!asked;
   });
   useEffect(() => {
-    const open = () => setGoTo({ text: '', problem: null });
+    const open = () => setGoTo(true);
     ipcRenderer.on('menu-go-to-cue', open);
     return () => ipcRenderer.removeListener('menu-go-to-cue', open);
   }, []);
-  const goToCue = () => {
-    const cue = findCue(data?.cues, goTo?.text);
-    if (!goTo?.text.trim()) return;
-    if (!cue) { setGoTo(g => ({ ...g, problem: 'No cues to go to.' })); return; }
-    setGoTo(null);
+  // Returns a problem to show, or null once it has gone to the cue
+  const goToCue = (text) => {
+    if (!text.trim()) return null;
+    const cue = findCue(data?.cues, text);
+    if (!cue) return 'No cues to go to.';
+    setGoTo(false);
     showCue(cue.id, 'all');
+    return null;
   };
 
   // Copy / Paste Whole Cue items (in both right-click menus)
@@ -1893,20 +1916,7 @@ const groupedCues = () => {
             </tbody>
           </table>
         )}
-        {goTo && (
-          // Go to Cue: a small box under the top bar; click outside or Escape closes it
-          <div style={{ position: 'fixed', inset: 0, zIndex: 99998 }} onMouseDown={() => setGoTo(null)}>
-            <div onMouseDown={e => e.stopPropagation()}
-              style={{ position: 'absolute', top: '64px', left: '50%', transform: 'translateX(-50%)', width: '260px', background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', boxShadow: '0 8px 28px rgba(0,0,0,0.5)', padding: '12px' }}>
-              <div style={{ fontSize: '13px', fontWeight: '600', color: '#FFFFFF', marginBottom: '8px' }}>Go to Cue</div>
-              <input autoFocus value={goTo.text} placeholder="LQ"
-                onChange={e => setGoTo({ text: e.target.value, problem: null })}
-                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); goToCue(); } if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setGoTo(null); } }}
-                style={{ width: '100%', height: '28px', boxSizing: 'border-box', background: 'rgba(255,255,255,0.05)', border: '1px solid #0A84FF', borderRadius: '6px', color: '#FFFFFF', padding: '0 10px', fontSize: '13px', outline: 'none', fontFamily: 'inherit' }} />
-              {goTo.problem && <div style={{ fontSize: '12px', color: '#FF453A', marginTop: '6px' }}>{goTo.problem}</div>}
-            </div>
-          </div>
-        )}
+        {goTo && <GoToCueBox onGo={goToCue} onClose={() => setGoTo(false)} />}
         {cuePopup && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           onClick={() => {
