@@ -39,7 +39,6 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 - [ ] **Later today (Nov 5):**
   - Custom Actions: rethink how the menu looks. Deleting an action asks what to put in the cues that use it (pick an existing action), so no cue is left with no action
   - Custom Actions: an action with no image shows an empty spot, not the purple circle
-  - A show opened for the first time after import: the cue list starts at the very top
   - **Cue list in a narrow window (big one):** with every frame button on each cue, the iris chips get squeezed until they can't be clicked (see 2026-11-05 screenshot: iris strip shows only ‹ ›). Needs a layout that stays sleek and easy to pick from at half-screen
   - iPad Sync tab: show each paired iPad's name (the device name, e.g. "Dana's iPad") instead of just "iPad", so it's clear which are connected. Mind App Store privacy answers (device name is sent only to the Mac on the local network)
   - **Iris size pictures (Wheeler's idea):** in Show Settings → Iris Sizes, each size gets a small stick figure (in the iris purple). Clicking opens a simple window with a white circle outline you drag and resize over the figure to show how big that size is and where it lands. Wheeler will help set the defaults. Then it can be shown in print headers and switched on/off on the iPad

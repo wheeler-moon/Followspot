@@ -1154,7 +1154,18 @@ export default function CueListScreen({ show, navigate }) {
       return;
     }
     const saved = JSON.parse(sessionStorage.getItem(`cueScroll_${show.id}`) || 'null');
-    if (!saved) { scrollRestored.current = true; return; }
+    if (!saved) {
+      // First time this show's cue list opens (a new or just-imported show): start at the very top and keep it
+      // there while the rows settle, so a big list doesn't drift down as it draws
+      let frames = 0;
+      const top = () => {
+        const el = scrollRef.current;
+        if (el) { el.scrollTop = 0; el.scrollLeft = 0; }
+        if (++frames > 20) scrollRestored.current = true; else requestAnimationFrame(top);
+      };
+      requestAnimationFrame(top);
+      return;
+    }
     // Put the cue that was at the top back at the same spot (rows above can settle to slightly different
     // heights while the list draws, so a pixel count alone would drift). Re-checked for a few frames.
     let tries = 0;
