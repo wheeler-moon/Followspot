@@ -14,7 +14,7 @@ const primaryButton = { ...borderedButton, background: '#0A84FF' };
 
 // Everything you can set for a sheet. Page Setup edits a copy and Save puts it back.
 const DEFAULT_OPTIONS = {
-  hideOff: false, keepOffNotes: true, hideTracked: false, showTracks: true, coverPage: false,
+  hideOff: false, keepOffNotes: true, hideTracked: false, showTracks: true, coverPage: false, irisPictures: false,
   usedOnly: false, showCostumeNotes: true, notesSpotId: null,
   pages: {},   // paper, orientation and range for each kind of sheet (all spot sheets share one)
 };
@@ -40,7 +40,7 @@ function buildRequest(selected, o, label, showId, cueFields) {
     Object.assign(req, { rangeStart: pg.rangeStart ? parseInt(pg.rangeStart) : null, rangeEnd: pg.rangeEnd ? parseInt(pg.rangeEnd) : null });
   }
   if (selected.kind === 'spot') Object.assign(req, { spotId: selected.spotId, hideOff: o.hideOff && (o.keepOffNotes ? 'unnoted' : 'all'), hideTracked: o.hideTracked });
-  if (selected.kind === 'spot' || selected.kind === 'caller') Object.assign(req, { showTracks: o.showTracks, cover: o.coverPage });
+  if (selected.kind === 'spot' || selected.kind === 'caller') Object.assign(req, { showTracks: o.showTracks, cover: o.coverPage, irisPictures: o.irisPictures });
   if (selected.kind === 'actions') req.usedOnly = o.usedOnly;
   if (selected.kind === 'notes') req.spotId = o.notesSpotId;
   if (selected.kind === 'characters') req.showCostumeNotes = o.showCostumeNotes;
@@ -99,12 +99,14 @@ function SheetOptions({ kind, o, set, spots }) {
       <Switch on={o.hideTracked} onChange={v => set({ hideTracked: v })} label="Hide Tracked cues" hint="Only cues where something changes" />
       <Switch on={o.showTracks} onChange={v => set({ showTracks: v })} label="T· numbers" hint="Under each LQ" />
       <Switch on={o.coverPage} onChange={v => set({ coverPage: v })} label="Cover page" hint="Logo, team, colors and an action key" />
+      <Switch on={o.irisPictures} onChange={v => set({ irisPictures: v })} label="Iris pictures" hint="How big each iris size is, in the header" />
     </>
   );
   if (kind === 'caller') return (
     <>
       <Switch on={o.showTracks} onChange={v => set({ showTracks: v })} label="T· numbers" hint="Under each LQ" />
       <Switch on={o.coverPage} onChange={v => set({ coverPage: v })} label="Cover page" hint="Logo, team, colors and an action key" />
+      <Switch on={o.irisPictures} onChange={v => set({ irisPictures: v })} label="Iris pictures" hint="How big each iris size is, in the header" />
     </>
   );
   if (kind === 'actions') return <Switch on={o.usedOnly} onChange={v => set({ usedOnly: v })} label="Only this show's actions" hint="Leave out actions no cue uses" />;

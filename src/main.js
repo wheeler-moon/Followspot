@@ -338,6 +338,7 @@ function buildSheet(kind, opts) {
         spotCues: database.prepare('SELECT * FROM spot_cues WHERE spot_id = ?').all(spot.id),
         numSpots: spots.length, hideOff: opts.hideOff === 'unnoted' ? 'unnoted' : !!opts.hideOff, hideTracked: !!opts.hideTracked,
         rangeStart: opts.rangeStart ?? null, rangeEnd: opts.rangeEnd ?? null, showTracks: opts.showTracks !== false,
+        irisPictures: !!opts.irisPictures,
       }), `Spot ${spot.spot_number}${spot.operator_name ? ' · ' + spot.operator_name : ''}`, [spot], PAGE_MARGINS.spot, false),
       landscape, paper, margin: PAGE_MARGINS.spot,
       fileName: `${show.title} - Spot ${spot.spot_number} - ${labelPart}.pdf`,
@@ -351,7 +352,7 @@ function buildSheet(kind, opts) {
     }
     return {
       html: cover(buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions, showTracks: opts.showTracks !== false,
-        rangeStart: opts.rangeStart ?? null, rangeEnd: opts.rangeEnd ?? null, paper }),
+        rangeStart: opts.rangeStart ?? null, rangeEnd: opts.rangeEnd ?? null, paper, irisPictures: !!opts.irisPictures }),
         'Caller Sheet', spots, PAGE_MARGINS.caller, landscape),
       landscape, paper, margin: PAGE_MARGINS.caller,
       fileName: `${show.title} - Caller Sheet - ${labelPart}.pdf`,

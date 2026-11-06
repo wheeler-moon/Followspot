@@ -24,9 +24,25 @@ const DEFAULT_IRIS_PICS = {
   'Full Body': { x: 60, y: 82, r: 70 },
   '3/4 Body': { x: 60, y: 68, r: 56 },
   '1/2 Body': { x: 60, y: 53, r: 40 },
-  'Head & Shoulders': { x: 60, y: 36, r: 23 },
-  'Head': { x: 60, y: 24, r: 13 },
+  'Head & Shoulders': { x: 60, y: 37, r: 27 },
+  'Head': { x: 60, y: 24, r: 16 },
 };
+// The stick figure, in those units: a head and five lines (body, arms, legs). Drawn by the Mac (IrisFigure.jsx)
+// and on prints (irisFigureSVG); the iPad should draw the same.
+const FIGURE_HEAD = { cx: 60, cy: 24, r: 10 };
+const FIGURE_LINES = [[60, 34, 60, 92], [60, 48, 38, 80], [60, 48, 82, 80], [60, 92, 44, 150], [60, 92, 76, 150]];
+
+// An SVG string of a size's picture, for prints: the figure, and its circle when it has one
+function irisFigureSVG(pic, { height = '0.38in', pad = 15, figure = '#6A2C9E', circle = '#1a1a1a' } = {}) {
+  const w = FIGURE_BOX.w + pad * 2;
+  const stroke = `stroke="${figure}" stroke-width="6" stroke-linecap="round" fill="none"`;
+  return `<svg viewBox="${-pad} 0 ${w} ${FIGURE_BOX.h}" style="height:${height};width:calc(${height} * ${w / FIGURE_BOX.h});display:block;overflow:hidden">`
+    + `<circle cx="${FIGURE_HEAD.cx}" cy="${FIGURE_HEAD.cy}" r="${FIGURE_HEAD.r}" ${stroke}/>`
+    + FIGURE_LINES.map(([x1, y1, x2, y2]) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" ${stroke}/>`).join('')
+    + (pic ? `<circle cx="${pic.x}" cy="${pic.y}" r="${pic.r}" fill="none" stroke="${circle}" stroke-width="5"/>` : '')
+    + '</svg>';
+}
+
 const validPic = (p) => p && [p.x, p.y, p.r].every(n => typeof n === 'number' && isFinite(n)) && p.r > 0;
 // The circle to draw for a size: its own, else its built-in default, else null
 const irisPic = (size) => (size && validPic(size.pic) ? size.pic : (size && size.builtin && DEFAULT_IRIS_PICS[size.key]) || null);
@@ -51,4 +67,4 @@ function irisSizeList(json) {
   return [...DEFAULT_IRIS_SIZES.map(s => ({ ...s, builtin: true, key: s.value })), ...sizes.map(s => ({ label: s.label || s.value, value: s.value, builtin: false, ...(validPic(s.pic) ? { pic: s.pic } : {}) }))];
 }
 
-module.exports = { DEFAULT_IRIS_SIZES, irisSizeList, FIGURE_BOX, DEFAULT_IRIS_PICS, irisPic };
+module.exports = { DEFAULT_IRIS_SIZES, irisSizeList, FIGURE_BOX, FIGURE_HEAD, FIGURE_LINES, DEFAULT_IRIS_PICS, irisPic, irisFigureSVG };

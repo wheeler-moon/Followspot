@@ -11,7 +11,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 - Cue list: double-click a cue and start typing the note right away. Return saves it and closes the box (Shift-Return for a new line)
 - Characters screen: double-click a character to edit it (no more Edit button). The Add character box is smaller
 - Spot Notes screen: easier to read. Each spot is one panel of notes grouped by scene (green and gold, like the cue list), each note under its LQ with the action symbol and character. A green ✓ gives a note, the trash can deletes it, click the LQ to go to the cue, and double-click a note to edit it
-- Show Settings → Iris Sizes: each size has a little stick figure. Click it and drag the circle to show how much of a person that size lights
+- Show Settings → Iris Sizes: each size has a little stick figure. Click it and drag the circle to show how much of a person that size lights. Turn on **Iris pictures** in Print → Page Setup to put them in the spot sheet and caller sheet headers
 - A show you've just imported opens its cue list at the very top
 - Show Settings: **Cue Settings** is now called **Cue Visibility**
 - Spot Settings: **Swap spots** is now at the top right, next to the title, so the spots start at the top of the page

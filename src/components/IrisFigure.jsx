@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import useEscape from '../useEscape';
-import { FIGURE_BOX } from '../irisSizes';
+import { FIGURE_BOX, FIGURE_HEAD, FIGURE_LINES } from '../irisSizes';
 
 // Iris size pictures: a stick figure in the iris amethyst with a white circle showing how much of a person
 // that size lights. The circle is { x, y, r } in the figure's drawing units (see src/irisSizes.js).
@@ -13,12 +13,8 @@ function Figure({ color = AMETHYST, width = 3 }) {
   const line = { stroke: color, strokeWidth: width, strokeLinecap: 'round', fill: 'none' };
   return (
     <g>
-      <circle cx="60" cy="24" r="10" {...line} />
-      <line x1="60" y1="34" x2="60" y2="92" {...line} />
-      <line x1="60" y1="48" x2="38" y2="80" {...line} />
-      <line x1="60" y1="48" x2="82" y2="80" {...line} />
-      <line x1="60" y1="92" x2="44" y2="150" {...line} />
-      <line x1="60" y1="92" x2="76" y2="150" {...line} />
+      <circle cx={FIGURE_HEAD.cx} cy={FIGURE_HEAD.cy} r={FIGURE_HEAD.r} {...line} />
+      {FIGURE_LINES.map(([x1, y1, x2, y2], i) => <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} {...line} />)}
     </g>
   );
 }

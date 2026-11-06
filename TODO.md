@@ -42,7 +42,7 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
   - **Cue list in a narrow window (big one):** with every frame button on each cue, the iris chips get squeezed until they can't be clicked (see 2026-11-05 screenshot: iris strip shows only ‹ ›). Needs a layout that stays sleek and easy to pick from at half-screen
   - iPad Sync tab: show each paired iPad's name (the device name, e.g. "Dana's iPad") instead of just "iPad", so it's clear which are connected. Mind App Store privacy answers (device name is sent only to the Mac on the local network)
   - Iris size pictures: Wheeler sets the five default circles (`DEFAULT_IRIS_PICS` in `src/irisSizes.js`; set each in Show Settings → Iris Sizes, then copy the saved numbers in)
-  - Iris size pictures on prints (page headers) and on the iPad (a switch to show or hide them)
+  - Iris size pictures on the iPad (a switch to show or hide them)
 - [ ] **Reminder, after the paperwork pass:** how to show operators what each iris size means, on prints and on the iPad (Wheeler has an idea)
 - [ ] Beta feedback: add items here as testers report them
 - [ ] ⌘C / ⌘V for a cue box without right-clicking (needs a way to select a box first)

@@ -7,7 +7,22 @@ const { cueFieldSettings } = require('./cueFields');
 const { actionNameMap, displayAction } = require('./actionNames');
 const { gelColor } = require('./gelColors');
 const { characterLabel } = require('./characterNames');
-const { irisSizeList } = require('./irisSizes');
+const { irisSizeList, irisPic, irisFigureSVG } = require('./irisSizes');
+
+// Page Setup → Iris pictures: each iris size's stick figure and circle, with its button label, for a sheet's
+// header (Show Settings → Iris Sizes). Sizes without a circle are left out; '' when none have one.
+function irisKeyHTML(show) {
+  const items = irisSizeList(show && show.iris_sizes).map(s => ({ s, pic: irisPic(s) })).filter(x => x.pic);
+  if (!items.length) return '';
+  const esc = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  return `<div class="iris-key">${items.map(({ s, pic }) =>
+    `<div class="iris-key-item">${irisFigureSVG(pic)}<div class="iris-key-label">${esc(s.label || s.value)}</div></div>`).join('')}</div>`;
+}
+const IRIS_KEY_CSS = `
+  .iris-key { display: flex; align-items: flex-end; gap: 3px; flex-shrink: 0; }
+  .iris-key-item { display: flex; flex-direction: column; align-items: center; }
+  .iris-key-label { font-size: 6.5pt; font-weight: 700; color: #1a1a1a; line-height: 1; margin-top: 2px; white-space: nowrap; }
+`;
 const { withGaps } = require('./frames');
 
 // Style rules that hide the cue fields a show has unticked under "Show on print"
@@ -139,7 +154,7 @@ const sceneRowHTML = (scene, colspan) => `
           </tr>
         `;
 
-function buildSpotSheetHTML({ cueFields, show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, hideOff, hideTracked, rangeStart, rangeEnd, customActions, showTracks = true }) {
+function buildSpotSheetHTML({ cueFields, show, spot, colorSlots, cues, spotCues, characters, scenes, label, numSpots, hideOff, hideTracked, rangeStart, rangeEnd, customActions, showTracks = true, irisPictures = false }) {
   const pageFields = cueFieldSettings(cueFields);
   const pagePrint = pageFields.page.print;
   const actionNames = actionNameMap(show && show.action_names);
@@ -407,6 +422,7 @@ const sceneOrderMap = {};
     color: #1a1a1a;
   }
 
+${IRIS_KEY_CSS}
   .print-date {
     font-size: 8.5pt;
     color: #888;
@@ -601,8 +617,9 @@ const sceneOrderMap = {};
 <div class="header">
   ${logoHTML}
   <div class="header-main">
-    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;">
+    <div style="display:flex;align-items:${irisPictures ? 'flex-start' : 'baseline'};justify-content:space-between;gap:12px;">
       <div class="show-title" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;">${show.title}</div>
+      ${irisPictures ? irisKeyHTML(show) : ''}
       <div class="header-right" style="flex-shrink:0;">
         <div class="print-label">${label || 'Spot Sheet'}</div>
         <div class="print-date">${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
@@ -652,7 +669,7 @@ const sceneOrderMap = {};
 </html>`;
 }
 
-function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions, showTracks = true, rangeStart = null, rangeEnd = null, paper = 'letter' }) {
+function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, spotCuesBySpot, characters, scenes, label, customActions, showTracks = true, rangeStart = null, rangeEnd = null, paper = 'letter', irisPictures = false }) {
   let logoBase64 = '';
   if (show.logo_path) {
     try {
@@ -887,6 +904,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
     color: #1a1a1a;
   }
 
+${IRIS_KEY_CSS}
   .print-date {
     font-size: 8pt;
     color: #888;
@@ -1188,6 +1206,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
         ].filter(Boolean).join(' &nbsp;·&nbsp; ')}
       </div>
     </div>
+    ${irisPictures ? irisKeyHTML(show) : ''}
     <div class="header-right">
       <div class="print-label">${label || 'Caller Sheet'}</div>
       <div class="print-date">${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
