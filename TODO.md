@@ -75,7 +75,6 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 Plan: `docs/ipad-app-plan.md`. Contract with the desktop: `docs/sync-protocol.md`.
 
 - [ ] **Reminder, after the paperwork pass:** how the changes are shown when an iPad is asked to update its cue list (Wheeler has a thought)
-- [ ] Single spot sheet: drag columns to reorder them (e.g. an op who wants Intensity first). Saved on that iPad for that show
 - [ ] Phase 1 finish: check landscape (When and Notes get separate columns) and text size in a dark booth on the real iPad
 - [ ] Keep the iPad's copies in step: `Resources/gels.json` (from `src/gels.json`) and `Resources/action-icons.json` (from the ActionIcon SVGs in `src/screens/CueListScreen.jsx`) whenever those change
 - [ ] After launch (Phase 2): suggestions sent to the Mac (When/Notes editing), offline queue, desktop review list, approval switch
