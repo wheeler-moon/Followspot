@@ -43,6 +43,7 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
   - iPad Sync tab: show each paired iPad's name (the device name, e.g. "Dana's iPad") instead of just "iPad", so it's clear which are connected. Mind App Store privacy answers (device name is sent only to the Mac on the local network)
   - Iris size pictures: Wheeler sets the five default circles (`DEFAULT_IRIS_PICS` in `src/irisSizes.js`; set each in Show Settings → Iris Sizes, then copy the saved numbers in)
 - [ ] Beta feedback: add items here as testers report them
+- [ ] Home screen: Duplicate a show (a full copy, everything included, named e.g. "… Copy")
 - [ ] ⌘C / ⌘V for a cue box without right-clicking (needs a way to select a box first)
 - [ ] Cue Defaults, second pass: first version is in (Show Settings → Cue Defaults, `src/cueDefaults.js`). Wheeler wants to think it through more and make sure it fully works and is structured right: when defaults should apply (on picking an action vs. when a cue is made), how they interact with tracking, inserted cues, copy/paste and actions' own settings, whether defaults should be per spot, and whether more details (character, When) belong there. Remove the "In progress" label in the panel once it is settled.
 
@@ -75,6 +76,7 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 Plan: `docs/ipad-app-plan.md`. Contract with the desktop: `docs/sync-protocol.md`.
 
 - [ ] **Reminder, after the paperwork pass:** how the changes are shown when an iPad is asked to update its cue list (Wheeler has a thought)
+- [ ] Single spot sheet: drag columns to reorder them (e.g. an op who wants Intensity first). Saved on that iPad for that show
 - [ ] Phase 1 finish: check landscape (When and Notes get separate columns) and text size in a dark booth on the real iPad
 - [ ] Keep the iPad's copies in step: `Resources/gels.json` (from `src/gels.json`) and `Resources/action-icons.json` (from the ActionIcon SVGs in `src/screens/CueListScreen.jsx`) whenever those change
 - [ ] After launch (Phase 2): suggestions sent to the Mac (When/Notes editing), offline queue, desktop review list, approval switch
