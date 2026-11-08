@@ -86,7 +86,7 @@ Other
 
 Saved for the iPad app's first release (kept out of the Mac's What's New).
 
-- Spot view: touch and hold a column title (Intensity, Color, When…), then drag it onto another to move that column. The order is kept on this iPad for that show; Details → **Reset Column Order** puts it back
+- Spot view: put the columns in any order. Drag a column's title sideways (a blue line shows where it will land), or open Details (⋯), where each column has its switch and a ≡ handle to drag. Kept on this iPad for that show; **Reset Column Order** puts it back
 - A color frame removed on the Mac keeps its place as an empty slot
 - Details → **Iris Pictures** shows each iris size's stick figure and circle (set on the Mac) above the cue list
 - Scene headers are centered in their row
