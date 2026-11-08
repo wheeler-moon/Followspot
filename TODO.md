@@ -40,7 +40,6 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
   - Custom Actions: rethink how the menu looks. Deleting an action asks what to put in the cues that use it (pick an existing action), so no cue is left with no action
   - Custom Actions: an action with no image shows an empty spot, not the purple circle
   - **Cue list in a narrow window (big one):** with every frame button on each cue, the iris chips get squeezed until they can't be clicked (see 2026-11-05 screenshot: iris strip shows only ‹ ›). Needs a layout that stays sleek and easy to pick from at half-screen
-  - iPad Sync tab: show each paired iPad's name (the device name, e.g. "Dana's iPad") instead of just "iPad", so it's clear which are connected. Mind App Store privacy answers (device name is sent only to the Mac on the local network)
   - Iris size pictures: Wheeler sets the five default circles (`DEFAULT_IRIS_PICS` in `src/irisSizes.js`; set each in Show Settings → Iris Sizes, then copy the saved numbers in)
 - [ ] Beta feedback: add items here as testers report them
 - [ ] ⌘C / ⌘V for a cue box without right-clicking (needs a way to select a box first)
@@ -84,7 +83,7 @@ Plan: `docs/ipad-app-plan.md`. Contract with the desktop: `docs/sync-protocol.md
   - App record in App Store Connect: name "SpotPlot for iPad", subtitle, category (Productivity or Business), price Free, age rating
   - Description, keywords, promotional text, support URL (spotplotapp.com/support.html), marketing URL
   - iPad screenshots (13-inch required) from a demo show, never a real one; optional preview video
-  - Privacy: Privacy Policy URL https://spotplotapp.com/privacy.html, App Privacy answer "Data Not Collected" (true today: shows stay on the iPad, sync is local only; revisit if Phase 2 sends anything off the device)
+  - Privacy: Privacy Policy URL https://spotplotapp.com/privacy.html, App Privacy answer "Data Not Collected" (true today: shows stay on the iPad, sync is local only, and the iPad name the operator types goes only to their Mac; revisit if Phase 2 sends anything off the device)
   - Export compliance (encryption) answer, review notes for Apple (how to try it without a Mac: open a sample .spotplot file) and a demo file they can use
   - TestFlight: external testing group for beta testers (needs Apple's beta review the first time)
 - [ ] After launch (Phase 2): follow the Eos console (Now / Next bar, live highlight), then grandMA

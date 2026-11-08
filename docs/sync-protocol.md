@@ -23,8 +23,8 @@ The contract between SpotPlot on the Mac (`src/ipadSync.js`) and SpotPlot for iP
 | Request | Auth | Body / query | Response |
 |---|---|---|---|
 | `GET /api/hello` | none | | `{ app: "SpotPlot", protocol, version, name }` |
-| `POST /api/pair` | none | `{ code, deviceId, deviceName }` | `200 { token, name, showId, title }` (the show the code belongs to); `403` no show with that code has iPad Sync on; `429` after 5 wrong codes in a minute |
-| `POST /api/presence` | token | `{ role, spots }` (role `spot` or `caller`; `spots` = spot numbers) | `{ ok: true }`. Send every ~5 s; the Mac shows an iPad as online (on that show) if seen in the last 15 s |
+| `POST /api/pair` | none | `{ code, deviceId, deviceName }` (`deviceName`: the name the operator typed on the iPad; iPadOS only gives apps "iPad") | `200 { token, name, showId, title }` (the show the code belongs to); `403` no show with that code has iPad Sync on; `429` after 5 wrong codes in a minute |
+| `POST /api/presence` | token | `{ role, spots, deviceName }` (role `spot` or `caller`; `spots` = spot numbers; `deviceName` optional: the name the operator gave this iPad, which updates the Mac's list) | `{ ok: true }`. Send every ~5 s; the Mac shows an iPad as online (on that show) if seen in the last 15 s |
 | `GET /api/shows` | token | | `{ shows: [{ id, title, theatre, num_spots, version }] }`: only the token's show |
 | `GET /api/shows/:id` | token | | the `.spotplot` export JSON plus `sync_version`; `404` for any show but the token's |
 | `GET /api/shows/:id/pdf` | token | `kind=spot&spotId=…` or `kind=caller` | `application/pdf` (token's show only) |

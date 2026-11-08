@@ -212,7 +212,14 @@ async function handle(req, res) {
   if (!db.prepare('SELECT id FROM shows WHERE id = ?').get(auth.showId)) return send(res, 404, { error: 'This show is no longer on the Mac.' });
 
   if (route === 'POST /presence') {
-    const { role = null, spots = null } = await readJSON(req);
+    const { role = null, spots = null, deviceName } = await readJSON(req);
+    // The iPad's name (its operator can rename it on the iPad): keep the Mac's list up to date
+    const name = typeof deviceName === 'string' ? deviceName.trim().slice(0, 80) : '';
+    if (name && name !== device.name) {
+      const s = loadSettings();
+      const d = showSettings(s, auth.showId).devices.find(x => x.id === device.id);
+      if (d) { d.name = name; saveSettings(s); }
+    }
     online.set(`${auth.showId}:${device.id}`, { lastSeen: Date.now(), showId: auth.showId, role, spots, ip: req.socket.remoteAddress });
     return send(res, 200, { ok: true });
   }
