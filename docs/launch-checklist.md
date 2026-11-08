@@ -11,7 +11,7 @@ Every task between now and launch, in date order, for all of SpotPlot (Mac app, 
 ## By Sunday, Nov 8: start everything that takes other people's time
 
 - [x] W: The Wheeler Moon Group LLC filed and approved (Nov 3)
-- [ ] W: EIN (irs.gov, free, ~10 minutes)
+- [x] W: EIN (done Nov 8)
 - [ ] W: Business bank account (needs the EIN)
 - [ ] W: Book the lawyer: Terms, Privacy Policy, license agreement, refunds (no refunds), auto-renewal rules; also ask about a **"SpotPlot" trademark search**
 - [ ] W: Ask an accountant: sales tax, selling outside the US (Stripe Tax vs. Paddle/Lemon Squeezy)
