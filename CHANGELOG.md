@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- Home: each show has a **⋯** button (or right-click it) to **Duplicate**, export or delete it. A duplicate is a full copy named "… copy"
 - Cue list: ⌘G (Edit → Go to Cue…) jumps to a cue. Type the LQ and press Return; it finds "14*" or "In 14" from 14, or the nearest cue
 - Notes sidebar: typing 14 finds a cue whose LQ is "14*" or "In 14"
 - Cue list: double-click a cue and start typing the note right away. Return saves it and closes the box (Shift-Return for a new line)

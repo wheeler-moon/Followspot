@@ -842,6 +842,35 @@ ipcMain.on('get-app-icon', (event) => {
       event.returnValue = { success: true, changed: r.changes };
     } catch(e) { event.returnValue = { success: false }; }
   });
+  // Home → ⋯ → Duplicate: a full copy of the show (everything an export carries, images copied too),
+  // named like Finder does: "Hamlet copy", then "Hamlet copy 2"
+  ipcMain.on('db-duplicate-show', (event, showId) => {
+    try {
+      const data = exportShow(getDb(), showId);
+      const taken = new Set(getDb().prepare('SELECT title FROM shows').all().map(r => r.title));
+      const base = data.show.title.trim().replace(/ copy( \d+)?$/, '');
+      let title = `${base} copy`;
+      for (let n = 2; taken.has(title); n++) title = `${base} copy ${n}`;
+      const { showId: newId } = importShow(getDb(), data, { imagesDir: imagesDir(), title });
+      event.returnValue = { success: true, showId: newId };
+    } catch(e) {
+      console.error('Duplicate error:', e);
+      event.returnValue = { success: false, error: e.message };
+    }
+  });
+  // Home → ⋯ → Delete…: the Mac's own question
+  ipcMain.on('dialog-delete-show', (event, title) => {
+    const { dialog } = require('electron');
+    const r = dialog.showMessageBoxSync(mainWindow, {
+      type: 'warning',
+      message: `Delete "${title}"?`,
+      detail: 'This can\'t be undone.',
+      buttons: ['Delete', 'Cancel'],
+      defaultId: 1,
+      cancelId: 1,
+    });
+    event.returnValue = r === 0;
+  });
   ipcMain.on('db-delete-show', (event, showId) => {
     try {
       getDb().prepare('DELETE FROM shows WHERE id = ?').run(showId);

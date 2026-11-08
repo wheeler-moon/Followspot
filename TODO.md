@@ -43,7 +43,6 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
   - iPad Sync tab: show each paired iPad's name (the device name, e.g. "Dana's iPad") instead of just "iPad", so it's clear which are connected. Mind App Store privacy answers (device name is sent only to the Mac on the local network)
   - Iris size pictures: Wheeler sets the five default circles (`DEFAULT_IRIS_PICS` in `src/irisSizes.js`; set each in Show Settings → Iris Sizes, then copy the saved numbers in)
 - [ ] Beta feedback: add items here as testers report them
-- [ ] Home screen: Duplicate a show (a full copy, everything included, named e.g. "… Copy")
 - [ ] ⌘C / ⌘V for a cue box without right-clicking (needs a way to select a box first)
 - [ ] Cue Defaults, second pass: first version is in (Show Settings → Cue Defaults, `src/cueDefaults.js`). Wheeler wants to think it through more and make sure it fully works and is structured right: when defaults should apply (on picking an action vs. when a cue is made), how they interact with tracking, inserted cues, copy/paste and actions' own settings, whether defaults should be per spot, and whether more details (character, When) belong there. Remove the "In progress" label in the panel once it is settled.
 

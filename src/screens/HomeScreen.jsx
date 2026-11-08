@@ -110,6 +110,21 @@ export default function HomeScreen({ navigate }) {
     const onAction = (_e, id) => {
       if (id === 'import-spotplot') importSpotPlotFile();
       if (id === 'import-filemaker') chooseFileMakerFile();
+      const [kind, showId] = String(id).split(':');
+      const show = showId && (ipcRenderer.sendSync('db-get-shows') || []).find(s => String(s.id) === showId);
+      if (!show) return;
+      if (kind === 'show-duplicate') {
+        const r = ipcRenderer.sendSync('db-duplicate-show', show.id);
+        if (r.success) refreshShows(); else alert('Couldn’t duplicate the show: ' + r.error);
+      }
+      if (kind === 'show-export') {
+        const r = ipcRenderer.sendSync('db-export-show', show.id);
+        if (!r.success && !r.cancelled) alert('Export failed: ' + r.error);
+      }
+      if (kind === 'show-delete' && ipcRenderer.sendSync('dialog-delete-show', show.title)) {
+        ipcRenderer.sendSync('db-delete-show', show.id);
+        refreshShows();
+      }
     };
     const onMenu = () => chooseFileMakerFile();
     ipcRenderer.on('context-menu-action', onAction);
@@ -148,19 +163,27 @@ export default function HomeScreen({ navigate }) {
 
   const shown = shows.filter(s => s.title.toLowerCase().includes(search.toLowerCase()) || (s.theatre || '').toLowerCase().includes(search.toLowerCase()));
   const listColumns = '32px minmax(0, 1fr) 56px 200px 56px';
-  const DeleteButton = ({ show }) => (
-    <button
-      onClick={e => {
-        e.stopPropagation();
-        if (window.confirm(`Delete "${show.title}"? This cannot be undone.`)) {
-          ipcRenderer.sendSync('db-delete-show', show.id);
-          setShows(shows.filter(s => s.id !== show.id));
-        }
-      }}
-      style={{ background: 'none', border: 'none', color: '#FF453A', fontSize: '11px', cursor: 'pointer', opacity: 0.4, padding: '2px 6px', flexShrink: 0 }}
-      onMouseEnter={e => e.currentTarget.style.opacity = 1}
-      onMouseLeave={e => e.currentTarget.style.opacity = 0.4}>
-      Delete
+  // Each show's ⋯ menu (also on right-click): Duplicate, Export, Delete. The Mac draws the menu;
+  // the choice comes back as 'context-menu-action' (handled above).
+  const openShowMenu = (e, show) => {
+    e.preventDefault();
+    e.stopPropagation();
+    ipcRenderer.send('show-context-menu', [
+      { id: `show-duplicate:${show.id}`, label: 'Duplicate' },
+      { id: `show-export:${show.id}`, label: 'Export Show File…' },
+      { type: 'separator' },
+      { id: `show-delete:${show.id}`, label: 'Delete…' },
+    ]);
+  };
+  const MoreButton = ({ show }) => (
+    <button onClick={e => openShowMenu(e, show)} title="More" aria-label={`More for ${show.title}`}
+      style={{ width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, border: 'none', borderRadius: '6px',
+        background: 'transparent', color: 'rgba(255,255,255,0.55)', cursor: 'pointer', flexShrink: 0 }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.10)'; e.currentTarget.style.color = '#FFFFFF'; }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; }}>
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
+        <circle cx="2.5" cy="7" r="1.4" /><circle cx="7" cy="7" r="1.4" /><circle cx="11.5" cy="7" r="1.4" />
+      </svg>
     </button>
   );
 
@@ -217,7 +240,7 @@ export default function HomeScreen({ navigate }) {
               {shown.map((show, i) => {
                 const logo = getImageSrc(show.logo_path);
                 return (
-                  <div key={show.id} data-tour={i === 0 ? 'show-card' : undefined} onClick={() => navigate('show', show)}
+                  <div key={show.id} data-tour={i === 0 ? 'show-card' : undefined} onClick={() => navigate('show', show)} onContextMenu={e => openShowMenu(e, show)}
                     style={{ display: 'grid', gridTemplateColumns: listColumns, gap: '12px', alignItems: 'center', padding: '8px 16px', cursor: 'pointer',
                       borderTop: i ? '1px solid rgba(255,255,255,0.05)' : 'none' }}
                     onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
@@ -231,7 +254,7 @@ export default function HomeScreen({ navigate }) {
                     </div>
                     <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.62)' }}>{show.num_spots}</span>
                     <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.62)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{modifiedText(show.updated_at || show.created_at).replace(/^Modified /, '')}</span>
-                    <DeleteButton show={show} />
+                    <MoreButton show={show} />
                   </div>
                 );
               })}
@@ -239,7 +262,7 @@ export default function HomeScreen({ navigate }) {
           ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
             {shown.map(show => (
-              <div key={show.id} data-tour="show-card" onClick={() => navigate('show', show)}
+              <div key={show.id} data-tour="show-card" onClick={() => navigate('show', show)} onContextMenu={e => openShowMenu(e, show)}
                 style={{ background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px', cursor: 'pointer' }}
                 onMouseEnter={e => e.currentTarget.style.borderColor = '#0A84FF'}
                 onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'}>
@@ -256,7 +279,7 @@ export default function HomeScreen({ navigate }) {
                   <span style={{ flex: 1, minWidth: 0, fontSize: '11px', color: 'rgba(255,255,255,0.40)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {modifiedText(show.updated_at || show.created_at)}
                   </span>
-                  <DeleteButton show={show} />
+                  <MoreButton show={show} />
                 </div>
               </div>
             ))}

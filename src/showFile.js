@@ -46,8 +46,10 @@ function exportShow(db, showId) {
 }
 
 // Creates a new show from exported data. imagesDir is where restored images are saved.
-function importShow(db, data, { imagesDir }) {
+// title: the new show's name (default: the file's name plus " (imported)"; Duplicate passes "… copy").
+function importShow(db, data, { imagesDir, title }) {
   if (!data || !data.show) throw new Error('This file is not a SpotPlot show.');
+  const newTitle = title || data.show.title + ' (imported)';
 
   const columnCache = {};
   const columns = table => columnCache[table] ||
@@ -78,7 +80,7 @@ function importShow(db, data, { imagesDir }) {
     const actions = parseJSON(data.show.custom_actions);
     const show = {
       ...data.show,
-      title: data.show.title + ' (imported)',
+      title: newTitle,
       logo_path: restoreImage(data.show.logo_path),
       custom_actions: Array.isArray(actions)
         ? JSON.stringify(actions.map(a => a && a.icon ? { ...a, icon: restoreImage(a.icon) } : a))
@@ -115,7 +117,7 @@ function importShow(db, data, { imagesDir }) {
     moveCheckedNotes(db, showId);
   })();
 
-  return { showId, title: data.show.title + ' (imported)' };
+  return { showId, title: newTitle };
 }
 
 module.exports = { exportShow, importShow };
