@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- Custom actions with no icon show nothing in the icon's place (on the cue list, in Show Settings and on prints), instead of a dot
 - Show Settings → iPad Sync: each iPad shows the name its operator gave it (e.g. "Dana – Spot 2") instead of just "iPad"
 - Home: each show has a **⋯** button (or right-click it) to **Duplicate**, export or delete it. A duplicate is a full copy named "… copy"
 - Cue list: ⌘G (Edit → Go to Cue…) jumps to a cue. Type the LQ and press Return; it finds "14*" or "In 14" from 14, or the nearest cue
@@ -87,6 +88,7 @@ Other
 
 Saved for the iPad app's first release (kept out of the Mac's What's New).
 
+- Custom actions with no icon show nothing in the icon's place, instead of a gray dot
 - Name this iPad (when adding a show, or the iPad button on the Shows list) so the Mac's list of iPads says who's who
 - Spot view: put the columns in any order. Drag a column's title sideways (a blue line shows where it will land), or open Details (⋯), where each column has its switch and a ≡ handle to drag. Kept on this iPad for that show; **Reset Column Order** puts it back
 - A color frame removed on the Mac keeps its place as an empty slot

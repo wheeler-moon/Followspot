@@ -50,12 +50,12 @@ const imageSrc = (path) => {
   } catch (e) { return null; }
 };
 
-// A custom action's icon: one of SpotPlot's symbols, an image, or a plain dot
+// A custom action's icon: one of SpotPlot's symbols, an image, or nothing (an empty space its size)
 function CustomIcon({ action, size = 28 }) {
   if (action.builtinIcon) return <ActionIcon action={action.builtinIcon} size={size} />;
   const src = imageSrc(action.icon);
   if (src) return <img src={src} style={{ width: size, height: size, objectFit: 'contain' }} />;
-  return <svg width={size} height={size} viewBox="0 0 32 32"><circle cx="16" cy="16" r="8" fill="#5E5CE6" /></svg>;
+  return <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" />;
 }
 
 const C = { label1: '#FFFFFF', label2: 'rgba(255,255,255,0.55)', label3: 'rgba(255,255,255,0.25)', accent: '#0A84FF', red: '#FF453A', separator: 'rgba(255,255,255,0.10)' };
