@@ -36,8 +36,9 @@ const DEFAULT_ACTIONS = [
 // it (its cues follow), change its icon or delete it. Icons come from SpotPlot's own symbols (the library)
 // or an image you choose.
 
-// Symbols a custom action can borrow: the built-in actions' plus three plain colored circles
-const LIBRARY = [...DEFAULT_ACTIONS.filter(a => a.name !== 'Tracked').map(a => a.name), 'Green Circle', 'Red Circle', 'Yellow Circle'];
+// Symbols a custom action can borrow: the built-in actions' plus plain colored circles (blue and purple
+// match the blue action symbols and the iris purple)
+const LIBRARY = [...DEFAULT_ACTIONS.filter(a => a.name !== 'Tracked').map(a => a.name), 'Green Circle', 'Red Circle', 'Yellow Circle', 'Blue Circle', 'Purple Circle'];
 
 const imageSrc = (path) => {
   if (!path) return null;
@@ -92,10 +93,12 @@ function IconChooser({ value, onChange }) {
   );
 }
 
-// The edit box for one action (built-in: its name in this show; custom: name, icon, delete)
-function EditAction({ target, actionNames, takenNames, onSaveBuiltin, onSaveCustom, onDelete, onClose }) {
+// The edit box for one action (built-in: its name in this show; custom: name, icon, delete; new: name and icon)
+function EditAction({ target, actionNames, takenNames, onSaveBuiltin, onSaveCustom, onAdd, onDelete, onClose }) {
   useEscape(onClose);
   const builtin = target.kind === 'builtin';
+  const isNew = target.kind === 'new';
+  if (isNew) target = { ...target, action: { name: '' } };
   const [name, setName] = useState(builtin ? (actionNames[target.name] || '') : target.action.name);
   const [icon, setIcon] = useState(builtin ? null : { icon: target.action.icon || null, builtinIcon: target.action.builtinIcon || null });
   const [error, setError] = useState(null);
@@ -104,7 +107,9 @@ function EditAction({ target, actionNames, takenNames, onSaveBuiltin, onSaveCust
     const original = builtin ? target.name : target.action.name;
     if (!builtin && !n) return setError('Give the action a name.');
     if (n && n !== original && takenNames.has(n.toLowerCase())) return setError(`“${n}” is already an action in this show.`);
-    if (builtin) onSaveBuiltin(target.name, n); else onSaveCustom(target.index, { ...target.action, name: n, ...icon });
+    if (builtin) onSaveBuiltin(target.name, n);
+    else if (isNew) onAdd({ name: n, color: 'rgba(255,255,255,0.62)', icon: icon.icon || null, builtinIcon: icon.builtinIcon || null });
+    else onSaveCustom(target.index, { ...target.action, name: n, ...icon });
     onClose();
   };
   return (
@@ -112,13 +117,13 @@ function EditAction({ target, actionNames, takenNames, onSaveBuiltin, onSaveCust
       <div onClick={e => e.stopPropagation()} style={{ width: '360px', background: '#2A2A2A', borderRadius: '16px', padding: '16px', boxShadow: '0 18px 48px rgba(0,0,0,0.45)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
           {builtin ? <ActionIcon action={target.name} size={28} /> : <CustomIcon action={{ ...target.action, ...icon }} size={28} />}
-          <div style={{ fontSize: '13px', fontWeight: '700', color: C.label1 }}>{builtin ? target.name : 'Custom action'}</div>
+          <div style={{ fontSize: '13px', fontWeight: '700', color: C.label1 }}>{builtin ? target.name : isNew ? 'New custom action' : 'Custom action'}</div>
         </div>
         <div style={{ fontSize: '11px', color: C.label2, marginBottom: '4px' }}>{builtin ? 'Name in this show' : 'Name'}</div>
         <input autoFocus value={name} placeholder={builtin ? target.name : 'Action name'} onChange={e => { setName(e.target.value); setError(null); }}
           onKeyDown={e => { if (e.key === 'Enter') save(); }} style={{ ...inputStyle, width: '100%' }} />
         <div style={{ fontSize: '11px', color: error ? C.red : C.label3, margin: '6px 0 12px', lineHeight: '14px' }}>
-          {error || (builtin ? 'Shown in this show’s cue list, action menu, prints and on iPads. The symbol stays. Leave empty for the standard name.' : 'Cues that use this action follow the new name.')}
+          {error || (builtin ? 'Shown in this show’s cue list, action menu, prints and on iPads. The symbol stays. Leave empty for the standard name.' : isNew ? 'Pick a SpotPlot symbol or your own image (optional).' : 'Cues that use this action follow the new name.')}
         </div>
         {!builtin && (
           <>
@@ -128,10 +133,10 @@ function EditAction({ target, actionNames, takenNames, onSaveBuiltin, onSaveCust
         )}
         <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
           {builtin && actionNames[target.name] && <button onClick={() => { onSaveBuiltin(target.name, ''); onClose(); }} style={button()}>Reset</button>}
-          {!builtin && <button onClick={() => { onDelete(target.index); onClose(); }} style={button('danger')}>Delete</button>}
+          {!builtin && !isNew && <button onClick={() => { onDelete(target.index); onClose(); }} style={button('danger')}>Delete</button>}
           <div style={{ flex: 1 }} />
           <button onClick={onClose} style={button()}>Cancel</button>
-          <button onClick={save} style={button('primary')}>Save</button>
+          <button onClick={save} style={button('primary')}>{isNew ? 'Add' : 'Save'}</button>
         </div>
       </div>
     </div>
@@ -141,10 +146,7 @@ function EditAction({ target, actionNames, takenNames, onSaveBuiltin, onSaveCust
 export default function CustomActionsPanel({ show }) {
   const [customActions, setCustomActions] = useState([]);
   const [actionNames, setActionNames] = useState({});
-  const [editing, setEditing] = useState(null);   // { kind: 'builtin', name } or { kind: 'custom', index, action }
-  const [newName, setNewName] = useState('');
-  const [newIcon, setNewIcon] = useState({ icon: null, builtinIcon: null });
-  const [addError, setAddError] = useState(null);
+  const [editing, setEditing] = useState(null);   // { kind: 'builtin', name }, { kind: 'custom', index, action } or { kind: 'new' }
 
   useEffect(() => {
     const updated = ipcRenderer.sendSync('db-get-show', show.id);
@@ -171,24 +173,15 @@ export default function CustomActionsPanel({ show }) {
   // Every name already in use in this show (built-in names, their renamed names, custom names)
   const taken = new Set([...DEFAULT_ACTIONS.map(a => a.name), ...Object.values(actionNames), ...customActions.map(a => a.name)].map(n => n.toLowerCase()));
 
-  const addAction = () => {
-    const n = newName.trim();
-    if (!n) return;
-    if (taken.has(n.toLowerCase())) { setAddError(`“${n}” is already an action in this show.`); return; }
-    saveCustoms([...customActions, { name: n, color: 'rgba(255,255,255,0.62)', icon: newIcon.icon || null, builtinIcon: newIcon.builtinIcon || null }]);
-    setNewName(''); setNewIcon({ icon: null, builtinIcon: null }); setAddError(null);
-  };
-
   const card = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', cursor: 'pointer' };
-  const sectionTitle = { fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' };
 
   return (
     <div>
       <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.52)', marginBottom: '16px', lineHeight: '18px' }}>
-        Click an action to rename it for this show. Add your own below.
+        Click an action to rename it for this show. <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: C.accent, margin: '0 4px 1px 2px' }} />marks your own actions; + adds one.
       </div>
 
-      <div style={sectionTitle}>Built-in actions</div>
+      {/* SpotPlot's actions, then this show's own (a blue dot marks them), then + to add one */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '8px', marginBottom: '24px' }}>
         {DEFAULT_ACTIONS.filter(a => a.name !== 'Tracked').map(a => (
           <div key={a.name} onClick={() => setEditing({ kind: 'builtin', name: a.name })} title="Rename for this show" style={card}
@@ -200,38 +193,24 @@ export default function CustomActionsPanel({ show }) {
             </div>
           </div>
         ))}
-      </div>
-
-      {customActions.length > 0 && (
-        <>
-          <div style={sectionTitle}>Custom actions</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '8px', marginBottom: '24px' }}>
-            {customActions.map((a, i) => (
-              <div key={i} onClick={() => setEditing({ kind: 'custom', index: i, action: a })} title="Edit" style={{ ...card, background: 'rgba(10,132,255,0.16)', border: '1px solid #0A84FF' }}>
-                <CustomIcon action={a} size={28} />
-                <div style={{ fontSize: '11px', color: '#FFFFFF', textAlign: 'center', lineHeight: 1.2 }}>{a.name}</div>
-              </div>
-            ))}
+        {customActions.map((a, i) => (
+          <div key={'c' + i} onClick={() => setEditing({ kind: 'custom', index: i, action: a })} title="Custom action: click to edit" style={{ ...card, position: 'relative' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.09)'; }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}>
+            <span style={{ position: 'absolute', top: '6px', right: '6px', width: '6px', height: '6px', borderRadius: '50%', background: C.accent }} />
+            <CustomIcon action={a} size={28} />
+            <div style={{ fontSize: '11px', color: '#FFFFFF', textAlign: 'center', lineHeight: 1.2 }}>{a.name}</div>
           </div>
-        </>
-      )}
-
-      <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '14px' }}>
-        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', marginBottom: '10px', fontWeight: '600' }}>Add custom action</div>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '10px' }}>
-          <CustomIcon action={newIcon} size={28} />
-          <input style={{ ...inputStyle, flex: 1 }} value={newName} onChange={e => { setNewName(e.target.value); setAddError(null); }}
-            onKeyDown={e => e.key === 'Enter' && addAction()} placeholder="Action name" />
-          <button onClick={addAction} style={button('primary')}>Add</button>
+        ))}
+        <div data-tour="add-custom-action" onClick={() => setEditing({ kind: 'new' })} title="Add a custom action"
+          style={{ ...card, justifyContent: 'center', background: 'transparent', border: '1px dashed rgba(255,255,255,0.18)', color: C.label2, fontSize: '22px', fontWeight: '300', minHeight: '64px' }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#FFFFFF'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)'; }} onMouseLeave={e => { e.currentTarget.style.color = C.label2; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)'; }}>
+          +
         </div>
-        {addError && <div style={{ fontSize: '11px', color: C.red, marginBottom: '8px' }}>{addError}</div>}
-        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '6px' }}>Icon: pick a SpotPlot symbol or choose your own image (optional)</div>
-        <IconChooser value={newIcon} onChange={setNewIcon} />
       </div>
 
       {editing && (
         <EditAction target={editing} actionNames={actionNames} takenNames={taken}
-          onSaveBuiltin={saveBuiltinName} onSaveCustom={saveCustom}
+          onSaveBuiltin={saveBuiltinName} onSaveCustom={saveCustom} onAdd={a => saveCustoms([...customActions, a])}
           onDelete={i => saveCustoms(customActions.filter((_, j) => j !== i))}
           onClose={() => setEditing(null)} />
       )}

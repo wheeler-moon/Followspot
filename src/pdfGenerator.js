@@ -73,6 +73,8 @@ function actionIconSVG(action, size = 28) {
     'Green Circle': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="#3B6D11"/></svg>`,
     'Red Circle': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="#A32D2D"/></svg>`,
     'Yellow Circle': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="#E0B000"/></svg>`,
+    'Blue Circle': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="#185FA5"/></svg>`,
+    'Purple Circle': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="#6A2C9E"/></svg>`,
     'Off': `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><line x1="8" y1="8" x2="24" y2="24" stroke="#999" stroke-width="2.5" stroke-linecap="round"/><line x1="24" y1="8" x2="8" y2="24" stroke="#999" stroke-width="2.5" stroke-linecap="round"/></svg>`,
   };
   // A custom action with no image: an empty space the icon's size

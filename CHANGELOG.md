@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- Show Settings → Custom Actions: your own actions sit right after Off (a blue dot marks them), and + at the end adds one. The icon library has blue and purple circles too
 - Custom actions with no icon show nothing in the icon's place (on the cue list, in Show Settings and on prints), instead of a dot
 - Show Settings → iPad Sync: each iPad shows the name its operator gave it (e.g. "Dana – Spot 2") instead of just "iPad"
 - Home: each show has a **⋯** button (or right-click it) to **Duplicate**, export or delete it. A duplicate is a full copy named "… copy"
