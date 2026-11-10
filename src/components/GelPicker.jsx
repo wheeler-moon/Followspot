@@ -11,7 +11,7 @@ const inputStyle = {
 // Search box for one gel. Pick from the catalog, or type anything: a gel that isn't in the catalog
 // is kept exactly as typed (as its number, so it prints) and is drawn clear/white wherever colors show.
 // Typing an exact catalog number (e.g. "r4615") fills in the proper number and name on leaving the box.
-export function GelPicker({ value, onChange, placeholder, borderColor }) {
+export function GelPicker({ value, title, onChange, placeholder, borderColor }) {
   const [query, setQuery] = useState(value || '');
   const [results, setResults] = useState([]);
   const [open, setOpen] = useState(false);
@@ -34,7 +34,7 @@ export function GelPicker({ value, onChange, placeholder, borderColor }) {
   }, []);
 
   const select = (gel) => {
-    setQuery(gel.gel_number + ' ' + gel.gel_name);
+    setQuery(gel.gel_number || gel.gel_name);   // the list shows names; the box just the number
     onChange({ gel_number: gel.gel_number, gel_name: gel.gel_name });
     setOpen(false);
   };
@@ -43,6 +43,7 @@ export function GelPicker({ value, onChange, placeholder, borderColor }) {
     <div ref={ref} style={{ position: 'relative', flex: 1, minWidth: 0 }}>
       <input style={borderColor ? { ...inputStyle, borderColor } : inputStyle}
         value={query}
+        title={title || undefined}
         placeholder={placeholder || 'Gel number or name'}
         onChange={e => { search(e.target.value); onChange({ gel_number: e.target.value.trim(), gel_name: '' }); }}
         onBlur={() => {
@@ -100,7 +101,7 @@ export function GelFramePicker({ gelNumber, gelName, onChange, placeholder, comp
       {gels.map((g, i) => (
         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: i ? '4px' : 0, position: 'relative' }}>
           {i > 0 && <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', width: '10px', textAlign: 'center' }}>+</span>}
-          <GelPicker value={[g.gel_number, g.gel_name].filter(Boolean).join(' ')}
+          <GelPicker value={g.gel_number || g.gel_name} title={g.gel_number && g.gel_name ? g.gel_number + ' ' + g.gel_name : ''}
             onChange={gel => update(gels.map((x, j) => j === i ? gel : x))}
             placeholder={i ? 'Add another gel' : placeholder} borderColor={borderColor} />
           {i > 0 && (
