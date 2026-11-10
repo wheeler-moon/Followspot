@@ -5,7 +5,7 @@ const { ipcRenderer } = window.require('electron');
 const inputStyle = {
   width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
   borderRadius: '6px', color: '#FFFFFF', padding: '5px 8px',
-  fontSize: '12px', outline: 'none', boxSizing: 'border-box',
+  fontSize: '13px', outline: 'none', boxSizing: 'border-box',
 };
 
 // Search box for one gel. Pick from the catalog, or type anything: a gel that isn't in the catalog
