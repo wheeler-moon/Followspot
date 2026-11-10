@@ -242,12 +242,13 @@ export default function CustomActionsPanel({ show }) {
   return (
     <div>
       <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.52)', marginBottom: '16px', lineHeight: '18px' }}>
-        Click an action to rename it for this show. <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: C.accent, margin: '0 4px 1px 2px' }} />marks your own actions; + adds one.
+        Click an action to rename it for this show (Off stays Off). <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: C.accent, margin: '0 4px 1px 2px' }} />marks your own actions; + adds one.
       </div>
 
       {/* SpotPlot's actions, then this show's own (a blue dot marks them), then + to add one */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '8px', marginBottom: '24px' }}>
-        {DEFAULT_ACTIONS.filter(a => a.name !== 'Tracked').map(a => (
+        {/* Off can't be renamed, so it isn't here */}
+        {DEFAULT_ACTIONS.filter(a => a.name !== 'Tracked' && a.name !== 'Off').map(a => (
           <div key={a.name} onClick={() => setEditing({ kind: 'builtin', name: a.name })} title="Rename for this show" style={card}
             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.09)'; }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}>
             <ActionIcon action={a.name} size={28} />

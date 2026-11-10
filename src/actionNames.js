@@ -1,4 +1,4 @@
-// A show can rename SpotPlot's built-in actions ("Pick Up" → "Pickup"), stored on the show as JSON in
+// A show can rename SpotPlot's built-in actions (all but Off) ("Pick Up" → "Pickup"), stored on the show as JSON in
 // shows.action_names: { [built-in name]: name shown in this show }. Cues keep the built-in name, so
 // symbols, colors and behaviour don't change; only the name people see does (cue list, action menu,
 // prints, action key, iPad). Custom actions are renamed for real instead (their cues follow).
@@ -10,7 +10,8 @@ function actionNameMap(json) {
   let saved = {};
   try { saved = (typeof json === 'string' ? JSON.parse(json) : json) || {}; } catch (e) { saved = {}; }
   const out = {};
-  for (const [k, v] of Object.entries(saved)) if (typeof v === 'string' && v.trim() && v.trim() !== k) out[k] = v.trim();
+  // Off always reads Off (it can't be renamed; an older rename is ignored)
+  for (const [k, v] of Object.entries(saved)) if (k !== 'Off' && typeof v === 'string' && v.trim() && v.trim() !== k) out[k] = v.trim();
   return out;
 }
 
