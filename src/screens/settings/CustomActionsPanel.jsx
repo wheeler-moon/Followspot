@@ -60,6 +60,8 @@ function CustomIcon({ action, size = 28 }) {
 }
 
 const C = { label1: '#FFFFFF', label2: 'rgba(255,255,255,0.55)', label3: 'rgba(255,255,255,0.25)', accent: '#0A84FF', red: '#FF453A', separator: 'rgba(255,255,255,0.10)' };
+const checkRow = { display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#FFFFFF', cursor: 'pointer' };
+const checkBox = { width: '15px', height: '15px', accentColor: '#0A84FF', cursor: 'pointer', margin: 0 };
 const inputStyle = { height: '28px', boxSizing: 'border-box', background: '#1E1E1E', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '6px', color: '#FFFFFF', padding: '0 10px', fontSize: '13px', outline: 'none', fontFamily: 'inherit' };
 const button = (kind) => ({ height: '28px', padding: '0 14px', borderRadius: '14px', border: 'none', fontSize: '13px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit',
   background: kind === 'primary' ? C.accent : 'rgba(255,255,255,0.08)', color: kind === 'danger' ? C.red : '#FFFFFF' });
@@ -102,6 +104,8 @@ function EditAction({ target, actionNames, takenNames, otherActions, countUses, 
   const [name, setName] = useState(builtin ? (actionNames[target.name] || '') : target.action.name);
   const [icon, setIcon] = useState(builtin ? null : { icon: target.action.icon || null, builtinIcon: target.action.builtinIcon || null });
   const [error, setError] = useState(null);
+  // What carries through this action when you change an earlier cue (src/characterTracking.js). All off by default.
+  const [tracking, setTracking] = useState(builtin ? null : { character: false, iris: false, color: false, goesOut: false, ...(target.action.tracking || {}) });
   // Deleting an action that cues use: what those cues get instead (an existing action, or a new one)
   const [deleting, setDeleting] = useState(null);   // { count, to: '' | action name | '__new', newName }
   const startDelete = () => {
@@ -127,8 +131,8 @@ function EditAction({ target, actionNames, takenNames, otherActions, countUses, 
     if (!builtin && !n) return setError('Give the action a name.');
     if (n && n !== original && takenNames.has(n.toLowerCase())) return setError(`“${n}” is already an action in this show.`);
     if (builtin) onSaveBuiltin(target.name, n);
-    else if (isNew) onAdd({ name: n, color: 'rgba(255,255,255,0.62)', icon: icon.icon || null, builtinIcon: icon.builtinIcon || null });
-    else onSaveCustom(target.index, { ...target.action, name: n, ...icon });
+    else if (isNew) onAdd({ name: n, color: 'rgba(255,255,255,0.62)', icon: icon.icon || null, builtinIcon: icon.builtinIcon || null, tracking });
+    else onSaveCustom(target.index, { ...target.action, name: n, ...icon, tracking });
     onClose();
   };
   const box = (content) => (
@@ -182,6 +186,20 @@ function EditAction({ target, actionNames, takenNames, otherActions, countUses, 
           <>
             <div style={{ fontSize: '11px', color: C.label2, marginBottom: '6px' }}>Icon</div>
             <IconChooser value={icon} onChange={setIcon} />
+            <div style={{ fontSize: '11px', color: C.label2, margin: '14px 0 6px' }}>Carries through this action</div>
+            <div style={{ display: 'flex', gap: '16px' }}>
+              {[['character', 'Character'], ['iris', 'Iris'], ['color', 'Color']].map(([k, label]) => (
+                <label key={k} style={checkRow}>
+                  <input type="checkbox" checked={tracking[k]} onChange={() => setTracking(t => ({ ...t, [k]: !t[k] }))} style={checkBox} />{label}
+                </label>
+              ))}
+            </div>
+            <label style={{ ...checkRow, marginTop: '8px' }}>
+              <input type="checkbox" checked={tracking.goesOut} onChange={() => setTracking(t => ({ ...t, goesOut: !t.goesOut }))} style={checkBox} />Spot goes out after this (like Fade Out)
+            </label>
+            <div style={{ fontSize: '11px', color: C.label3, marginTop: '6px', lineHeight: '14px' }}>
+              When you change an earlier cue, checked items carry into this cue too. Not sure? Leave them unchecked.
+            </div>
           </>
         )}
         <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>

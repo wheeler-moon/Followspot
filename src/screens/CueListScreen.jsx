@@ -13,7 +13,7 @@ import { irisSizeList } from '../irisSizes';
 import { gelColor } from '../gelColors';
 import { MAX_CHARACTERS, extraCharacters, extraCharactersJSON } from '../characterNames';
 import { setUndoTarget } from '../undoTarget';
-import { followDown, FOLLOW_FIELDS } from '../characterTracking';
+import { followDown, FOLLOW_FIELDS, goesOut } from '../characterTracking';
 import { withGaps } from '../frames';
 import ActionIcon from '../components/ActionIcon';
 import { findCue } from '../cueSearch';
@@ -1574,7 +1574,7 @@ export default function CueListScreen({ show, navigate }) {
       const cues = [...(data?.cues || [])].sort((a, b) => a.sort_order - b.sort_order);
       const rows = cues.map(c => (data?.spotCues || []).find(x => x.cue_id === c.id && x.spot_id === oldSpotCue.spot_id) || null);
       const from = cues.findIndex(c => c.id === oldSpotCue.cue_id);
-      for (const id of followDown(rows, from, field, oldValue, value)) updateSpotCue(id, field, value, false, true);
+      for (const id of followDown(rows, from, field, oldValue, value, customActions)) updateSpotCue(id, field, value, false, true);
     }
   };
   const upsertSpotCue = (spotId, cueId, field, value) => {
@@ -1735,7 +1735,7 @@ export default function CueListScreen({ show, navigate }) {
     for (const cue of [...(data?.cues || [])].sort((a, b) => a.sort_order - b.sort_order)) {
       for (const spot of data?.spots || []) {
         const sc = scBy.get(`${cue.id}:${spot.id}`);
-        if (!(spot.id in last) || ENDS_OFF.includes(last[spot.id]) || sc?.action === 'Off') fromOffCells.add(`${cue.id}:${spot.id}`);
+        if (!(spot.id in last) || ENDS_OFF.includes(last[spot.id]) || goesOut(last[spot.id], customActions) || sc?.action === 'Off') fromOffCells.add(`${cue.id}:${spot.id}`);
         if (prev[spot.id]) aboveCells.set(`${cue.id}:${spot.id}`, prev[spot.id]);
         prev[spot.id] = sc;
         if (sc && sc.action && sc.action !== 'Tracked') last[spot.id] = sc.action;

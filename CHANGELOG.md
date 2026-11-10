@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- Custom actions: choose whether a character, iris or color change carries through them, and whether the spot goes out after (like Fade Out). Unchecked, changes stop before them
 - Cue list: click the ↓ next to an LQ to copy its number and page into the blank cues below it
 - Cue list: change a spot's iris or color and it carries down until the spot goes out, including the Fade Out or Bump Out cue. It stops before an iris action (Iris In, Iris Out…) for iris, and before Bump Color or Roll Color for color
 - Cue list: iris and color fit better. Frames always show F1–F6; the iris sizes scroll sideways if they don't all fit, and only in a really narrow window fold into one button showing the current size (the frames then show just 1, 2, 3…). All spots always look the same

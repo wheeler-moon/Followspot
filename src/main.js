@@ -1186,10 +1186,16 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
         prevSCs.forEach(sc => { prevSpotCues[sc.spot_id] = sc; });
       }
 
+      let customOut = new Set();
+      try {
+        const ca = JSON.parse(database.prepare('SELECT custom_actions FROM shows WHERE id = ?').get(showId)?.custom_actions || '[]');
+        customOut = new Set((Array.isArray(ca) ? ca : []).filter(a => a && a.tracking && a.tracking.goesOut).map(a => a.name));
+      } catch (e) {}
       for (const spot of spots) {
         const prevSpotCue = prevSpotCues[spot.id] || null;
         const prevAction = prevSpotCue ? prevSpotCue.action : '';
-        const endsInOff = ['Fade Out', 'Bump Out', 'Fade In Place', 'Up & Out', 'Iris/Fade Out'].includes(prevAction);
+        // (or a custom action marked "Spot goes out after this")
+        const endsInOff = ['Fade Out', 'Bump Out', 'Fade In Place', 'Up & Out', 'Iris/Fade Out'].includes(prevAction) || customOut.has(prevAction);
         const wasOff = prevAction === 'Off';
         const startsOff = endsInOff || wasOff;
 
