@@ -887,12 +887,13 @@ function CueRow({ selected, lqSeed, onDragFinished, onCellMenu, onCueMenu, menuC
                 </span>
               )}
             </div>
-            <select value={cue.scene_id || ''} onChange={e => onUpdateCue(cue.id, 'scene_id', e.target.value ? parseInt(e.target.value) : null)}
+            {/* Left out of Tab (tabIndex -1): Tab goes from the page number straight to the spots */}
+            <select tabIndex={-1} value={cue.scene_id || ''} onChange={e => onUpdateCue(cue.id, 'scene_id', e.target.value ? parseInt(e.target.value) : null)}
               style={{ width: '74px', height: '20px', background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '6px', color: 'rgba(255,255,255,0.45)', padding: '0 4px', fontSize: '10px', outline: 'none', marginTop: '4px' }}>
               <option value="">No scene</option>
               {scenes.map(s => <option key={s.id} value={s.id}>{s.label || s.song}{s.label && s.song ? ' · ' + s.song : ''}</option>)}
             </select>
-            <div onClick={() => { if (window.confirm('Delete this cue? It\'s removed for every spot. ⌘Z brings it back.')) onDelete(cue.id); }}
+            <div onClick={() => { if (window.confirm('Delete this cue? It\'s removed for every spot.')) onDelete(cue.id); }}
               style={{ fontSize: '10px', fontWeight: '500', color: '#FF453A', cursor: 'pointer', marginTop: '2px', padding: '1px 6px', borderRadius: '6px', opacity: 0.45 }}
               onMouseEnter={e => { e.currentTarget.style.opacity = 1; e.currentTarget.style.background = 'rgba(255,69,58,0.14)'; }}
               onMouseLeave={e => { e.currentTarget.style.opacity = 0.45; e.currentTarget.style.background = 'transparent'; }}>
@@ -1768,7 +1769,7 @@ export default function CueListScreen({ show, navigate }) {
     } else if (id === 'insert-below') {
       insertCueAfter(cue.id, cue.scene_id);
     } else if (id === 'delete') {
-      if (window.confirm(`Delete ${cueName(cue)}? It's removed for every spot. ⌘Z brings it back.`)) deleteCue(cue.id);
+      if (window.confirm(`Delete ${cueName(cue)}? It's removed for every spot.`)) deleteCue(cue.id);
     } else if (id === 'clear') {
       clearSpotCue(sc);
     }
@@ -1858,7 +1859,7 @@ export default function CueListScreen({ show, navigate }) {
       const cmd = e.metaKey || e.ctrlKey;
       if (cmd && (e.key === 'Backspace' || e.key === 'Delete')) {
         e.preventDefault();
-        if (!window.confirm(`Delete ${k.cueName(cue)}? It's removed for every spot. ⌘Z brings it back.`)) return;
+        if (!window.confirm(`Delete ${k.cueName(cue)}? It's removed for every spot.`)) return;
         const i = cues.findIndex(c => c.id === cue.id);
         const next = cues[i + 1] || cues[i - 1];
         k.deleteCue(cue.id);

@@ -77,7 +77,7 @@ export default function ScenesScreen({ show, navigate }) {
   };
 
   const deleteScene = (sceneId) => {
-    if (!window.confirm('Delete this scene? Its cues become unassigned. ⌘Z brings it back.')) return;
+    if (!window.confirm('Delete this scene? Its cues become unassigned.')) return;
     const result = ipcRenderer.sendSync('db-delete-scene', sceneId);
     if (result?.success && result.row) {
       const { row, cueIds } = result;
