@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import useEscape from '../../useEscape';
 import SwapSpotsDialog from '../../components/SwapSpotsDialog';
 import CopyColorsSelect from '../../components/CopyColorsSelect';
-import { GelFramePicker } from '../../components/GelPicker';
 import FrameGrid, { RemoveFrameDialog } from '../../components/FrameGrid';
 import { getUndoTarget, setUndoTarget } from '../../undoTarget';
 const { ipcRenderer } = window.require('electron');
@@ -16,7 +15,7 @@ const inputStyle = {
   fontSize: '13px', outline: 'none', boxSizing: 'border-box',
 };
 
-function SpotCard({ flash, spot, spotNumbers, colorSlots, onUpdateSpot, onUpdateGel, onDelete, otherSpots, onCopyColorsFrom, onSetPermanent, onSlotsChanged, onTrack }) {
+function SpotCard({ flash, spot, spotNumbers, colorSlots, onUpdateSpot, onUpdateGel, onPermGel, onDelete, otherSpots, onCopyColorsFrom, onSlotsChanged, onTrack }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   // The frame being removed when cues use it (asks what to do with those cues)
   const [removing, setRemoving] = useState(null);
@@ -36,7 +35,6 @@ function SpotCard({ flash, spot, spotNumbers, colorSlots, onUpdateSpot, onUpdate
     const slots = ipcRenderer.sendSync('db-add-frame', { spotId: spot.id, slotNumber });
     if (Array.isArray(slots)) onSlotsChanged(spot.id, slots);
   });
-  const [permJustOn, setPermJustOn] = useState(false);
   // Bumped after a copy so the gel pickers re-read their values
   const [copyCount, setCopyCount] = useState(0);
   const isCustomFixture = spot.fixture_type && !FIXTURES.includes(spot.fixture_type);
@@ -106,31 +104,17 @@ function SpotCard({ flash, spot, spotNumbers, colorSlots, onUpdateSpot, onUpdate
             onDelete();
           }} />
       )}
-      <div data-tour="spot-frames"><FrameGrid key={copyCount} cardBackground="#2A2A2A"
+      <div data-tour="spot-frames"><FrameGrid key={copyCount}
         frames={regularSlots.map(s => ({ key: s.id, slot: s.slot_number, gel_number: s.gel_number, gel_name: s.gel_name, row: s }))}
         onGelChange={(f, gel) => onUpdateGel(spot.id, f.row.id, gel)}
         onRemove={f => askRemoveFrame(f.row)}
-        onAdd={addFrame} /></div>
+        onAdd={addFrame}
+        perm={{ tour: 'spot-permanent', gel_number: permSlot?.gel_number, gel_name: permSlot?.gel_name, onChange: gel => onPermGel(spot.id, gel) }} /></div>
       {removing && (
         <RemoveFrameDialog slot={removing.slot.slot_number} cueCount={removing.cueCount}
           otherSlots={regularSlots.filter(s => s.id !== removing.slot.id).map(s => s.slot_number)}
           onCancel={() => setRemoving(null)}
           onRemove={replaceWith => removeFrame(removing.slot, replaceWith)} />
-      )}
-      {/* Checked when the spot has a permanent gel (or the box was just ticked) */}
-      <label data-tour="spot-permanent" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: '#FFFFFF', margin: '4px 0 0' }}>
-        <input type="checkbox" checked={!!(permSlot && (permJustOn || permSlot.gel_number || permSlot.gel_name))} onChange={e => { setPermJustOn(e.target.checked); onSetPermanent(spot.id, e.target.checked); }}
-          style={{ width: '15px', height: '15px', accentColor: '#0A84FF', cursor: 'pointer', margin: 0 }} />
-        Permanent color
-        <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)' }}>a gel that always stays in the fixture</span>
-      </label>
-      {permSlot && (permJustOn || permSlot.gel_number || permSlot.gel_name) && (
-        <div style={{ background: '#2A2A2A', borderRadius: '8px', padding: '8px', marginTop: '8px', border: '1px solid rgba(255,214,10,0.25)' }}>
-          <div style={{ fontSize: '10px', color: '#C8A26B', marginBottom: '6px', fontWeight: '600' }}>Permanent frame</div>
-          <GelFramePicker key={copyCount} gelNumber={permSlot.gel_number} gelName={permSlot.gel_name}
-            onChange={gel => onUpdateGel(spot.id, permSlot.id, gel)}
-            placeholder="Gel number or name" />
-        </div>
       )}
     </div>
   );
@@ -323,7 +307,12 @@ export default function SpotSettingsPanel({ show, focusSpotId = null }) {
           onDelete={() => load()}
           otherSpots={spots.filter(s => s.id !== spot.id).map(s => ({ key: s.id, label: 'Spot ' + s.spot_number }))}
           onCopyColorsFrom={sourceId => track(spot.id, () => copyColors(spot.id, sourceId))}
-          onSetPermanent={(spotId, enabled) => track(spotId, () => setPermanent(spotId, enabled))}
+          onPermGel={(spotId, gel) => track(spotId, () => {
+            // The Perm box: an empty one means no permanent color. A spot without a permanent slot gets one on first typing
+            let perm = (colorSlots[spotId] || []).find(sl => sl.is_permanent);
+            if (!perm) perm = (setPermanent(spotId, true) || []).find(sl => sl.is_permanent);
+            if (perm) updateGel(spotId, perm.id, gel);
+          }, 'perm:' + spotId)}
           onSlotsChanged={(spotId, slots) => setColorSlots(prev => ({ ...prev, [spotId]: slots }))}
         />
       ))}

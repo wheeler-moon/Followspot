@@ -11,7 +11,7 @@ const inputStyle = {
 // Search box for one gel. Pick from the catalog, or type anything: a gel that isn't in the catalog
 // is kept exactly as typed (as its number, so it prints) and is drawn clear/white wherever colors show.
 // Typing an exact catalog number (e.g. "r4615") fills in the proper number and name on leaving the box.
-export function GelPicker({ value, onChange, placeholder }) {
+export function GelPicker({ value, onChange, placeholder, borderColor }) {
   const [query, setQuery] = useState(value || '');
   const [results, setResults] = useState([]);
   const [open, setOpen] = useState(false);
@@ -41,7 +41,7 @@ export function GelPicker({ value, onChange, placeholder }) {
 
   return (
     <div ref={ref} style={{ position: 'relative', flex: 1, minWidth: 0 }}>
-      <input style={inputStyle}
+      <input style={borderColor ? { ...inputStyle, borderColor } : inputStyle}
         value={query}
         placeholder={placeholder || 'Gel number or name'}
         onChange={e => { search(e.target.value); onChange({ gel_number: e.target.value.trim(), gel_name: '' }); }}
@@ -87,7 +87,9 @@ const joinFrame = (gels) => {
     gel_name: multi ? used.map(g => g.gel_name || g.gel_number).join(' + ') : (used[0]?.gel_name || '') };
 };
 
-export function GelFramePicker({ gelNumber, gelName, onChange, placeholder }) {
+// compact: no "+ Add gel" line under the box; instead a small + shows at the box's right edge
+// while showControls is on (the frame is hovered), next to any other controls passed in.
+export function GelFramePicker({ gelNumber, gelName, onChange, placeholder, compact, showControls, controls, borderColor }) {
   const [gels, setGels] = useState(() => splitFrame(gelNumber, gelName));
   const update = (next) => { setGels(next); onChange(joinFrame(next)); };
   const hasFirst = gels[0] && (gels[0].gel_number || gels[0].gel_name);
@@ -96,18 +98,27 @@ export function GelFramePicker({ gelNumber, gelName, onChange, placeholder }) {
   return (
     <div>
       {gels.map((g, i) => (
-        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: i ? '4px' : 0 }}>
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: i ? '4px' : 0, position: 'relative' }}>
           {i > 0 && <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', width: '10px', textAlign: 'center' }}>+</span>}
           <GelPicker value={[g.gel_number, g.gel_name].filter(Boolean).join(' ')}
             onChange={gel => update(gels.map((x, j) => j === i ? gel : x))}
-            placeholder={i ? 'Add another gel' : placeholder} />
+            placeholder={i ? 'Add another gel' : placeholder} borderColor={borderColor} />
           {i > 0 && (
             <button onClick={() => update(gels.filter((_, j) => j !== i))} title="Remove this gel"
               style={{ ...link, color: 'rgba(255,255,255,0.45)', fontSize: '14px', lineHeight: 1, padding: '0 2px' }}>×</button>
           )}
+          {compact && i === 0 && showControls && (
+            <div style={{ position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)', display: 'flex', gap: '3px' }}>
+              {hasFirst && (
+                <button onClick={() => setGels([...gels, { gel_number: '', gel_name: '' }])} title="Add another gel to this frame" aria-label="Add gel"
+                  style={{ width: '16px', height: '16px', borderRadius: '8px', border: 'none', padding: 0, background: 'rgba(10,132,255,0.22)', color: '#409CFF', fontSize: '13px', lineHeight: '16px', cursor: 'pointer' }}>+</button>
+              )}
+              {controls}
+            </div>
+          )}
         </div>
       ))}
-      {hasFirst && (
+      {!compact && hasFirst && (
         <button onClick={() => setGels([...gels, { gel_number: '', gel_name: '' }])} style={{ ...link, marginTop: '5px' }}>+ Add gel</button>
       )}
     </div>

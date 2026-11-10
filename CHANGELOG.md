@@ -6,7 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
-- Show Settings → Spot Settings: operator, location and fixture sit on one row, so each spot takes less room
+- Spot Settings and New Show are more compact: operator, location and fixture sit on one row, and the color frames are two short rows. The permanent color is the last box, **Perm** (leave it empty for none), and hovering a frame shows **+** for a second gel
 - Custom Actions: Off is no longer on the list of actions you can rename; it always reads Off
 - Deleting a custom action that cues use asks what those cues should use instead: another action, a new one, or don't delete
 - Show Settings → Custom Actions: your own actions sit right after Off (a blue dot marks them), and + at the end adds one. The icon library has blue and purple circles too

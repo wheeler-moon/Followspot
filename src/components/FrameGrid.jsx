@@ -4,12 +4,18 @@ import { GelFramePicker } from './GelPicker';
 
 export const MAX_FRAMES = 6;
 
-// The color frames of one spot (Spot Settings and New Show). Each frame shows a small red ×
-// on hover to remove it; frames keep their numbers and their place, so removing Frame 2 leaves an
-// empty Frame 2 slot ("+ Add back") between 1 and 3. "+ Add frame" adds the next one after the last.
+// The color frames of one spot (Spot Settings and New Show), three across: a short label (F1)
+// beside each gel box. Hovering a frame shows + (a second gel in the frame) and a small red × to
+// remove it; frames keep their numbers and their place, so removing Frame 2 leaves an empty F2
+// slot ("+ Add back") between 1 and 3. "+ Add frame" adds the next one after the last.
+// perm: { gel_number, gel_name, onChange, tour } adds the permanent color as a last "Perm" box
+// (an empty Perm box means no permanent color).
 // onAdd(n): add Frame n.
 // frames: [{ key, slot, gel_number, gel_name }] in frame order.
-export default function FrameGrid({ frames, cardBackground, onGelChange, onRemove, onAdd }) {
+const tag = { fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', width: '18px', flexShrink: 0, paddingTop: '5px' };
+const dashed = { flex: 1, height: '24px', background: 'none', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '11px', cursor: 'pointer', textAlign: 'left', padding: '0 8px' };
+
+export default function FrameGrid({ frames, onGelChange, onRemove, onAdd, perm }) {
   const [hovered, setHovered] = useState(null);
   // A removed frame keeps its place: an empty slot that can be added back
   const nums = frames.map(f => f.slot);
@@ -17,33 +23,44 @@ export default function FrameGrid({ frames, cardBackground, onGelChange, onRemov
   const gaps = [];
   for (let n = 1; n <= max; n++) if (!nums.includes(n)) gaps.push(n);
   const cells = [...frames.map(f => ({ ...f, n: f.slot })), ...gaps.map(n => ({ gap: true, key: 'gap-' + n, n }))].sort((a, b) => a.n - b.n);
+  const hover = (key) => ({ onMouseEnter: () => setHovered(key), onMouseLeave: () => setHovered(h => h === key ? null : h) });
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', marginBottom: '8px' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '6px 10px' }}>
       {cells.map(f => f.gap ? (
-        <button key={f.key} onClick={() => onAdd(f.n)} title={'Add Frame ' + f.n + ' back'}
-          style={{ minHeight: '54px', background: 'none', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '8px', color: 'rgba(255,255,255,0.4)', fontSize: '12px', cursor: 'pointer', textAlign: 'left', padding: '8px' }}>
-          <div style={{ fontSize: '10px', fontWeight: '600', marginBottom: '4px' }}>Frame {f.n}</div>
-          <span style={{ color: '#409CFF' }}>+ Add back</span>
-        </button>
+        <div key={f.key} style={{ display: 'flex', alignItems: 'flex-start' }}>
+          <span style={{ ...tag, color: 'rgba(255,255,255,0.3)' }}>F{f.n}</span>
+          <button onClick={() => onAdd(f.n)} title={'Add Frame ' + f.n + ' back'} style={{ ...dashed, color: '#409CFF' }}>+ Add back</button>
+        </div>
       ) : (
-        <div key={f.key} onMouseEnter={() => setHovered(f.key)} onMouseLeave={() => setHovered(h => h === f.key ? null : h)}
-          style={{ position: 'relative', background: cardBackground, borderRadius: '8px', padding: '8px' }}>
-          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', marginBottom: '4px', fontWeight: '600' }}>Frame {f.slot}</div>
-          {hovered === f.key && (
-            <button onClick={() => onRemove(f)} title={'Remove Frame ' + f.slot} aria-label={'Remove Frame ' + f.slot}
-              style={{ position: 'absolute', top: '5px', right: '6px', width: '16px', height: '16px', borderRadius: '8px', border: 'none', padding: 0,
-                background: 'rgba(255,69,58,0.16)', color: '#FF453A', fontSize: '13px', lineHeight: '16px', cursor: 'pointer' }}>×</button>
-          )}
-          <GelFramePicker gelNumber={f.gel_number} gelName={f.gel_name}
-            onChange={gel => onGelChange(f, gel)}
-            placeholder="Gel number or name" />
+        <div key={f.key} {...hover(f.key)} style={{ display: 'flex', alignItems: 'flex-start' }}>
+          <span style={tag} title={'Frame ' + f.slot}>F{f.slot}</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <GelFramePicker gelNumber={f.gel_number} gelName={f.gel_name} compact showControls={hovered === f.key}
+              onChange={gel => onGelChange(f, gel)}
+              placeholder="Gel"
+              controls={
+                <button onClick={() => onRemove(f)} title={'Remove Frame ' + f.slot} aria-label={'Remove Frame ' + f.slot}
+                  style={{ width: '16px', height: '16px', borderRadius: '8px', border: 'none', padding: 0,
+                    background: 'rgba(255,69,58,0.16)', color: '#FF453A', fontSize: '13px', lineHeight: '16px', cursor: 'pointer' }}>×</button>
+              } />
+          </div>
         </div>
       ))}
       {max < MAX_FRAMES && (
-        <button onClick={() => onAdd(max + 1)}
-          style={{ minHeight: '54px', background: 'none', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '8px', color: '#409CFF', fontSize: '12px', cursor: 'pointer' }}>
-          + Add frame
-        </button>
+        <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+          <span style={tag} />
+          <button onClick={() => onAdd(max + 1)} style={{ ...dashed, color: '#409CFF' }}>+ Add frame</button>
+        </div>
+      )}
+      {perm && (
+        <div data-tour={perm.tour} {...hover('perm')} style={{ display: 'flex', alignItems: 'flex-start' }}
+          title="Permanent color: a gel that always stays in the fixture">
+          <span style={{ ...tag, width: '34px', color: '#C8A26B' }}>Perm</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <GelFramePicker key={perm.key} gelNumber={perm.gel_number} gelName={perm.gel_name} compact showControls={hovered === 'perm'}
+              onChange={perm.onChange} placeholder="None" borderColor="rgba(255,214,10,0.35)" />
+          </div>
+        </div>
       )}
     </div>
   );

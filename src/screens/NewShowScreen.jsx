@@ -3,7 +3,6 @@ import AppHeader from '../components/AppHeader';
 import Tips from '../components/Tips';
 import { TIPS } from '../tips';
 import CopyColorsSelect from '../components/CopyColorsSelect';
-import { GelFramePicker } from '../components/GelPicker';
 import FrameGrid from '../components/FrameGrid';
 const { ipcRenderer } = window.require('electron');
 
@@ -87,29 +86,17 @@ function SpotSetup({ spot, spotNumber, onChange, onRemove, otherSpots, onCopyCol
       </div>
       <label style={{ ...labelStyle, marginBottom: '8px', display: 'block' }}>Color frames</label>
       <div key={copyCount} data-tour="spot-setup">
-        <FrameGrid cardBackground="rgba(255,255,255,0.05)"
+        <FrameGrid
           frames={spot.gels.map(g => ({ key: g.slot, ...g }))}
           onGelChange={(f, gelData) => updateGel(spot.gels.findIndex(g => g.slot === f.slot), gelData)}
           onRemove={f => onChange({ ...spot, gels: spot.gels.filter(g => g.slot !== f.slot) })}
           onAdd={(n) => {
             if (spot.gels.some(g => g.slot === n)) return;
             onChange({ ...spot, gels: [...spot.gels, { slot: n, gel_number: '', gel_name: '' }].sort((a, b) => a.slot - b.slot) });
-          }} />
+          }}
+          perm={{ key: copyCount, gel_number: spot.perm_gel_number, gel_name: spot.perm_gel_name,
+            onChange: gelData => onChange({ ...spot, perm_gel_number: gelData.gel_number, perm_gel_name: gelData.gel_name }) }} />
       </div>
-      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: '#FFFFFF', margin: '4px 0 8px' }}>
-        <input type="checkbox" checked={!!(spot.perm_on || spot.perm_gel_number || spot.perm_gel_name)} onChange={e => onChange(e.target.checked ? { ...spot, perm_on: true } : { ...spot, perm_on: false, perm_gel_number: '', perm_gel_name: '' })}
-          style={{ width: '15px', height: '15px', accentColor: '#0A84FF', cursor: 'pointer', margin: 0 }} />
-        Permanent color
-        <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)' }}>a gel that always stays in the fixture</span>
-      </label>
-      {(spot.perm_on || spot.perm_gel_number || spot.perm_gel_name) && (
-      <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '8px', border: '1px solid rgba(255,214,10,0.25)' }}>
-        <div style={{ fontSize: '10px', color: '#C8A26B', marginBottom: '6px', fontWeight: '600' }}>Permanent frame</div>
-        <GelFramePicker key={copyCount} gelNumber={spot.perm_gel_number} gelName={spot.perm_gel_name}
-          onChange={gelData => onChange({ ...spot, perm_gel_number: gelData.gel_number, perm_gel_name: gelData.gel_name })}
-          placeholder="Gel number or name" />
-      </div>
-      )}
     </div>
   );
 }
