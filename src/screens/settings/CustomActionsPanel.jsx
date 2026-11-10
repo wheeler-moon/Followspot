@@ -38,7 +38,7 @@ const DEFAULT_ACTIONS = [
 
 // Symbols a custom action can borrow: the built-in actions' plus plain colored circles (blue and purple
 // match the blue action symbols and the iris purple)
-const LIBRARY = [...DEFAULT_ACTIONS.filter(a => a.name !== 'Tracked').map(a => a.name), 'Green Circle', 'Red Circle', 'Yellow Circle', 'Blue Circle', 'Purple Circle'];
+const LIBRARY = [...DEFAULT_ACTIONS.filter(a => a.name !== 'Tracked' && a.name !== 'Off').map(a => a.name), 'Green Circle', 'Red Circle', 'Yellow Circle', 'Blue Circle', 'Purple Circle'];
 
 const imageSrc = (path) => {
   if (!path) return null;
@@ -242,8 +242,7 @@ export default function CustomActionsPanel({ show }) {
   return (
     <div>
       <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.52)', marginBottom: '16px', lineHeight: '18px' }}>
-        Click an action to rename it for this show (Off stays Off). <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: C.accent, margin: '0 4px 1px 2px' }} />marks your own actions; + adds one.
-      </div>
+        Click an action to rename it for this show.</div>
 
       {/* SpotPlot's actions, then this show's own (a blue dot marks them), then + to add one */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '8px', marginBottom: '24px' }}>
