@@ -208,17 +208,23 @@ const textWidth = (t) => {
   if (!measureCtx) { measureCtx = document.createElement('canvas').getContext('2d'); measureCtx.font = chipFont; }
   return measureCtx.measureText(String(t)).width;
 };
-const NUMBER_CHIP = 20;   // a frame shown as just its number: a fixed square-ish chip
+// In the narrow looks everything is a little tighter (TIGHT): cell padding 12px a side instead of 18,
+// chips 4px a side instead of 6, 2px between chips instead of 3, frames as 17px number chips.
+const NUMBER_CHIP = 17;
+const TIGHT = { cellPad: 12, chipPad: 4, gap: 2 };
 function lookFor(width, sizes, slots, showIris, showColor) {
-  const room = width - 36 - 8;   // cell padding, and the gap between iris and color
-  const row = (ws) => ws.reduce((a, w) => a + w, 0) + 3 * Math.max(0, ws.length - 1);
-  const iris = showIris ? row(sizes.map(sz => textWidth(sz.label) + 14)) : 0;
   const frames = withGaps(slots);
-  const color = (numbers) => showColor ? row([textWidth('NC') + 14, ...frames.map(sl => numbers ? NUMBER_CHIP : textWidth('F' + sl.slot_number) + (sl.gap ? 12 : 14))]) : 0;
-  if (iris + color(false) <= room) return 'full';
-  if (iris + color(true) <= room) return 'numbers';
+  const fits = (pad, chipPad, gap, frameWidth) => {
+    const row = (ws) => ws.reduce((a, w) => a + w, 0) + gap * Math.max(0, ws.length - 1);
+    const iris = showIris ? row(sizes.map(sz => textWidth(sz.label) + chipPad * 2 + 2)) : 0;
+    const color = showColor ? row([textWidth('NC') + chipPad * 2 + 2, ...frames.map(frameWidth)]) : 0;
+    return iris + color + gap * 3 <= width - pad * 2;
+  };
+  if (fits(18, 6, 3, sl => textWidth('F' + sl.slot_number) + (sl.gap ? 12 : 14))) return 'full';
+  if (fits(TIGHT.cellPad, TIGHT.chipPad, TIGHT.gap, () => NUMBER_CHIP)) return 'numbers';
   return 'fold';
 }
+const LOOK_ORDER = ['full', 'numbers', 'fold'];
 
 // The iris sizes folded into one chip (a narrow column): shows the chosen size; click, Return or Space
 // opens the sizes in a small pop-up (←/→ and Return there). Typing a letter picks straight away.
@@ -274,7 +280,7 @@ function IrisFold({ sizes, selected, onPick, same }) {
 }
 
 // Iris chips in a sideways-scrolling strip; edges fade and an arrow appears when more sizes are hidden
-function IrisStrip({ sizes, selected, onPick, same }) {
+function IrisStrip({ sizes, selected, onPick, same, tight }) {
   const ref = useRef();
   const [more, setMore] = useState({ left: false, right: false });
   // Keyboard: ←/→ move between sizes, Space or Return picks (again clears it). Typing picks too:
@@ -333,12 +339,12 @@ function IrisStrip({ sizes, selected, onPick, same }) {
       {/* tabIndex -1: when the sizes don't all fit, the browser would otherwise make this scrolling row its own Tab stop */}
       <div ref={ref} tabIndex={-1} className="no-scrollbar" onScroll={measure}
         onWheel={e => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) ref.current.scrollLeft += e.deltaY; }}
-        style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', gap: '3px', overflowX: 'auto', scrollBehavior: 'smooth', WebkitMaskImage: fade, maskImage: fade }}>
+        style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', gap: tight ? TIGHT.gap + 'px' : '3px', overflowX: 'auto', scrollBehavior: 'smooth', WebkitMaskImage: fade, maskImage: fade }}>
         {sizes.map((iris, i) => {
           const isSel = selected === iris.value;
           return (
             <div key={iris.value} data-selected={isSel} onClick={() => onPick(iris.value)} title={iris.value}
-              style={{ boxShadow: cursor === i ? 'inset 0 0 0 2px #FFFFFF' : 'none', flexShrink: 0, padding: '2px 6px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap', background: isSel ? (same ? 'rgba(10,132,255,0.35)' : '#0A84FF') : '#2A2A2A', color: isSel ? (same ? 'rgba(255,255,255,0.6)' : '#FFFFFF') : 'rgba(255,255,255,0.28)', border: `1px solid ${isSel ? (same ? 'transparent' : '#0A84FF') : 'rgba(255,255,255,0.1)'}` }}>
+              style={{ boxShadow: cursor === i ? 'inset 0 0 0 2px #FFFFFF' : 'none', flexShrink: 0, padding: tight ? `2px ${TIGHT.chipPad}px` : '2px 6px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap', background: isSel ? (same ? 'rgba(10,132,255,0.35)' : '#0A84FF') : '#2A2A2A', color: isSel ? (same ? 'rgba(255,255,255,0.6)' : '#FFFFFF') : 'rgba(255,255,255,0.28)', border: `1px solid ${isSel ? (same ? 'transparent' : '#0A84FF') : 'rgba(255,255,255,0.1)'}` }}>
               {iris.label}
             </div>
           );
@@ -447,7 +453,7 @@ function SpotCueCell({ above, onDragEnd, onContextMenu, spotCue, spot, cue, fiel
       onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) onDragLeave(e); }}
       onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop(e); }}
       onDoubleClick={onDoubleClick}
-      style={{ padding: '8px 18px', borderRight: '1px solid rgba(255,255,255,0.12)', verticalAlign: 'top', minWidth: '260px', minHeight: '80px', background: isDragTarget ? 'rgba(10,132,255,0.16)' : '#191919', outline: isDragTarget || isMenuTarget ? '2px solid #0A84FF' : 'none', outlineOffset: '-2px', cursor: 'grab' }}>
+      style={{ padding: look === 'full' ? '8px 18px' : `8px ${TIGHT.cellPad}px`, borderRight: '1px solid rgba(255,255,255,0.12)', verticalAlign: 'top', minWidth: '260px', minHeight: '80px', background: isDragTarget ? 'rgba(10,132,255,0.16)' : '#191919', outline: isDragTarget || isMenuTarget ? '2px solid #0A84FF' : 'none', outlineOffset: '-2px', cursor: 'grab' }}>
         <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.22)', minHeight: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>—</div>
     </td>
   );
@@ -554,7 +560,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
         onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); onDragOver(e); }}
         onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) onDragLeave(e); }}
         onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop(e); }}
-        style={{ padding: '8px 18px', borderRight: '1px solid rgba(255,255,255,0.12)', verticalAlign: 'top', minWidth: '260px', background: isDragTarget ? 'rgba(10,132,255,0.16)' : '#191919', outline: isDragTarget || isMenuTarget ? '2px solid #0A84FF' : 'none', outlineOffset: '-2px', position: 'relative' }}>
+        style={{ padding: look === 'full' ? '8px 18px' : `8px ${TIGHT.cellPad}px`, borderRight: '1px solid rgba(255,255,255,0.12)', verticalAlign: 'top', minWidth: '260px', background: isDragTarget ? 'rgba(10,132,255,0.16)' : '#191919', outline: isDragTarget || isMenuTarget ? '2px solid #0A84FF' : 'none', outlineOffset: '-2px', position: 'relative' }}>
         <div ref={ref} style={{ position: 'relative', zIndex: showActionPicker ? 99999 : 'auto' }}>
           <div ref={actionBtnRef} data-tour="cue-action" tabIndex={0} role="button" onKeyDown={actionKeys} onClick={() => setShowActionPicker(v => !v)}
             style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '3px 7px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer' }}>
@@ -598,7 +604,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
       onDoubleClick={onDoubleClick}
       data-tour="cue-cell"
       style={{ 
-        padding: '8px 18px', 
+        padding: look === 'full' ? '8px 18px' : `8px ${TIGHT.cellPad}px`,
         borderRight: '1px solid rgba(255,255,255,0.12)', 
         verticalAlign: 'top', 
         minWidth: '260px', 
@@ -718,7 +724,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
 <div data-tour="cue-look" style={{ display: 'flex', alignItems: 'center', marginBottom: '3px', gap: '8px' }}>
           {fieldsShown.iris === false ? <div style={{ flex: 1 }} /> : look === 'fold' ? <IrisFold sizes={irisSizes || []}
             selected={spotCue.frame_size} same={irisSame}
-            onPick={value => onUpdate(spotCue.id, 'frame_size', spotCue.frame_size === value ? '' : value)} /> : <IrisStrip sizes={irisSizes || []}
+            onPick={value => onUpdate(spotCue.id, 'frame_size', spotCue.frame_size === value ? '' : value)} /> : <IrisStrip sizes={irisSizes || []} tight={look !== 'full'}
             selected={spotCue.frame_size} same={irisSame}
             onPick={value => onUpdate(spotCue.id, 'frame_size', spotCue.frame_size === value ? '' : value)} />}
           <div tabIndex={0} aria-label="Color frames" onFocus={e => { if (e.currentTarget.matches(':focus-visible')) setColorCursor(c => c ?? 0); }} onBlur={() => setColorCursor(null)}
@@ -734,10 +740,10 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
               else if (/^[1-9]$/.test(e.key) && keys.includes('F' + e.key)) { e.preventDefault(); setColorCursor(keys.indexOf('F' + e.key)); press('F' + e.key); }
               else if (e.key.toLowerCase() === 'n') { e.preventDefault(); setColorCursor(0); press('NC'); }
             }}
-            style={{ display: fieldsShown.color === false ? 'none' : 'flex', gap: '3px', alignItems: 'center', flexShrink: 0, borderRadius: '6px', outline: 'none' }}>
+            style={{ display: fieldsShown.color === false ? 'none' : 'flex', gap: look === 'full' ? '3px' : TIGHT.gap + 'px', alignItems: 'center', flexShrink: 0, borderRadius: '6px', outline: 'none' }}>
             <div
               onClick={toggleNC}
-              style={{ boxShadow: colorCursor === 0 ? '0 0 0 2px #FFFFFF' : 'none', padding: '2px 6px', borderRadius: '6px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: spotCue.no_color ? (colorSame ? 'rgba(172,142,104,0.4)' : '#AC8E68') : '#2A2A2A', color: spotCue.no_color ? (colorSame ? 'rgba(255,255,255,0.6)' : '#FFFFFF') : 'rgba(255,255,255,0.45)', border: `1px solid ${spotCue.no_color ? (colorSame ? 'transparent' : '#AC8E68') : 'rgba(255,255,255,0.1)'}` }}>
+              style={{ boxShadow: colorCursor === 0 ? '0 0 0 2px #FFFFFF' : 'none', padding: look === 'full' ? '2px 6px' : `2px ${TIGHT.chipPad}px`, borderRadius: '6px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: spotCue.no_color ? (colorSame ? 'rgba(172,142,104,0.4)' : '#AC8E68') : '#2A2A2A', color: spotCue.no_color ? (colorSame ? 'rgba(255,255,255,0.6)' : '#FFFFFF') : 'rgba(255,255,255,0.45)', border: `1px solid ${spotCue.no_color ? (colorSame ? 'transparent' : '#AC8E68') : 'rgba(255,255,255,0.1)'}` }}>
               NC
             </div>
             {withGaps(colorSlots).map(slot => {
@@ -1224,6 +1230,9 @@ export default function CueListScreen({ show, navigate }) {
       const th = theadRef.current?.querySelector(`[data-spot-head="${sp.id}"]`);
       if (th) next[sp.id] = lookFor(th.getBoundingClientRect().width, sizes, slots[sp.id] || [], fields.iris !== false, fields.color !== false);
     }
+    // Every spot looks the same: all take the tightest look any one of them needs
+    const worst = Object.values(next).reduce((a, l) => LOOK_ORDER.indexOf(l) > LOOK_ORDER.indexOf(a) ? l : a, 'full');
+    for (const id of Object.keys(next)) next[id] = worst;
     setLookBySpot(prev => JSON.stringify(prev) === JSON.stringify(next) ? prev : next);
   };
   const measureThead = () => {
