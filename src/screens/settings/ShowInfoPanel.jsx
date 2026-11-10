@@ -65,7 +65,7 @@ export default function ShowInfoPanel({ show, onShowUpdate, onClose }) {
       <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.45)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Lighting team</div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
         {[
-          ['designer', 'Lighting designer'],
+          ['designer', 'Lighting Designer'],
           ['associate_ld', 'Associate LD'],
           ['assistant_ld', 'Assistant LD'],
           ['production_electrician', 'Production Electrician'],
