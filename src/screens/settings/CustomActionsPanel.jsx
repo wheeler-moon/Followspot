@@ -94,7 +94,7 @@ function IconChooser({ value, onChange }) {
 }
 
 // The edit box for one action (built-in: its name in this show; custom: name, icon, delete; new: name and icon)
-function EditAction({ target, actionNames, takenNames, onSaveBuiltin, onSaveCustom, onAdd, onDelete, onClose }) {
+function EditAction({ target, actionNames, takenNames, otherActions, countUses, onSaveBuiltin, onSaveCustom, onAdd, onDelete, onReplaceDelete, onClose }) {
   useEscape(onClose);
   const builtin = target.kind === 'builtin';
   const isNew = target.kind === 'new';
@@ -102,6 +102,25 @@ function EditAction({ target, actionNames, takenNames, onSaveBuiltin, onSaveCust
   const [name, setName] = useState(builtin ? (actionNames[target.name] || '') : target.action.name);
   const [icon, setIcon] = useState(builtin ? null : { icon: target.action.icon || null, builtinIcon: target.action.builtinIcon || null });
   const [error, setError] = useState(null);
+  // Deleting an action that cues use: what those cues get instead (an existing action, or a new one)
+  const [deleting, setDeleting] = useState(null);   // { count, to: '' | action name | '__new', newName }
+  const startDelete = () => {
+    const count = countUses(target.action.name);
+    if (!count) { onDelete(target.index); onClose(); return; }
+    setDeleting({ count, to: '', newName: '' });
+  };
+  const confirmDelete = () => {
+    if (deleting.to === '__new') {
+      const n = deleting.newName.trim();
+      if (!n) return setError('Give the new action a name.');
+      if (takenNames.has(n.toLowerCase())) return setError(`“${n}” is already an action in this show.`);
+      onReplaceDelete(target.index, n, { name: n, color: 'rgba(255,255,255,0.62)', icon: null, builtinIcon: null });
+    } else {
+      if (!deleting.to) return setError('Choose what those cues should use instead.');
+      onReplaceDelete(target.index, deleting.to, null);
+    }
+    onClose();
+  };
   const save = () => {
     const n = name.trim();
     const original = builtin ? target.name : target.action.name;
@@ -112,9 +131,43 @@ function EditAction({ target, actionNames, takenNames, onSaveBuiltin, onSaveCust
     else onSaveCustom(target.index, { ...target.action, name: n, ...icon });
     onClose();
   };
-  return (
+  const box = (content) => (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 100000, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div onClick={e => e.stopPropagation()} style={{ width: '360px', background: '#2A2A2A', borderRadius: '16px', padding: '16px', boxShadow: '0 18px 48px rgba(0,0,0,0.45)' }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: '360px', background: '#2A2A2A', borderRadius: '16px', padding: '16px', boxShadow: '0 18px 48px rgba(0,0,0,0.45)' }}>{content}</div>
+    </div>
+  );
+  if (deleting) {
+    const cues = `${deleting.count} cue${deleting.count === 1 ? '' : 's'}`;
+    return box(
+      <>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+          <CustomIcon action={target.action} size={28} />
+          <div style={{ fontSize: '13px', fontWeight: '700', color: C.label1 }}>Delete “{target.action.name}”?</div>
+        </div>
+        <div style={{ fontSize: '13px', color: C.label2, lineHeight: '18px', marginBottom: '12px' }}>{cues} use this action. What should they use instead?</div>
+        <select autoFocus value={deleting.to} onChange={e => { setDeleting({ ...deleting, to: e.target.value }); setError(null); }}
+          style={{ ...inputStyle, width: '100%', color: deleting.to ? '#FFFFFF' : C.label2 }}>
+          <option value="" disabled>Choose an action…</option>
+          {otherActions.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
+          <option value="__new">A new action…</option>
+        </select>
+        {deleting.to === '__new' && (
+          <input autoFocus value={deleting.newName} placeholder="New action name" onChange={e => { setDeleting({ ...deleting, newName: e.target.value }); setError(null); }}
+            onKeyDown={e => { if (e.key === 'Enter') confirmDelete(); }} style={{ ...inputStyle, width: '100%', marginTop: '8px' }} />
+        )}
+        <div style={{ fontSize: '11px', color: error ? C.red : C.label3, margin: '6px 0 0', lineHeight: '14px', minHeight: '14px' }}>
+          {error || (deleting.to === '__new' ? 'You can give it an icon afterwards.' : '')}
+        </div>
+        <div style={{ display: 'flex', gap: '8px', marginTop: '14px' }}>
+          <div style={{ flex: 1 }} />
+          <button onClick={() => { setDeleting(null); setError(null); }} style={button()}>Don’t Delete</button>
+          <button onClick={confirmDelete} style={{ ...button(), background: C.red }}>Replace and Delete</button>
+        </div>
+      </>
+    );
+  }
+  return box(
+      <>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
           {builtin ? <ActionIcon action={target.name} size={28} /> : <CustomIcon action={{ ...target.action, ...icon }} size={28} />}
           <div style={{ fontSize: '13px', fontWeight: '700', color: C.label1 }}>{builtin ? target.name : isNew ? 'New custom action' : 'Custom action'}</div>
@@ -133,13 +186,12 @@ function EditAction({ target, actionNames, takenNames, onSaveBuiltin, onSaveCust
         )}
         <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
           {builtin && actionNames[target.name] && <button onClick={() => { onSaveBuiltin(target.name, ''); onClose(); }} style={button()}>Reset</button>}
-          {!builtin && !isNew && <button onClick={() => { onDelete(target.index); onClose(); }} style={button('danger')}>Delete</button>}
+          {!builtin && !isNew && <button onClick={startDelete} style={button('danger')}>Delete</button>}
           <div style={{ flex: 1 }} />
           <button onClick={onClose} style={button()}>Cancel</button>
           <button onClick={save} style={button('primary')}>{isNew ? 'Add' : 'Save'}</button>
         </div>
-      </div>
-    </div>
+      </>
   );
 }
 
@@ -168,6 +220,18 @@ export default function CustomActionsPanel({ show }) {
     const old = customActions[index];
     if (old.name !== action.name) ipcRenderer.sendSync('db-rename-action', { showId: show.id, from: old.name, to: action.name });
     saveCustoms(customActions.map((a, i) => (i === index ? action : a)));
+  };
+
+  // How many cues use an action (any spot), for deleting one
+  const countUses = (name) => {
+    const data = ipcRenderer.sendSync('db-get-cue-list', show.id);
+    return new Set((data?.spotCues || []).filter(sc => sc.action === name).map(sc => sc.cue_id)).size;
+  };
+  // Delete a custom action, first moving its cues to another action (or a new one, added in its place)
+  const replaceAndDelete = (index, to, newAction) => {
+    const old = customActions[index];
+    ipcRenderer.sendSync('db-rename-action', { showId: show.id, from: old.name, to });
+    saveCustoms(newAction ? customActions.map((a, i) => (i === index ? newAction : a)) : customActions.filter((_, i) => i !== index));
   };
 
   // Every name already in use in this show (built-in names, their renamed names, custom names)
@@ -211,6 +275,11 @@ export default function CustomActionsPanel({ show }) {
       {editing && (
         <EditAction target={editing} actionNames={actionNames} takenNames={taken}
           onSaveBuiltin={saveBuiltinName} onSaveCustom={saveCustom} onAdd={a => saveCustoms([...customActions, a])}
+          countUses={countUses} onReplaceDelete={replaceAndDelete}
+          otherActions={[
+            ...DEFAULT_ACTIONS.filter(a => a.name !== 'Tracked').map(a => ({ value: a.name, label: actionNames[a.name] || a.name })),
+            ...customActions.filter((_, i) => editing.kind !== 'custom' || i !== editing.index).map(a => ({ value: a.name, label: a.name })),
+          ]}
           onDelete={i => saveCustoms(customActions.filter((_, j) => j !== i))}
           onClose={() => setEditing(null)} />
       )}

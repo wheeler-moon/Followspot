@@ -37,7 +37,6 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 
 ### Next (0.5.1)
 - [ ] **Later today (Nov 5):**
-  - Custom Actions: rethink how the menu looks. Deleting an action asks what to put in the cues that use it (pick an existing action), so no cue is left with no action
   - **Cue list in a narrow window (big one):** with every frame button on each cue, the iris chips get squeezed until they can't be clicked (see 2026-11-05 screenshot: iris strip shows only ‹ ›). Needs a layout that stays sleek and easy to pick from at half-screen
   - Iris size pictures: Wheeler sets the five default circles (`DEFAULT_IRIS_PICS` in `src/irisSizes.js`; set each in Show Settings → Iris Sizes, then copy the saved numbers in)
 - [ ] Beta feedback: add items here as testers report them
