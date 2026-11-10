@@ -6,7 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
-- Cue list in a narrow window (half screen, smaller Macs): color frames show just 1, 2, 3…, and if it's still tight the iris sizes fold into one button showing the current size, so they never get squeezed out. All spots always look the same
+- Cue list: iris and color fit better. Frames always show F1–F6; the iris sizes scroll sideways if they don't all fit, and only in a really narrow window fold into one button showing the current size. All spots always look the same
 - Cue list: click empty space in a cue (or under its number) to select the whole row. Then ⌘C / ⌘V copy and paste the whole cue, ⌘D duplicates it, ⌘= adds a cue after it, ⌘Delete deletes it, ⌘1–⌘4 open that spot's cue window, ↑ ↓ move to the next cue, and typing sets its LQ. Escape clears it
 - Cue list: build cues without the mouse. Tab goes through each spot (action, character, intensity, time, iris, color, When, w/LQ, notes) and on to the next cue. Return opens the action picker (arrows or a letter to choose); on iris and color, ← → and Space, or type (3 = 3/4, H = H&S, 2 = F2, N = NC)
 - Cue list: the Notes sidebar opens and closes instantly, and opening a spot's color load no longer makes the scene headers jump

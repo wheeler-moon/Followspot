@@ -156,8 +156,8 @@ A compact way to show a spot's frames in one row: the chips share the row's widt
 ### Cue flags (iPad)
 Quick marks an operator puts on a cue: **Missed** (red, `exclamationmark.triangle.fill`), **Clarify** (orange, `questionmark.circle.fill`), **Idea** (yellow, `lightbulb.fill`). Tapping a cue opens a popover with three big buttons (96×78, radius 14, the color at 16% behind the symbol and label). A flagged cue shows small symbols under its T· number.
 
-### Iris and color in a narrow column (cue list)
-The spot columns' width decides, and every spot always takes the same look (the tightest any spot needs). If every iris size and F1…F6 don't fit on one line, the row tightens: cell padding 12px a side, chips 4px a side with 2px gaps, frames as 17px number chips (1, 2…). If that still doesn't fit, the iris sizes fold into one pill showing the chosen size with a small ▾; it opens the sizes in a pop-up (#2A2A2A, radius 8). Wide windows never change.
+### Iris and color row (cue list)
+One look and one fallback, the same for every spot. Normal: cell padding 12px a side, chips 4px a side with 2px gaps; NC and F1…F6 always show in full, and the iris sizes take the room that's left, scrolling sideways (‹ ›) if they don't all fit. Fallback: only when that room is under about three sizes (80px), the iris sizes fold into one pill showing the chosen size with a small ▾ that opens them in a pop-up (#2A2A2A, radius 8). If any spot folds, all do. Target: a 16" MacBook Pro at full screen shows everything for 1–4 spots.
 
 ### Selected row and keyboard focus (cue list)
 A selected cue row gets an accent wash (`rgba(10,132,255,0.12)`) over every cell, with a thin accent line (55%) above and below, so the cells' own highlights still show through. Anything reached with Tab shows a 2px solid accent ring; a chip group (iris, color frames, the action picker) marks the chip you're on with a 2px white ring. Neither shows for mouse clicks.
