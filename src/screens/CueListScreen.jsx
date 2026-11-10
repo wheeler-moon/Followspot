@@ -250,7 +250,8 @@ function IrisStrip({ sizes, selected, onPick, same }) {
       )}
       {/* Absolutely positioned so the chips never widen the table column; they scroll inside it instead */}
       <div style={{ flex: 1, minWidth: 0, position: 'relative', height: '20px' }}>
-      <div ref={ref} className="no-scrollbar" onScroll={measure}
+      {/* tabIndex -1: when the sizes don't all fit, the browser would otherwise make this scrolling row its own Tab stop */}
+      <div ref={ref} tabIndex={-1} className="no-scrollbar" onScroll={measure}
         onWheel={e => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) ref.current.scrollLeft += e.deltaY; }}
         style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', gap: '3px', overflowX: 'auto', scrollBehavior: 'smooth', WebkitMaskImage: fade, maskImage: fade }}>
         {sizes.map((iris, i) => {
