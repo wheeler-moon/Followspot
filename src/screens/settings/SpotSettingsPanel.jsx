@@ -48,8 +48,8 @@ function SpotCard({ flash, spot, spotNumbers, colorSlots, onUpdateSpot, onUpdate
   const permSlot = slots.find(s => s.is_permanent);
 
   return (
-    <div data-tour="spot-card" data-spot-card={spot.id} style={{ background: 'rgba(255,255,255,0.05)', border: flash ? '1px solid #0A84FF' : '1px solid rgba(255,255,255,0.1)', boxShadow: flash ? '0 0 0 3px rgba(10,132,255,0.35)' : 'none', transition: 'box-shadow 0.4s, border-color 0.4s', borderRadius: '12px', padding: '16px', marginBottom: '16px', scrollMarginTop: '12px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+    <div data-tour="spot-card" data-spot-card={spot.id} style={{ background: 'rgba(255,255,255,0.05)', border: flash ? '1px solid #0A84FF' : '1px solid rgba(255,255,255,0.1)', boxShadow: flash ? '0 0 0 3px rgba(10,132,255,0.35)' : 'none', transition: 'box-shadow 0.4s, border-color 0.4s', borderRadius: '12px', padding: '12px 14px', marginBottom: '10px', scrollMarginTop: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
         <div style={{ fontSize: '14px', fontWeight: '700', color: '#409CFF' }}>
           Spot {spot.spot_number}
         </div>
@@ -59,44 +59,44 @@ function SpotCard({ flash, spot, spotNumbers, colorSlots, onUpdateSpot, onUpdate
           Delete spot
         </button>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '10px' }}>
         <div>
           <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Operator name</div>
           <input style={inputStyle} defaultValue={spot.operator_name || ''}
             onBlur={e => onUpdateSpot(spot.id, 'operator_name', e.target.value)}
-            placeholder="Operator's name" />
+            placeholder="Name" />
         </div>
         <div>
           <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Location</div>
           <input style={inputStyle} defaultValue={spot.location || ''}
             onBlur={e => onUpdateSpot(spot.id, 'location', e.target.value)}
-            placeholder="Position, e.g. FOH Left" />
+            placeholder="e.g. FOH Left" />
         </div>
-        <div style={{ gridColumn: '1 / -1' }}>
-          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>Fixture type</div>
+        <div>
+          <div style={{ display: 'flex', fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '4px' }}>
+            Fixture type
+            {showCustomFixture && (
+              <span onClick={() => { onUpdateSpot(spot.id, 'fixture_type', ''); setShowCustomFixture(false); }}
+                style={{ marginLeft: 'auto', color: '#409CFF', cursor: 'pointer' }}>Use list</span>
+            )}
+          </div>
           {showCustomFixture ? (
-            <div>
-              <input key={spot.fixture_type || ''} style={inputStyle} defaultValue={spot.fixture_type || ''}
-                onBlur={e => onUpdateSpot(spot.id, 'fixture_type', e.target.value)}
-                placeholder="Fixture name" />
-              <div onClick={() => { onUpdateSpot(spot.id, 'fixture_type', ''); setShowCustomFixture(false); }}
-                style={{ fontSize: '11px', color: '#409CFF', cursor: 'pointer', marginTop: '4px' }}>
-                Choose from list instead
-              </div>
-            </div>
+            <input key={spot.fixture_type || ''} style={inputStyle} defaultValue={spot.fixture_type || ''}
+              onBlur={e => onUpdateSpot(spot.id, 'fixture_type', e.target.value)}
+              placeholder="Fixture name" />
           ) : (
             <select style={inputStyle} value={spot.fixture_type || ''}
               onChange={e => {
                 if (e.target.value === 'Other') { setShowCustomFixture(true); }
                 else onUpdateSpot(spot.id, 'fixture_type', e.target.value);
               }}>
-              <option value="">Select fixture...</option>
+              <option value="">Select…</option>
               {FIXTURES.map(f => <option key={f} value={f}>{f}</option>)}
             </select>
           )}
         </div>
       </div>
-      <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '8px' }}>Color frames</div>
+      <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.52)', marginBottom: '6px' }}>Color frames</div>
       {confirmDelete && (
         <DeleteSpotDialog spotNumber={spot.spot_number} spotNumbers={spotNumbers}
           onCancel={() => setConfirmDelete(false)}
@@ -118,14 +118,14 @@ function SpotCard({ flash, spot, spotNumbers, colorSlots, onUpdateSpot, onUpdate
           onRemove={replaceWith => removeFrame(removing.slot, replaceWith)} />
       )}
       {/* Checked when the spot has a permanent gel (or the box was just ticked) */}
-      <label data-tour="spot-permanent" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: '#FFFFFF', margin: '4px 0 8px' }}>
+      <label data-tour="spot-permanent" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: '#FFFFFF', margin: '4px 0 0' }}>
         <input type="checkbox" checked={!!(permSlot && (permJustOn || permSlot.gel_number || permSlot.gel_name))} onChange={e => { setPermJustOn(e.target.checked); onSetPermanent(spot.id, e.target.checked); }}
           style={{ width: '15px', height: '15px', accentColor: '#0A84FF', cursor: 'pointer', margin: 0 }} />
         Permanent color
         <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)' }}>a gel that always stays in the fixture</span>
       </label>
       {permSlot && (permJustOn || permSlot.gel_number || permSlot.gel_name) && (
-        <div style={{ background: '#2A2A2A', borderRadius: '8px', padding: '8px', border: '1px solid rgba(255,214,10,0.25)' }}>
+        <div style={{ background: '#2A2A2A', borderRadius: '8px', padding: '8px', marginTop: '8px', border: '1px solid rgba(255,214,10,0.25)' }}>
           <div style={{ fontSize: '10px', color: '#C8A26B', marginBottom: '6px', fontWeight: '600' }}>Permanent frame</div>
           <GelFramePicker key={copyCount} gelNumber={permSlot.gel_number} gelName={permSlot.gel_name}
             onChange={gel => onUpdateGel(spot.id, permSlot.id, gel)}
