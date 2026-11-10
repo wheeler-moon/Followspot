@@ -6,7 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
-- Cue list: change a spot's iris or color and it carries down until the spot goes out, including the Fade Out or Bump Out cue. Iris also stops before an iris action (Iris In, Iris Out…)
+- Cue list: change a spot's iris or color and it carries down until the spot goes out, including the Fade Out or Bump Out cue. It stops before an iris action (Iris In, Iris Out…) for iris, and before Bump Color or Roll Color for color
 - Cue list: iris and color fit better. Frames always show F1–F6; the iris sizes scroll sideways if they don't all fit, and only in a really narrow window fold into one button showing the current size (the frames then show just 1, 2, 3…). All spots always look the same
 - Cue list: click empty space in a cue (or under its number) to select the whole row. Then ⌘C / ⌘V copy and paste the whole cue, ⌘D duplicates it, ⌘= adds a cue after it, ⌘Delete deletes it, ⌘1–⌘4 open that spot's cue window, ↑ ↓ move to the next cue, and typing sets its LQ. Escape clears it
 - Cue list: build cues without the mouse. Tab goes through each spot (action, character, intensity, time, iris, color, When, w/LQ, notes) and on to the next cue. Return opens the action picker (arrows or a letter to choose); on iris and color, ← → and Space, or type (3 = 3/4, H = H&S, 2 = F2, N = NC)

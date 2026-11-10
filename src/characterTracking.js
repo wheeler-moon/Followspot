@@ -15,8 +15,9 @@
 //   - Every later cue that still has the old value takes the new one, whatever its action.
 //   - A cue that ends the spot (Fade Out, Bump Out, …) takes it too, and it stops there.
 //   - It stops before: an Off cue, and any cue with a different value (changed by hand).
-//   - Iris only: it also stops before an iris action (Iris In, Iris Out, Iris/Fade …), which sets its
-//     own size. Changing the iris on that cue carries down from there by the same rules.
+//   - Iris also stops before an iris action (Iris In, Iris Out, Iris/Fade …), and color before a color
+//     action (Bump Color, Roll Color): those set their own. Changing it on that cue carries down from
+//     there by the same rules.
 //   - Changing them on a cue that ends the spot, or on an Off cue, carries nothing down.
 
 const CHARACTER_FIELDS = ['character_id', 'custom_character', 'extra_characters'];
@@ -24,6 +25,7 @@ const FOLLOW_FIELDS = [...CHARACTER_FIELDS, 'frame_size', 'active_frames', 'no_c
 const ENDS_SPOT = ['Fade Out', 'Bump Out', 'Up & Out', 'Fade In Place', 'Iris/Fade Out'];
 const NEW_TARGET = ['Pick Up', 'Bump Up', 'Swap To', 'Slide To'];
 const IRIS_ACTIONS = ['Iris In', 'Iris Out', 'Iris/Fade Up', 'Iris/Fade Down', 'Iris/Fade Out'];
+const COLOR_ACTIONS = ['Bump Color', 'Roll Color'];
 
 const isTracked = (action) => !action || action === 'Tracked';
 const same = (a, b) => {
@@ -52,6 +54,7 @@ function followDown(rows, from, field, oldValue, newValue) {
       const sc = rows[i];
       if (!sc || sc.action === 'Off' || !same(sc[field], oldValue)) break;
       if (field === 'frame_size' && IRIS_ACTIONS.includes(sc.action)) break;
+      if (field !== 'frame_size' && COLOR_ACTIONS.includes(sc.action)) break;
       ids.push(sc.id);
       if (ENDS_SPOT.includes(sc.action)) break;
     }
@@ -59,4 +62,4 @@ function followDown(rows, from, field, oldValue, newValue) {
   return ids;
 }
 
-module.exports = { followDown, FOLLOW_FIELDS, CHARACTER_FIELDS, ENDS_SPOT, NEW_TARGET, IRIS_ACTIONS, isTracked, same };
+module.exports = { followDown, FOLLOW_FIELDS, CHARACTER_FIELDS, ENDS_SPOT, NEW_TARGET, IRIS_ACTIONS, COLOR_ACTIONS, isTracked, same };
