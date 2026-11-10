@@ -7,9 +7,10 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 ## Unreleased
 
 - Spot Settings and New Show are more compact: operator, location and fixture sit on one row, and the color frames are two short rows. The permanent color is the last box, **Perm** (leave it empty for none), and hovering a frame shows **+** for a second gel. A picked gel shows just its number (R02); the search list and hovering the box show the name
-- Custom Actions: Off is no longer on the list of actions you can rename; it always reads Off
+- Show Settings: **Custom Actions** is now just **Actions**
+- Actions: Off is no longer on the list of actions you can rename; it always reads Off
 - Deleting a custom action that cues use asks what those cues should use instead: another action, a new one, or don't delete
-- Show Settings → Custom Actions: your own actions sit right after Off (a blue dot marks them), and + at the end adds one. The icon library has blue and purple circles too
+- Show Settings → Actions: your own actions sit right after Off (a blue dot marks them), and + at the end adds one. The icon library has blue and purple circles too
 - Custom actions with no icon show nothing in the icon's place (on the cue list, in Show Settings and on prints), instead of a dot
 - Show Settings → iPad Sync: each iPad shows the name its operator gave it (e.g. "Dana – Spot 2") instead of just "iPad"
 - Home: each show has a **⋯** button (or right-click it) to **Duplicate**, export or delete it. A duplicate is a full copy named "… copy"

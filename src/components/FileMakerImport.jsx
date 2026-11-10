@@ -80,7 +80,7 @@ export default function FileMakerImport({ summary, onCancel, onImported }) {
             </div>
           )}
           <MatchList title="Actions" items={s.actions} value={actions}
-            hint="These actions in the file aren’t exactly one of SpotPlot’s. Choose the SpotPlot action each one means, or keep it as a custom action (you can give it a symbol later in Show Settings → Custom Actions)."
+            hint="These actions in the file aren’t exactly one of SpotPlot’s. Choose the SpotPlot action each one means, or keep it as a custom action (you can give it a symbol later in Show Settings → Actions)."
             options={s.spotplotActions} customLabel={name => `New custom action “${name}”`}
             onChange={(name, v) => setActions(a => ({ ...a, [name]: v }))} />
           <MatchList title="Iris sizes" items={s.sizes} value={sizes}
