@@ -186,7 +186,7 @@ function EditAction({ target, actionNames, takenNames, otherActions, countUses, 
           <>
             <div style={{ fontSize: '11px', color: C.label2, marginBottom: '6px' }}>Icon</div>
             <IconChooser value={icon} onChange={setIcon} />
-            <div style={{ fontSize: '11px', color: C.label2, margin: '14px 0 6px' }}>Carries through this action</div>
+            <div style={{ fontSize: '11px', color: C.label2, margin: '14px 0 6px' }}>Tracks through this action</div>
             <div style={{ display: 'flex', gap: '16px' }}>
               {[['character', 'Character'], ['iris', 'Iris'], ['color', 'Color']].map(([k, label]) => (
                 <label key={k} style={checkRow}>
@@ -198,7 +198,7 @@ function EditAction({ target, actionNames, takenNames, otherActions, countUses, 
               <input type="checkbox" checked={tracking.goesOut} onChange={() => setTracking(t => ({ ...t, goesOut: !t.goesOut }))} style={checkBox} />Spot goes out after this (like Fade Out)
             </label>
             <div style={{ fontSize: '11px', color: C.label3, marginTop: '6px', lineHeight: '14px' }}>
-              When you change an earlier cue, checked items carry into this cue too. Not sure? Leave them unchecked.
+              When you change an earlier cue, checked items track into this cue too. Not sure? Leave them unchecked.
             </div>
           </>
         )}
