@@ -1562,7 +1562,7 @@ export default function CueListScreen({ show, navigate }) {
       pushUndo({ type: 'spot-cue', spotCueId, field, oldValue, newValue: value });
     }
     // The change carries down this spot's later cues by the rules in src/characterTracking.js (a new
-    // character follows the person to their fade out; iris and color follow Tracked cues). Each box it
+    // character follows the person to their fade out; iris and color follow the spot to its fade out). Each box it
     // changes gets its own ⌘Z entry, grouped with this click.
     if (oldSpotCue && !noFollow && FOLLOW_FIELDS.includes(field)) {
       const cues = [...(data?.cues || [])].sort((a, b) => a.sort_order - b.sort_order);

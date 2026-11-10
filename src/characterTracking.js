@@ -11,13 +11,19 @@
 //     and any cue whose character isn't the old one (someone else, or changed by hand).
 //   - Changing the character on a cue that ends the spot, or on an Off cue, carries nothing down.
 //
-// Iris size and color frames: only Tracked cues follow (any action can set its own iris or color),
-// stopping at the first cue with an action or a different value.
+// Iris size and color frames follow the spot until it goes out, like a character:
+//   - Every later cue that still has the old value takes the new one, whatever its action.
+//   - A cue that ends the spot (Fade Out, Bump Out, …) takes it too, and it stops there.
+//   - It stops before: an Off cue, and any cue with a different value (changed by hand).
+//   - Iris only: it also stops before an iris action (Iris In, Iris Out, Iris/Fade …), which sets its
+//     own size. Changing the iris on that cue carries down from there by the same rules.
+//   - Changing them on a cue that ends the spot, or on an Off cue, carries nothing down.
 
 const CHARACTER_FIELDS = ['character_id', 'custom_character', 'extra_characters'];
 const FOLLOW_FIELDS = [...CHARACTER_FIELDS, 'frame_size', 'active_frames', 'no_color'];
 const ENDS_SPOT = ['Fade Out', 'Bump Out', 'Up & Out', 'Fade In Place', 'Iris/Fade Out'];
 const NEW_TARGET = ['Pick Up', 'Bump Up', 'Swap To', 'Slide To'];
+const IRIS_ACTIONS = ['Iris In', 'Iris Out', 'Iris/Fade Up', 'Iris/Fade Down', 'Iris/Fade Out'];
 
 const isTracked = (action) => !action || action === 'Tracked';
 const same = (a, b) => {
@@ -41,13 +47,16 @@ function followDown(rows, from, field, oldValue, newValue) {
       if (ENDS_SPOT.includes(sc.action)) break;
     }
   } else {
+    if (!start || start.action === 'Off' || ENDS_SPOT.includes(start.action)) return [];
     for (let i = from + 1; i < rows.length; i++) {
       const sc = rows[i];
-      if (!sc || !isTracked(sc.action) || !same(sc[field], oldValue)) break;
+      if (!sc || sc.action === 'Off' || !same(sc[field], oldValue)) break;
+      if (field === 'frame_size' && IRIS_ACTIONS.includes(sc.action)) break;
       ids.push(sc.id);
+      if (ENDS_SPOT.includes(sc.action)) break;
     }
   }
   return ids;
 }
 
-module.exports = { followDown, FOLLOW_FIELDS, CHARACTER_FIELDS, ENDS_SPOT, NEW_TARGET, isTracked, same };
+module.exports = { followDown, FOLLOW_FIELDS, CHARACTER_FIELDS, ENDS_SPOT, NEW_TARGET, IRIS_ACTIONS, isTracked, same };
