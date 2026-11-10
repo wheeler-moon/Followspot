@@ -204,7 +204,7 @@ const startEdit = () => {
                     ['designer', 'Lighting designer'],
                     ['associate_ld', 'Associate LD'],
                     ['assistant_ld', 'Assistant LD'],
-                    ['production_electrician', 'Production electrician'],
+                    ['production_electrician', 'Production Electrician'],
                     ['programmer', 'Programmer'],
                   ].map(([field, label]) => (
                     <div key={field}>

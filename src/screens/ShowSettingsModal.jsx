@@ -19,8 +19,8 @@ const SECTIONS = [
   { id: 'spot-order', label: 'Spot Order' },
   { id: 'cue-settings', label: 'Cue Visibility' },
   { id: 'cue-defaults', label: 'Cue Defaults' },
-  { id: 'iris-sizes', label: 'Iris Sizes' },
   { id: 'custom-actions', label: 'Actions' },
+  { id: 'iris-sizes', label: 'Iris Sizes' },
   { id: 'eos-control', label: 'Console Connection' },
   { id: 'ipad-sync', label: 'iPad Sync' },
 ];
