@@ -21,11 +21,11 @@ const DEFAULT_IRIS_SIZES = [
 
 const FIGURE_BOX = { w: 120, h: 170 };
 const DEFAULT_IRIS_PICS = {
-  'Full Body': { x: 60, y: 82, r: 70 },
+  'Full Body': { x: 60, y: 82, r: 74.6 },
   '3/4 Body': { x: 60, y: 68, r: 56 },
-  '1/2 Body': { x: 60, y: 53, r: 40 },
-  'Head & Shoulders': { x: 60, y: 37, r: 27 },
-  'Head': { x: 60, y: 24, r: 16 },
+  '1/2 Body': { x: 59.7, y: 52.5, r: 43.1 },
+  'Head & Shoulders': { x: 60, y: 36, r: 26.9 },
+  'Head': { x: 60.1, y: 24.9, r: 21 },
 };
 // The stick figure, in those units: a head and five lines (body, arms, legs). Drawn by the Mac (IrisFigure.jsx)
 // and on prints (irisFigureSVG); the iPad should draw the same.
