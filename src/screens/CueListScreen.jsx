@@ -530,6 +530,9 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
     onUpdate(spotCue.id, 'active_frames', next.join(','));
   };
 
+  // While the iris is folded (a cramped window), frames drop the F: 1, 2…
+  const folded = look === 'fold';
+  const frameLabel = (slot) => (folded ? '' : 'F') + slot.slot_number;
   const toggleNC = () => {
     const isNC = spotCue.no_color === 1;
     onUpdate(spotCue.id, 'no_color', isNC ? 0 : 1);
@@ -738,17 +741,18 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
             </div>
             {withGaps(colorSlots).map(slot => {
               // A removed frame keeps its place as a faint, empty slot
-              if (slot.gap) return <div key={slot.id} title={`Frame ${slot.slot_number} was removed`} style={{ padding: `1px ${ROW.chipPad - 1}px`, borderRadius: '6px', fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.2)', border: '1px dashed rgba(255,255,255,0.18)' }}>F{slot.slot_number}</div>;
+              if (slot.gap) return <div key={slot.id} title={`Frame ${slot.slot_number} was removed`} style={{ padding: `1px ${ROW.chipPad - 1}px`, borderRadius: '6px', fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.2)', border: '1px dashed rgba(255,255,255,0.18)' }}>{frameLabel(slot)}</div>;
               const isActive = activeFrames.includes('F' + slot.slot_number);
               const isHovered = hoveredFrame === slot.id;
               return (
                 <div key={slot.id} style={{ position: 'relative' }}>
                   <div
                     onClick={() => toggleFrame('F' + slot.slot_number)}
+                    title={folded ? 'Frame ' + slot.slot_number : undefined}
                     onMouseEnter={() => setHoveredFrame(slot.id)}
                     onMouseLeave={() => setHoveredFrame(null)}
-                    style={{ boxShadow: colorCursor != null && colorCursor === 1 + withGaps(colorSlots).filter(sl => !sl.gap).findIndex(sl => sl.id === slot.id) ? '0 0 0 2px #FFFFFF' : 'none', padding: `2px ${ROW.chipPad}px`, borderRadius: '6px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: isActive ? (colorSame ? 'rgba(10,132,255,0.35)' : '#0A84FF') : '#2A2A2A', color: isActive ? (colorSame ? 'rgba(255,255,255,0.6)' : '#FFFFFF') : 'rgba(255,255,255,0.45)', border: `1px solid ${isActive ? (colorSame ? 'transparent' : '#0A84FF') : 'rgba(255,255,255,0.1)'}` }}>
-                    F{slot.slot_number}
+                    style={{ boxShadow: colorCursor != null && colorCursor === 1 + withGaps(colorSlots).filter(sl => !sl.gap).findIndex(sl => sl.id === slot.id) ? '0 0 0 2px #FFFFFF' : 'none', padding: `2px ${folded ? 5 : ROW.chipPad}px`, borderRadius: '6px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: isActive ? (colorSame ? 'rgba(10,132,255,0.35)' : '#0A84FF') : '#2A2A2A', color: isActive ? (colorSame ? 'rgba(255,255,255,0.6)' : '#FFFFFF') : 'rgba(255,255,255,0.45)', border: `1px solid ${isActive ? (colorSame ? 'transparent' : '#0A84FF') : 'rgba(255,255,255,0.1)'}` }}>
+                    {frameLabel(slot)}
                   </div>
                   {isHovered && slot.gel_number && (
                     <div style={{ position: 'fixed', zIndex: 99999, transform: 'translateX(-50%)', marginTop: '4px', background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.14)', borderRadius: '8px', padding: '8px 10px', pointerEvents: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', minWidth: '120px' }}
