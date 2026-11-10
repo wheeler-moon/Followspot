@@ -6,6 +6,8 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- Cue list: click empty space in a cue (or under its number) to select the whole row. Then ⌘C / ⌘V copy and paste the whole cue, ⌘D duplicates it, ⌘= adds a cue after it, ⌘Delete deletes it, ⌘1–⌘4 open that spot's cue window, ↑ ↓ move to the next cue, and typing sets its LQ. Escape clears it
+- Cue list: build cues without the mouse. Tab goes through each spot (action, character, intensity, time, iris, color, When, w/LQ, notes) and on to the next cue. Return opens the action picker (arrows or a letter to choose); on iris and color, ← → and Space, or type (3 = 3/4, H = H&S, 2 = F2, N = NC)
 - Cue list: the Notes sidebar opens and closes instantly, and opening a spot's color load no longer makes the scene headers jump
 - Spot Settings and New Show are more compact: operator, location and fixture sit on one row, and the color frames are two short rows. The permanent color is the last box, **Perm** (leave it empty for none), and hovering a frame shows **+** for a second gel. A picked gel shows just its number (R02); the search list and hovering the box show the name
 - Show Settings: **Custom Actions** is now just **Actions**

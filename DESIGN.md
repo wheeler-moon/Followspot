@@ -156,6 +156,9 @@ A compact way to show a spot's frames in one row: the chips share the row's widt
 ### Cue flags (iPad)
 Quick marks an operator puts on a cue: **Missed** (red, `exclamationmark.triangle.fill`), **Clarify** (orange, `questionmark.circle.fill`), **Idea** (yellow, `lightbulb.fill`). Tapping a cue opens a popover with three big buttons (96×78, radius 14, the color at 16% behind the symbol and label). A flagged cue shows small symbols under its T· number.
 
+### Selected row and keyboard focus (cue list)
+A selected cue row gets an accent wash (`rgba(10,132,255,0.12)`) over every cell, with a thin accent line (55%) above and below, so the cells' own highlights still show through. Anything reached with Tab shows a 2px solid accent ring; a chip group (iris, color frames, the action picker) marks the chip you're on with a 2px white ring. Neither shows for mouse clicks.
+
 ### Highlighted rows and row shading (iPad)
 A highlighted cue gets its color at 24% across the row plus a solid 5pt bar on its left edge. A highlighted When/Notes line uses 42%. Cue rows alternate between no fill and white at 3.5% so rows are easy to tell apart. In the caller view (spots side by side), each cue is its own card (white 5.5%, 12pt corners, inset 8pt, 8pt gap between cards) so cues read as separate rows and it never looks like a grid; spots inside a card are split by a short, faint line (white 9%, stopping 10pt short of the top and bottom). The LQ column is snug and capped; a long cue number shrinks to fit. Each spot's When box in a row starts at the same height.
 

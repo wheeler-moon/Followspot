@@ -38,6 +38,8 @@ export const TIPS = {
       body: 'Makes When read "w/ LQ" and this cue\'s number.' },
     { id: 'cue-cell', target: 'cue-cell', title: 'Do more with a cue',
       body: 'Right-click a cue to copy, paste, highlight or insert. Drag one cue onto another to copy it. Double-click for spot notes.' },
+    { id: 'cue-select', target: 'cue-lq', title: 'Select a whole cue',
+      body: 'Click empty space in a cue. Then ⌘C / ⌘V, ⌘D to duplicate, ↑ ↓, or Tab through it.' },
     { id: 'cue-add', target: 'add-cue-end', title: 'Adding cues',
       body: 'Add a cue at the end, or hover between cues to insert one.' },
     { id: 'cue-notes', target: 'notes-toggle', title: 'Notes during a run',

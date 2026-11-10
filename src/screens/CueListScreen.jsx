@@ -96,6 +96,38 @@ function scrollParent(el) {
 }
 function ActionPicker({ value, onChange, onClose, anchorRef, customActions, actionNames }) {
   useEscape(onClose);
+  // Keyboard: arrows move around the grid, Return or Space picks, a letter jumps to the actions starting with it
+  const list = [...ACTIONS, ...(customActions || []).map(a => ({ name: a.name, short: a.name.substring(0, 4), color: a.color || 'rgba(255,255,255,0.62)', icon: a.icon || null, builtinIcon: a.builtinIcon || null }))];
+  const [hi, setHi] = useState(() => Math.max(0, list.findIndex(a => a.name === value)));
+  const [keyed, setKeyed] = useState(false);
+  const hiRef = useRef(hi);
+  hiRef.current = hi;
+  const pickRef = useRef(null);
+  pickRef.current = (a) => { onChange(a); onClose(); };
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const n = list.length, cols = 4, i = hiRef.current;
+      let next = null;
+      if (e.key === 'ArrowRight') next = Math.min(n - 1, i + 1);
+      else if (e.key === 'ArrowLeft') next = Math.max(0, i - 1);
+      else if (e.key === 'ArrowDown') next = Math.min(n - 1, i + cols);
+      else if (e.key === 'ArrowUp') next = Math.max(0, i - cols);
+      else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); pickRef.current(list[i]); return; }
+      else if (e.key === 'Tab') { e.preventDefault(); e.stopPropagation(); return; }
+      else if (e.key.length === 1) {
+        const ch = e.key.toLowerCase();
+        const starts = (a) => displayAction(a.name, actionNames).toLowerCase().startsWith(ch);
+        for (let k = 1; k <= n; k++) if (starts(list[(i + k) % n])) { next = (i + k) % n; break; }
+      }
+      if (next == null) return;
+      e.preventDefault(); e.stopPropagation();
+      setKeyed(true); setHi(next);
+      menuRef.current?.children[next]?.scrollIntoView({ block: 'nearest' });
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, []);
   const menuRef = useRef();
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
@@ -145,9 +177,9 @@ function ActionPicker({ value, onChange, onClose, anchorRef, customActions, acti
 
   return (
     <div ref={menuRef} style={{ position: 'absolute', top: 0, left: 0, visibility: 'hidden', overflowY: 'auto', boxSizing: 'border-box', zIndex: 99999, background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.14)', borderRadius: '10px', padding: '8px', width: PICKER_WIDTH + 'px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px' }}>
-      {[...ACTIONS, ...(customActions || []).map(a => ({ name: a.name, short: a.name.substring(0, 4), color: a.color || 'rgba(255,255,255,0.62)', icon: a.icon || null, builtinIcon: a.builtinIcon || null }))].map(a => (
+      {list.map((a, i) => (
         <div key={a.name} onClick={() => { onChange(a); onClose(); }}
-          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', padding: '6px 4px', borderRadius: '6px', cursor: 'pointer', background: value === a.name ? 'rgba(10,132,255,0.16)' : 'transparent', border: value === a.name ? '1px solid #0A84FF' : '1px solid transparent' }}
+          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', padding: '6px 4px', borderRadius: '6px', cursor: 'pointer', background: value === a.name ? 'rgba(10,132,255,0.16)' : 'transparent', border: value === a.name ? '1px solid #0A84FF' : '1px solid transparent', boxShadow: keyed && i === hi ? '0 0 0 2px #FFFFFF' : 'none' }}
           onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
           onMouseLeave={e => e.currentTarget.style.background = value === a.name ? 'rgba(10,132,255,0.16)' : 'transparent'}>
           {a.builtinIcon ? <ActionIcon action={a.builtinIcon} size={28} /> : a.icon ? <img src={(() => { try { const fs = window.require('fs'); const d = fs.readFileSync(a.icon); const ext = a.icon.split('.').pop().toLowerCase(); return `data:image/${ext};base64,${d.toString('base64')}`; } catch(e) { return ''; } })()} style={{ width: 28, height: 28, objectFit: 'contain' }} /> : <ActionIcon action={a.name} size={28} />}
@@ -161,6 +193,31 @@ function ActionPicker({ value, onChange, onClose, anchorRef, customActions, acti
 function IrisStrip({ sizes, selected, onPick, same }) {
   const ref = useRef();
   const [more, setMore] = useState({ left: false, right: false });
+  // Keyboard: ←/→ move between sizes, Space or Return picks (again clears it). Typing picks too:
+  // 3 → 3/4, H → H&S (H again → Hd), F → FB.
+  const [cursor, setCursor] = useState(null);
+  const showChip = (i) => requestAnimationFrame(() => ref.current?.children[i]?.scrollIntoView({ block: 'nearest', inline: 'nearest' }));
+  const onKeyDown = (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey || !sizes.length) return;
+    const at = cursor ?? 0;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const next = Math.max(0, Math.min(sizes.length - 1, at + (e.key === 'ArrowRight' ? 1 : -1)));
+      setCursor(next); showChip(next);
+    } else if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault(); onPick(sizes[at].value);
+    } else if (e.key.length === 1) {
+      const ch = e.key.toLowerCase();
+      const matches = sizes.map((s, i) => i).filter(i => String(sizes[i].label).toLowerCase().startsWith(ch));
+      if (!matches.length) return;
+      e.preventDefault();
+      // Pressing the same letter again moves on to the next size starting with it
+      const cur = sizes.findIndex(s => s.value === selected);
+      const next = matches.includes(cur) ? matches[(matches.indexOf(cur) + 1) % matches.length] : matches[0];
+      setCursor(next); showChip(next);
+      if (sizes[next].value !== selected) onPick(sizes[next].value);
+    }
+  };
 
   const measure = () => {
     const el = ref.current;
@@ -183,7 +240,9 @@ function IrisStrip({ sizes, selected, onPick, same }) {
   const fade = `linear-gradient(to right, ${more.left ? 'transparent' : '#000'} 0, #000 ${more.left ? '16px' : '0'}, #000 calc(100% - ${more.right ? '16px' : '0px'}), ${more.right ? 'transparent' : '#000'} 100%)`;
 
   return (
-    <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '2px' }}>
+    <div tabIndex={0} aria-label="Iris size" onKeyDown={onKeyDown}
+      onFocus={e => { if (e.currentTarget.matches(':focus-visible')) setCursor(c => c ?? Math.max(0, sizes.findIndex(s => s.value === selected))); }} onBlur={() => setCursor(null)}
+      style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '2px', borderRadius: '6px' }}>
       {/* Arrows on either side show there are more sizes that way; click to scroll */}
       {more.left && (
         <div onClick={() => { ref.current.scrollLeft -= 80; }} title="Earlier iris sizes"
@@ -194,11 +253,11 @@ function IrisStrip({ sizes, selected, onPick, same }) {
       <div ref={ref} className="no-scrollbar" onScroll={measure}
         onWheel={e => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) ref.current.scrollLeft += e.deltaY; }}
         style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', gap: '3px', overflowX: 'auto', scrollBehavior: 'smooth', WebkitMaskImage: fade, maskImage: fade }}>
-        {sizes.map(iris => {
+        {sizes.map((iris, i) => {
           const isSel = selected === iris.value;
           return (
             <div key={iris.value} data-selected={isSel} onClick={() => onPick(iris.value)} title={iris.value}
-              style={{ flexShrink: 0, padding: '2px 6px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap', background: isSel ? (same ? 'rgba(10,132,255,0.35)' : '#0A84FF') : '#2A2A2A', color: isSel ? (same ? 'rgba(255,255,255,0.6)' : '#FFFFFF') : 'rgba(255,255,255,0.28)', border: `1px solid ${isSel ? (same ? 'transparent' : '#0A84FF') : 'rgba(255,255,255,0.1)'}` }}>
+              style={{ boxShadow: cursor === i ? 'inset 0 0 0 2px #FFFFFF' : 'none', flexShrink: 0, padding: '2px 6px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap', background: isSel ? (same ? 'rgba(10,132,255,0.35)' : '#0A84FF') : '#2A2A2A', color: isSel ? (same ? 'rgba(255,255,255,0.6)' : '#FFFFFF') : 'rgba(255,255,255,0.28)', border: `1px solid ${isSel ? (same ? 'transparent' : '#0A84FF') : 'rgba(255,255,255,0.1)'}` }}>
               {iris.label}
             </div>
           );
@@ -270,6 +329,7 @@ let wholeCueClipboard = null;
 function SpotCueCell({ above, onDragEnd, onContextMenu, spotCue, spot, cue, fieldsShown = {}, characters, colorSlots, onUpdate, onNewCustomCharacter, lqNumber, onDragStart, onDragOver, onDragLeave, onDrop, isDragTarget, isMenuTarget, colorSame, irisSame, onDoubleClick, irisSizes, customActions, actionNames, defaults, fromOff }) {
   const [showActionPicker, setShowActionPicker] = useState(false);
   const [hoveredFrame, setHoveredFrame] = useState(null);
+  const [colorCursor, setColorCursor] = useState(null);   // keyboard: which color chip you're on (0 = NC)
   const [showCustomTime, setShowCustomTime] = useState(false);
   const [showCustomChar, setShowCustomChar] = useState(!!spotCue?.custom_character);
   const [addingChar, setAddingChar] = useState(false);   // a new, still-empty character box under the first
@@ -279,6 +339,16 @@ function SpotCueCell({ above, onDragEnd, onContextMenu, spotCue, spot, cue, fiel
   const ref = useRef();
   const actionBtnRef = useRef();
   const isOff = spotCue?.action === 'Off' || !spotCue?.action;
+  // The action button works from the keyboard: Return, Space or ↓ opens the picker, and focus comes back after
+  const pickerByKey = useRef(false);
+  const actionKeys = (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') { e.preventDefault(); pickerByKey.current = true; setShowActionPicker(true); }
+  };
+  const closePicker = () => {
+    setShowActionPicker(false);
+    if (pickerByKey.current) { pickerByKey.current = false; requestAnimationFrame(() => actionBtnRef.current?.focus()); }
+  };
 
   if (!spotCue) return (
     <td
@@ -378,6 +448,12 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
     onUpdate(spotCue.id, 'active_frames', next.join(','));
   };
 
+  const toggleNC = () => {
+    const isNC = spotCue.no_color === 1;
+    onUpdate(spotCue.id, 'no_color', isNC ? 0 : 1);
+    if (!isNC) onUpdate(spotCue.id, 'active_frames', '');
+  };
+
   const withLQ = !!spotCue.with_lq;
   const toggleWLQ = () => onUpdate(spotCue.id, 'with_lq', withLQ ? 0 : 1);
 
@@ -394,12 +470,12 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
         onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop(e); }}
         style={{ padding: '8px 18px', borderRight: '1px solid rgba(255,255,255,0.12)', verticalAlign: 'top', minWidth: '260px', background: isDragTarget ? 'rgba(10,132,255,0.16)' : '#191919', outline: isDragTarget || isMenuTarget ? '2px solid #0A84FF' : 'none', outlineOffset: '-2px', position: 'relative' }}>
         <div ref={ref} style={{ position: 'relative', zIndex: showActionPicker ? 99999 : 'auto' }}>
-          <div ref={actionBtnRef} data-tour="cue-action" onClick={() => setShowActionPicker(v => !v)}
+          <div ref={actionBtnRef} data-tour="cue-action" tabIndex={0} role="button" onKeyDown={actionKeys} onClick={() => setShowActionPicker(v => !v)}
             style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '3px 7px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer' }}>
             <ActionIcon action="Off" size={16} />
             <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.28)', fontWeight: '500' }}>Off</span>
           </div>
-{showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} anchorRef={actionBtnRef} customActions={customActions} actionNames={actionNames} />}
+{showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={closePicker} anchorRef={actionBtnRef} customActions={customActions} actionNames={actionNames} />}
           {/* A note for the op while the spot is off. It's the cue's regular note, so it carries over if the spot comes back on */}
           {showOffNote ? (
             <div onBlur={() => setAddingOffNote(false)} style={{ marginTop: '6px' }}>
@@ -455,7 +531,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
         {/* One grid for action / character (+ more characters) / intensity / time, so the boxes line up:
             intensity under action, time under character and its + */}
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr) 24px', columnGap: '6px', rowGap: '6px', alignItems: 'center', marginBottom: '5px' }}>
-          <div ref={actionBtnRef} data-tour="cue-action" onClick={() => setShowActionPicker(v => !v)}
+          <div ref={actionBtnRef} data-tour="cue-action" tabIndex={0} role="button" onKeyDown={actionKeys} onClick={() => setShowActionPicker(v => !v)}
             style={{ display: fieldsShown.action === false ? 'none' : 'flex', alignItems: 'center', gap: '6px', height: '32px', boxSizing: 'border-box', padding: '0 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer', minWidth: 0, gridColumn: showChar ? '1' : '1 / 4' }}>
             {spotCue.action ? (
               <>
@@ -479,7 +555,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
               <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.28)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Action…</span>
             )}
           </div>
-{showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={() => setShowActionPicker(false)} anchorRef={actionBtnRef} customActions={customActions} actionNames={actionNames} />}
+{showActionPicker && <ActionPicker value={spotCue.action} onChange={handleActionSelect} onClose={closePicker} anchorRef={actionBtnRef} customActions={customActions} actionNames={actionNames} />}
                 {showCustomChar ? (
                     <input
             autoFocus
@@ -557,14 +633,23 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
           {fieldsShown.iris === false ? <div style={{ flex: 1 }} /> : <IrisStrip sizes={irisSizes || []}
             selected={spotCue.frame_size} same={irisSame}
             onPick={value => onUpdate(spotCue.id, 'frame_size', spotCue.frame_size === value ? '' : value)} />}
-          <div style={{ display: fieldsShown.color === false ? 'none' : 'flex', gap: '3px', alignItems: 'center', flexShrink: 0 }}>
+          <div tabIndex={0} aria-label="Color frames" onFocus={e => { if (e.currentTarget.matches(':focus-visible')) setColorCursor(c => c ?? 0); }} onBlur={() => setColorCursor(null)}
+            onKeyDown={e => {
+              // ←/→ move along NC, F1, F2…; Space or Return turns the one you're on on or off.
+              // Typing 1–9 toggles that frame, N toggles NC.
+              if (e.metaKey || e.ctrlKey || e.altKey) return;
+              const keys = ['NC', ...withGaps(colorSlots).filter(sl => !sl.gap).map(sl => 'F' + sl.slot_number)];
+              const at = Math.min(colorCursor ?? 0, keys.length - 1);
+              const press = (key) => key === 'NC' ? toggleNC() : toggleFrame(key);
+              if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); setColorCursor(Math.max(0, Math.min(keys.length - 1, at + (e.key === 'ArrowRight' ? 1 : -1)))); }
+              else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); press(keys[at]); }
+              else if (/^[1-9]$/.test(e.key) && keys.includes('F' + e.key)) { e.preventDefault(); setColorCursor(keys.indexOf('F' + e.key)); press('F' + e.key); }
+              else if (e.key.toLowerCase() === 'n') { e.preventDefault(); setColorCursor(0); press('NC'); }
+            }}
+            style={{ display: fieldsShown.color === false ? 'none' : 'flex', gap: '3px', alignItems: 'center', flexShrink: 0, borderRadius: '6px', outline: 'none' }}>
             <div
-              onClick={() => {
-                const isNC = spotCue.no_color === 1;
-                onUpdate(spotCue.id, 'no_color', isNC ? 0 : 1);
-                if (!isNC) onUpdate(spotCue.id, 'active_frames', '');
-              }}
-              style={{ padding: '2px 6px', borderRadius: '6px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: spotCue.no_color ? (colorSame ? 'rgba(172,142,104,0.4)' : '#AC8E68') : '#2A2A2A', color: spotCue.no_color ? (colorSame ? 'rgba(255,255,255,0.6)' : '#FFFFFF') : 'rgba(255,255,255,0.45)', border: `1px solid ${spotCue.no_color ? (colorSame ? 'transparent' : '#AC8E68') : 'rgba(255,255,255,0.1)'}` }}>
+              onClick={toggleNC}
+              style={{ boxShadow: colorCursor === 0 ? '0 0 0 2px #FFFFFF' : 'none', padding: '2px 6px', borderRadius: '6px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: spotCue.no_color ? (colorSame ? 'rgba(172,142,104,0.4)' : '#AC8E68') : '#2A2A2A', color: spotCue.no_color ? (colorSame ? 'rgba(255,255,255,0.6)' : '#FFFFFF') : 'rgba(255,255,255,0.45)', border: `1px solid ${spotCue.no_color ? (colorSame ? 'transparent' : '#AC8E68') : 'rgba(255,255,255,0.1)'}` }}>
               NC
             </div>
             {withGaps(colorSlots).map(slot => {
@@ -578,7 +663,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
                     onClick={() => toggleFrame('F' + slot.slot_number)}
                     onMouseEnter={() => setHoveredFrame(slot.id)}
                     onMouseLeave={() => setHoveredFrame(null)}
-                    style={{ padding: '2px 6px', borderRadius: '6px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: isActive ? (colorSame ? 'rgba(10,132,255,0.35)' : '#0A84FF') : '#2A2A2A', color: isActive ? (colorSame ? 'rgba(255,255,255,0.6)' : '#FFFFFF') : 'rgba(255,255,255,0.45)', border: `1px solid ${isActive ? (colorSame ? 'transparent' : '#0A84FF') : 'rgba(255,255,255,0.1)'}` }}>
+                    style={{ boxShadow: colorCursor != null && colorCursor === 1 + withGaps(colorSlots).filter(sl => !sl.gap).findIndex(sl => sl.id === slot.id) ? '0 0 0 2px #FFFFFF' : 'none', padding: '2px 6px', borderRadius: '6px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: isActive ? (colorSame ? 'rgba(10,132,255,0.35)' : '#0A84FF') : '#2A2A2A', color: isActive ? (colorSame ? 'rgba(255,255,255,0.6)' : '#FFFFFF') : 'rgba(255,255,255,0.45)', border: `1px solid ${isActive ? (colorSame ? 'transparent' : '#0A84FF') : 'rgba(255,255,255,0.1)'}` }}>
                     F{slot.slot_number}
                   </div>
                   {isHovered && slot.gel_number && (
@@ -620,7 +705,8 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
             placeholder={withLQ ? '' : 'When…'}
             style={{ flex: 1, minWidth: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.62)', padding: '2px 0', fontSize: '12px' }} />
           </div>
-          <div data-tour="cue-wlq" onClick={toggleWLQ} role="switch" aria-checked={withLQ}
+          <div data-tour="cue-wlq" onClick={toggleWLQ} role="switch" aria-checked={withLQ} tabIndex={0}
+            onKeyDown={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleWLQ(); } }}
             title={withLQ ? 'Linked to this cue\'s LQ number — click to unlink' : 'Link to this cue\'s LQ number'}
             style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', flexShrink: 0 }}>
             <div style={{ width: '44px', height: '20px', borderRadius: '10px', background: withLQ ? '#0A84FF' : 'rgba(255,255,255,0.10)', position: 'relative', transition: 'background 0.15s' }}>
@@ -638,6 +724,14 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
     </td>
   );
 }
+
+// The selected cue row (a light blue wash over every cell, with a line above and below), the focus ring
+// for keyboard use, and room under the pinned headers when the keyboard scrolls a row into view
+const CUE_LIST_CSS = `
+.cue-list tr[data-selected="true"] > td { background-image: linear-gradient(rgba(10,132,255,0.12), rgba(10,132,255,0.12)); box-shadow: inset 0 1px 0 rgba(10,132,255,0.55), inset 0 -1px 0 rgba(10,132,255,0.55); }
+.cue-list :focus-visible { outline: 2px solid #0A84FF !important; outline-offset: 1px; }
+.cue-list tr[data-cue-id] { scroll-margin-top: calc(var(--thead-h, 47px) + 36px); }
+`;
 
 function InsertButton({ onInsert }) {
   const [hover, setHover] = useState(false);
@@ -715,7 +809,7 @@ function HeaderColorLoad({ slots, perm }) {
   );
 }
 
-function CueRow({ onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesBySpot, irisChangesBySpot, cue, isLastCue, fieldsShown, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onNewCustomCharacter, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal, onCueDoubleClick, irisSizes, customActions, actionNames, defaults, fromOffCells, aboveCells }) {
+function CueRow({ selected, lqSeed, onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesBySpot, irisChangesBySpot, cue, isLastCue, fieldsShown, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onNewCustomCharacter, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal, onCueDoubleClick, irisSizes, customActions, actionNames, defaults, fromOffCells, aboveCells }) {
   const [editingLQ, setEditingLQ] = useState(false);
   const [lqVal, setLqVal] = useState(cue.lq_number || '');
 
@@ -730,14 +824,31 @@ function CueRow({ onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesB
     if (v !== (cue.page || '')) onUpdateCue(cue.id, 'page', v || null);
   };
 
+  const lqBox = useRef(null);
+  const lqByKey = useRef(false);   // editing started from the keyboard: focus comes back to the number after
   const saveLQ = () => {
     setEditingLQ(false);
     onUpdateCue(cue.id, 'lq_number', lqVal);
   };
+  // Typing with the row selected starts the LQ number (a key replaces it; Return keeps it)
+  // (a layout effect, so the box is open before the next key arrives)
+  useLayoutEffect(() => {
+    if (!lqSeed) return;
+    if (lqSeed.text != null) setLqVal(lqSeed.text);
+    lqByKey.current = true;
+    setEditingLQ(true);
+  }, [lqSeed?.n]);
+  useEffect(() => {
+    if (!editingLQ && lqByKey.current) {
+      lqByKey.current = false;
+      // Return or Escape: back on the number. (Tab has already moved on to the next box.)
+      if (document.activeElement === document.body) lqBox.current?.focus();
+    }
+  }, [editingLQ]);
 
   return (
     <>
-      <tr data-cue-id={cue.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+      <tr data-cue-id={cue.id} data-selected={selected ? 'true' : undefined} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
         onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.025)'}
         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
         <td onContextMenu={e => { if (e.target.closest('input, select')) return; e.preventDefault(); onCueMenu(cue); }}
@@ -748,10 +859,18 @@ function CueRow({ onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesB
           <div data-tour="cue-lq" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
             {editingLQ ? (
               <input autoFocus value={lqVal} onChange={e => setLqVal(e.target.value)}
+                onFocus={e => { if (lqSeed && lqSeed.text != null) { const n = e.target.value.length; e.target.setSelectionRange(n, n); } }}
                 onBlur={saveLQ} onKeyDown={e => { if (e.key === 'Enter') saveLQ(); if (e.key === 'Escape') { setLqVal(cue.lq_number || ''); setEditingLQ(false); } }}
                 style={{ width: '100%', maxWidth: '78px', boxSizing: 'border-box', background: 'rgba(255,255,255,0.05)', border: '1px solid #0A84FF', borderRadius: '6px', color: '#FFFFFF', padding: '3px 2px', fontSize: '16px', fontWeight: '700', textAlign: 'center', outline: 'none', fontVariantNumeric: 'tabular-nums' }} />
             ) : (
-              <div onClick={() => setEditingLQ(true)} style={{ fontSize: '20px', fontWeight: '700', color: lqVal ? '#FFFFFF' : 'rgba(255,255,255,0.28)', cursor: 'pointer', minHeight: '24px', fontVariantNumeric: 'tabular-nums' }}>
+              <div ref={lqBox} data-lq tabIndex={0} onClick={() => setEditingLQ(true)}
+                onKeyDown={e => {
+                  // Return edits the number; typing replaces it
+                  if (e.metaKey || e.ctrlKey || e.altKey) return;
+                  if (e.key === 'Enter') { e.preventDefault(); lqByKey.current = true; setEditingLQ(true); }
+                  else if (e.key.length === 1 && e.key !== ' ') { e.preventDefault(); lqByKey.current = true; setLqVal(e.key); setEditingLQ(true); }
+                }}
+                style={{ fontSize: '20px', borderRadius: '6px', padding: '0 4px', fontWeight: '700', color: lqVal ? '#FFFFFF' : 'rgba(255,255,255,0.28)', cursor: 'pointer', minHeight: '24px', fontVariantNumeric: 'tabular-nums' }}>
                 {lqVal || '—'}
               </div>
             )}
@@ -762,7 +881,7 @@ function CueRow({ onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesB
                   onBlur={savePage} onKeyDown={e => { if (e.key === 'Enter') savePage(); if (e.key === 'Escape') { setPageVal(cue.page || ''); setEditingPage(false); } }}
                   placeholder="pg" style={{ width: '34px', background: 'rgba(255,255,255,0.05)', border: '1px solid #0A84FF', borderRadius: '4px', color: '#FFFFFF', padding: '0 3px', fontSize: '10px', textAlign: 'center', outline: 'none' }} />
               ) : (
-                <span onClick={() => setEditingPage(true)} title="Script page"
+                <span tabIndex={0} onClick={() => setEditingPage(true)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEditingPage(true); } }} title="Script page"
                   style={{ cursor: 'pointer', color: pageVal ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.22)' }}>
                   pg {pageVal || '–'}
                 </span>
@@ -1182,7 +1301,11 @@ export default function CueListScreen({ show, navigate }) {
   useEffect(() => {
     const handler = () => {
       const cues = dataRef.current?.cues || [];
-      if (cues.length > 0) {
+      const selected = cues.find(c => c.id === keysRef.current.selectedCueId);
+      if (selected) {
+        const id = insertCueAfter(selected.id, selected.scene_id);
+        if (id) keysRef.current.selectCue(id);
+      } else if (cues.length > 0) {
         const lastCue = [...cues].sort((a, b) => a.sort_order - b.sort_order)[cues.length - 1];
         insertCueAfter(lastCue.id, lastCue.scene_id);
       } else {
@@ -1307,6 +1430,7 @@ export default function CueListScreen({ show, navigate }) {
     const r = ipcRenderer.sendSync('db-create-cue', { showId: show.id, sceneId, afterCueId });
     if (r?.success) pushUndo({ type: 'cue-created', cueId: r.id });
     load();
+    return r?.success ? r.id : null;
   };
 
     const updateCue = (cueId, field, value) => {
@@ -1656,6 +1780,150 @@ export default function CueListScreen({ show, navigate }) {
     load();
   };
 
+  // ── A selected cue row and the keyboard ──
+  // Clicking empty space in a cue (not a box or button) selects its whole row, like a row in a
+  // spreadsheet. With a row selected: ↑/↓ move the selection, ⌘C / ⌘V copy and paste the whole cue
+  // (paste replaces what every spot does; LQ, page and scene stay), ⌘D duplicates it below, ⌘= adds
+  // a cue after it, ⌘Delete deletes it (asks first), ⌘1–⌘9 opens that spot's cue window, typing
+  // starts the LQ number, Tab goes into the row, and Escape (or clicking elsewhere) clears it.
+  // Tabbing into a row selects it too, so the shortcuts follow the keyboard.
+  const [selectedCueId, setSelectedCueId] = useState(null);
+  const [lqSeed, setLqSeed] = useState(null);   // { cueId, text, n }: typing with a row selected
+  const sortedCues = () => [...(data?.cues || [])].sort((a, b) => a.sort_order - b.sort_order);
+  const rowEl = (cueId) => scrollRef.current?.querySelector(`tr[data-cue-id="${cueId}"]`);
+  const selectCue = (cueId, scroll = true) => {
+    setSelectedCueId(cueId);
+    if (scroll && cueId) requestAnimationFrame(() => rowEl(cueId)?.scrollIntoView({ block: 'nearest' }));
+  };
+  const duplicateCue = (cue) => {
+    const newId = ipcRenderer.sendSync('db-create-cue', { showId: show.id, sceneId: cue.scene_id, afterCueId: cue.id });
+    const id = newId?.success ? newId.id : null;
+    if (!id) return null;
+    // The new cue takes every spot's settings from this one; ⌘Z removes the new cue
+    for (const sp of data?.spots || []) {
+      const row = (data?.spotCues || []).find(x => x.spot_id === sp.id && x.cue_id === cue.id);
+      if (!row) continue;
+      for (const f of COPY_FIELDS) if (row[f] != null && row[f] !== '') ipcRenderer.sendSync('db-upsert-spot-cue', { spotId: sp.id, cueId: id, field: f, value: row[f] });
+    }
+    if (cue.page) ipcRenderer.sendSync('db-update-cue', { cueId: id, field: 'page', value: cue.page });
+    pushUndo({ type: 'cue-created', cueId: id });
+    load();
+    return id;
+  };
+  const openSpotWindow = (cue, spotNumber) => {
+    const spot = (data?.spots || []).find(sp => sp.spot_number === spotNumber);
+    if (!spot) return;
+    const row = ensureSpotCue(spot, cue, (data?.spotCues || []).find(x => x.spot_id === spot.id && x.cue_id === cue.id));
+    setCuePopup({ cue, spot, spotCue: row });
+    setPopupNote(row?.spot_note || '');
+  };
+  const isTextBox = (el) => !!el && (el.matches?.('input, textarea, select') || el.isContentEditable);
+  const keysRef = useRef({});
+  keysRef.current = { selectedCueId, sortedCues, selectCue, duplicateCue, openSpotWindow, copyWholeCue, pasteWholeCue, deleteCue, cueName, popupOpen: !!cuePopup };
+  const lastInput = useRef('mouse');
+  useEffect(() => {
+    // Anything you can click or type in doesn't select the row: boxes, buttons, chips, links
+    const interactive = (el, stop) => {
+      for (let n = el; n && n !== stop; n = n.parentElement) {
+        if (n.matches('input, select, textarea, button, option, a, [contenteditable="true"], [role="switch"], [tabindex]')) return true;
+        const c = getComputedStyle(n).cursor;
+        if (c === 'pointer' || c === 'text') return true;
+      }
+      return false;
+    };
+    const onDown = (e) => {
+      lastInput.current = 'mouse';
+      const list = scrollRef.current;
+      const tr = list?.contains(e.target) && e.target.closest('tr[data-cue-id]');
+      if (tr && e.button === 0 && !interactive(e.target, tr)) {
+        setSelectedCueId(Number(tr.dataset.cueId));
+        if (isTextBox(document.activeElement)) document.activeElement.blur();
+      } else if (e.button === 0 && list?.contains(e.target)) setSelectedCueId(null);
+    };
+    const onFocusIn = (e) => {
+      if (lastInput.current !== 'key') return;
+      const tr = scrollRef.current?.contains(e.target) && e.target.closest('tr[data-cue-id]');
+      if (tr) setSelectedCueId(Number(tr.dataset.cueId));
+    };
+    const onKey = (e) => {
+      lastInput.current = 'key';
+      const k = keysRef.current;
+      if (!k.selectedCueId || k.popupOpen || e.defaultPrevented) return;
+      const cues = k.sortedCues();
+      const cue = cues.find(c => c.id === k.selectedCueId);
+      if (!cue) return;
+      const active = document.activeElement;
+      const nothingFocused = !active || active === document.body;
+      if (isTextBox(active)) return;   // typing in a box: keys belong to the box
+      const cmd = e.metaKey || e.ctrlKey;
+      if (cmd && (e.key === 'Backspace' || e.key === 'Delete')) {
+        e.preventDefault();
+        if (!window.confirm(`Delete ${k.cueName(cue)}? It's removed for every spot. ⌘Z brings it back.`)) return;
+        const i = cues.findIndex(c => c.id === cue.id);
+        const next = cues[i + 1] || cues[i - 1];
+        k.deleteCue(cue.id);
+        k.selectCue(next ? next.id : null);
+      } else if (cmd && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'd') {
+        e.preventDefault();
+        const id = k.duplicateCue(cue);
+        if (id) k.selectCue(id);
+      } else if (cmd && /^[1-9]$/.test(e.key)) {
+        e.preventDefault();
+        k.openSpotWindow(cue, Number(e.key));
+      } else if (cmd || e.altKey) {
+        return;
+      } else if (nothingFocused && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+        e.preventDefault();
+        const i = cues.findIndex(c => c.id === cue.id);
+        const next = cues[i + (e.key === 'ArrowDown' ? 1 : -1)];
+        if (next) k.selectCue(next.id);
+      } else if (nothingFocused && e.key === 'Tab' && !e.shiftKey) {
+        // Into the row: its LQ number first
+        const lq = rowEl(cue.id)?.querySelector('[data-lq]');
+        if (lq) { e.preventDefault(); lq.focus(); }
+      } else if (nothingFocused && (e.key === 'Enter' || (e.key.length === 1 && e.key !== ' '))) {
+        // Typing starts the LQ number (replacing it, like a spreadsheet); Return edits it as it is
+        e.preventDefault();
+        setLqSeed(s => ({ cueId: cue.id, text: e.key === 'Enter' ? null : e.key, n: (s?.n || 0) + 1 }));
+      }
+    };
+    // ⌘C / ⌘V come through Edit → Copy / Paste as copy and paste events
+    const onCopy = (e) => {
+      const k = keysRef.current;
+      if (!k.selectedCueId || k.popupOpen || isTextBox(document.activeElement)) return;
+      const cue = k.sortedCues().find(c => c.id === k.selectedCueId);
+      if (!cue) return;
+      e.preventDefault();
+      k.copyWholeCue(cue);
+    };
+    const onPaste = (e) => {
+      const k = keysRef.current;
+      if (!k.selectedCueId || k.popupOpen || isTextBox(document.activeElement)) return;
+      const cue = k.sortedCues().find(c => c.id === k.selectedCueId);
+      if (!cue) return;
+      e.preventDefault();
+      k.pasteWholeCue(cue);
+    };
+    document.addEventListener('mousedown', onDown, true);
+    document.addEventListener('focusin', onFocusIn);
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('copy', onCopy);
+    document.addEventListener('paste', onPaste);
+    return () => {
+      document.removeEventListener('mousedown', onDown, true);
+      document.removeEventListener('focusin', onFocusIn);
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('copy', onCopy);
+      document.removeEventListener('paste', onPaste);
+    };
+  }, []);
+  // Escape: first leaves a button or chip you tabbed to, then clears the selected row
+  useEscape(() => {
+    const active = document.activeElement;
+    if (active && active !== document.body && scrollRef.current?.contains(active)) active.blur();
+    else setSelectedCueId(null);
+  }, selectedCueId != null);
+
   const addScene = () => {
     if (!newSceneLabel.trim() && !newSceneSong.trim()) return;   // a label, a song, or both
     const result = ipcRenderer.sendSync('db-create-scene', { showId: show.id, label: newSceneLabel, song: newSceneSong });
@@ -1811,7 +2079,8 @@ const groupedCues = () => {
           sessionStorage.setItem(`cueScroll_${show.id}`, JSON.stringify({ top: el.scrollTop, left: el.scrollLeft,
             cueId: row ? row.dataset.cueId : null, offset: row ? row.getBoundingClientRect().top - el.getBoundingClientRect().top : 0 }));
         }
-      }} style={{ flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'auto' }}>
+      }} className="cue-list" style={{ flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'auto', scrollPaddingTop: 'calc(var(--thead-h, 47px) + 36px)' }}>
+        <style>{CUE_LIST_CSS}</style>
         {!loaded ? (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60%', color: 'rgba(255,255,255,0.45)', fontSize: '14px' }}>
             Loading cues…
@@ -1873,6 +2142,7 @@ const groupedCues = () => {
                   <InsertButton onInsert={() => insertCueAtSceneTop(group)} />
                   {group.cues.map((cue) => (
                     <CueRow key={cue.id} cue={cue} fieldsShown={listFields}
+                      selected={selectedCueId === cue.id} lqSeed={lqSeed?.cueId === cue.id ? lqSeed : null}
                       isLastCue={cue.id === lastCueId}
                       spots={data?.spots || []}
                       spotCues={data?.spotCues || []} characters={characters}

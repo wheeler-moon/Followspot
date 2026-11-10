@@ -40,13 +40,6 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
   - **Cue list in a narrow window (big one):** with every frame button on each cue, the iris chips get squeezed until they can't be clicked (see 2026-11-05 screenshot: iris strip shows only ‹ ›). Needs a layout that stays sleek and easy to pick from at half-screen
   - Iris size pictures: Wheeler sets the five default circles (`DEFAULT_IRIS_PICS` in `src/irisSizes.js`; set each in Show Settings → Iris Sizes, then copy the saved numbers in)
 - [ ] Beta feedback: add items here as testers report them
-- [ ] **Cue list: select a row, and build cues from the keyboard** (Wheeler's idea, 2026-11-09; next up after the narrow-window fix)
-  - Click empty space in a cue (an Off cue's blank area, or under the cue number on the left) to select the whole cue row, like a row in Excel: the row is lightly highlighted.
-  - With a row selected: ⌘C / ⌘V copy and paste the whole row, plus other shortcuts (decide which: delete, insert below, move up/down…). This replaces the old "⌘C / ⌘V for a cue box" item.
-  - Typing with a row selected goes into its cue number (LQ) box.
-  - Tab moves through each spot's controls (action, character, intensity, time, iris, color…) and on to the next spot; arrows and Return work as expected, so a whole cue can be built without the mouse.
-  - Goal: everything still works with the mouse, but someone who never touches it can build cues with Tab, the arrows, typing and Return.
-  - To work out together: exactly where a click selects the row vs. starts editing, what each shortcut does, the Tab order, and how arrows behave inside menus vs. between cues. Undo must cover row paste.
 - [ ] Cue Defaults, second pass: first version is in (Show Settings → Cue Defaults, `src/cueDefaults.js`). Wheeler wants to think it through more and make sure it fully works and is structured right: when defaults should apply (on picking an action vs. when a cue is made), how they interact with tracking, inserted cues, copy/paste and actions' own settings, whether defaults should be per spot, and whether more details (character, When) belong there. Remove the "In progress" label in the panel once it is settled.
 
 - [ ] Print headers: go over the header on every PDF (spot sheet, caller sheet, Color Load, Spot Notes, Characters, Action Key, Scene List, cover page) so they match. The Color Load header looks misaligned. Wheeler has opinions on the redesign; waiting on his notes
