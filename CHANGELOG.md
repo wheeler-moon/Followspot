@@ -6,52 +6,29 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
-- Custom actions: choose whether a character, iris or color change tracks through them, and whether the spot goes out after (like Fade Out). Unchecked, changes stop before them
-- Cue list: click the ↓ next to an LQ to copy its number and page into the blank cues below it
-- Cue list: change a spot's iris or color and it carries down until the spot goes out, including the Fade Out or Bump Out cue. It stops before an iris action (Iris In, Iris Out…) for iris, and before Bump Color or Roll Color for color
-- Cue list: iris and color fit better. Frames always show F1–F6; the iris sizes scroll sideways if they don't all fit, and only in a really narrow window fold into one button showing the current size (the frames then show just 1, 2, 3…). All spots always look the same
-- Cue list: click empty space in a cue (or under its number) to select the whole row. Then ⌘C / ⌘V copy and paste the whole cue, ⌘D duplicates it, ⌘= adds a cue after it, ⌘Delete deletes it, ⌘1–⌘4 open that spot's cue window, ↑ ↓ move to the next cue, and typing sets its LQ. Escape clears it
-- Cue list: build cues without the mouse. Tab goes through each spot (action, character, intensity, time, iris, color, When, w/LQ, notes) and on to the next cue. Return opens the action picker (arrows or a letter to choose); on iris and color, ← → and Space, or type (3 = 3/4, H = H&S, 2 = F2, N = NC)
-- Cue list: the Notes sidebar opens and closes instantly, and opening a spot's color load no longer makes the scene headers jump
-- Spot Settings and New Show are more compact: operator, location and fixture sit on one row, and the color frames are two short rows. The permanent color is the last box, **Perm** (leave it empty for none), and hovering a frame shows **+** for a second gel. A picked gel shows just its number (R02); the search list and hovering the box show the name
-- Show Settings: **Custom Actions** is now just **Actions**
-- Actions: Off is no longer on the list of actions you can rename; it always reads Off
-- Deleting a custom action that cues use asks what those cues should use instead: another action, a new one, or don't delete
-- Show Settings → Actions: your own actions sit right after Off (a blue dot marks them), and + at the end adds one. The icon library has blue and purple circles too
-- Custom actions with no icon show nothing in the icon's place (on the cue list, in Show Settings and on prints), instead of a dot
-- Show Settings → iPad Sync: each iPad shows the name its operator gave it (e.g. "Dana – Spot 2") instead of just "iPad"
-- Home: each show has a **⋯** button (or right-click it) to **Duplicate**, export or delete it. A duplicate is a full copy named "… copy"
-- Cue list: ⌘G (Edit → Go to Cue…) jumps to a cue. Type the LQ and press Return; it finds "14*" or "In 14" from 14, or the nearest cue
-- Notes sidebar: typing 14 finds a cue whose LQ is "14*" or "In 14"
-- Cue list: double-click a cue and start typing the note right away. Return saves it and closes the box (Shift-Return for a new line)
-- Characters screen: double-click a character to edit it (no more Edit button). The Add character box is smaller
-- Spot Notes screen: easier to read. Each spot is one panel of notes grouped by scene (green and gold, like the cue list), each note under its LQ with the action symbol and character. A green ✓ gives a note, the trash can deletes it, click the LQ to go to the cue, and double-click a note to edit it
-- Show Settings → Iris Sizes: each size has a little stick figure. Click it and drag the circle to show how much of a person that size lights. Turn on **Iris pictures** in Print → Page Setup to put them in the spot sheet and caller sheet headers
-- A show you've just imported opens its cue list at the very top
-- Show Settings: **Cue Settings** is now called **Cue Visibility**
-- Spot Settings: **Swap spots** is now at the top right, next to the title, so the spots start at the top of the page
-- Swap spots: the dialog fits long operator names and sits in the middle of the window, and spot notes you've already given (the Given tray) swap with their cues too. A new **Also swap operator, location, fixture and gels** box (off to start) moves everything
-- A removed color frame keeps its place everywhere as an empty slot (Frame 4 removed leaves a gap between 3 and 5): in Spot Settings (with **+ Add back**), the cue list, the dashboard, every printed sheet and the iPad
-- Clicking a spot on the show dashboard opens Show Settings right at that spot
-- Spot Settings: ⌘Z undoes changes to a spot's operator, location, fixture, gels, frames (cues get their frames back too), permanent color, Copy colors, adding a spot and swapping spots (⇧⌘Z redoes)
-- Show dashboard: each spot shows its color load as little colored boxes, lined up F1 under F1 down the list (PERM last). Click a spot to edit it in Show Settings
-- A new cue after an Iris/Fade Out starts Off for that spot, like after a Fade Out
-- Characters screen: ⌘Z undoes adding, changing, deleting, reordering and the Print checkbox (⇧⌘Z redoes). Undoing a delete puts the character back in every cue that had them
-- Scenes screen: ⌘Z undoes adding, changing, deleting and reordering scenes (⇧⌘Z redoes). Undoing a delete puts its cues back in the scene. The up/down arrows are gone from Scenes and Characters; drag to reorder
-- A scene no longer needs a label: give it a label, a song, or both. A scene with only a song shows the song in its header, on prints and on the iPad
-- Cue list top bar stays on one line in a narrow window: Add Scene and Add Character are icon buttons, a long show name shortens with …, and the scene menu shrinks
-- Cue list: when a show lets iPads connect, the top bar shows a green dot for each connected iPad ("2 iPads") and a **Send to iPads** button. iPads only get your changes when you send them, so you can make lots of changes and send them in one go. Only changes an operator would see count (giving a Spot Note or other Mac-only settings don't)
-- **Page Setup** (Print → Page Setup…, or ⌘P): paper size (Letter or Legal), orientation, a page range or T· range, the sheet's options and which cue details print, with a preview you scroll through. Each kind of sheet keeps its own paper, orientation and range. Every sheet fits the paper you pick: Legal fits more cues on a spot sheet, gives the caller sheet more room and a spot sheet's cover a bigger logo. Spot sheets print portrait, the caller sheet landscape
-- Print remembers what you picked for each show: the sheet, label and every setting
-- Print preview opens showing a whole page
-- Caller sheet with 4 or more spots: short iris names (H&S, FB), smaller action words that stay on one line, and each spot's color load on one row at the top, lined up even when a spot has no location. Names never split mid-word. Action symbols are the same size throughout a sheet
-- Caller sheet: an ignored spot keeps its size, goes grey and faint, with IGNORE centered over it
-- Caller sheet: each cue lines up across its spots. The action word, character and intensity share one line; iris, color and time sit at the same height; and if any spot has a When or a Note, every active spot shows both, in line. Tracked spots keep their short layout
-- Shorter tips and settings descriptions, quicker to read
-- A new or inserted cue now brings each spot's iris size from the cue above, along with its character and color
-- Cue list: a spot's iris size shows bright blue in the cue where it changes and muted while it stays the same, like color frames
-- Changing a cue to **Tracked** now starts it clean (no time, intensity, When, w/LQ or notes) and carries on from that spot's cue above: the same character, iris size and color frames. It keeps following: change the iris or color in the cue above and the Tracked cues below change too. A new **character** follows the person all the way to their fade out: through Tracked cues and cues like Increase or Iris In, into the Fade Out / Bump Out, and stopping at Off, a new Pick Up, Swap To or Slide To, or a cue on someone else
-- Clearer action symbols: Bump Up and Bump Out are bold arrows hitting a bar (the light snaps straight to full or out), Ballyhoo is two overlapping circles, Iris In and Iris/Fade Out's arrows point inward (Iris Out's point out), new symbols for Swap To and Stay With, and a new purple for the iris actions. Prints and the Action Key match
+## 0.5.1 (2026-11-10)
+
+Cue list
+- **Select a whole cue:** click empty space in it. Then ⌘C / ⌘V, ⌘D duplicates, ⌘= adds a cue after it, ⌘Delete deletes, ⌘1–⌘4 open that spot, ↑ ↓ move, and typing sets the LQ
+- **Build cues from the keyboard:** Tab goes through every spot, Return opens the action picker, and ← → with Space work on iris and color
+- **Go to Cue** (⌘G) jumps to any cue by its LQ
+- **Tracking:** a new character tracks with that person to their fade out. Iris and color track until the spot goes out (iris stops before iris actions, color before Bump Color and Roll Color). Tracked cues start clean and follow the cue above
+- **↓ next to an LQ** fills its number and page into the blank cues below it
+- New cues bring the iris size from the cue above, and an iris change shows bright blue, like color
+- Fits narrow windows: iris sizes scroll, and fold into one button when the window is really tight
+- Green dots show connected iPads, and **Send to iPads** sends your changes when you're ready
+
+Printing
+- **Page Setup** (⌘P): Letter or Legal, orientation, a page or T· range, and which details print, with a preview
+- **Iris pictures:** show on a stick figure how much of a person each iris size lights, and print it in the sheet headers
+
+Show Settings
+- **Actions** (was Custom Actions): add your own actions with icons, or rename the built-in ones. Choose what tracks through each of your own actions
+
+Elsewhere
+- **Home:** ⋯ on a show to Duplicate, export or delete it
+- **Spot Notes:** redesigned, grouped by scene, with ✓ to give a note
+- iPad Sync shows each iPad's name
 
 ## 0.5.0 (2026-11-04)
 
