@@ -819,6 +819,8 @@ const CUE_LIST_CSS = `
 .cue-list tr[data-selected="true"] > td { background-image: linear-gradient(rgba(10,132,255,0.12), rgba(10,132,255,0.12)); box-shadow: inset 0 1px 0 rgba(10,132,255,0.55), inset 0 -1px 0 rgba(10,132,255,0.55); }
 .cue-list :focus-visible { outline: 2px solid #0A84FF !important; outline-offset: 1px; }
 .cue-list tr[data-cue-id] { scroll-margin-top: calc(var(--thead-h, 47px) + 36px); }
+.cue-list .fill-down { position: absolute; top: 12px; right: 3px; width: 16px; height: 18px; padding: 0; border: none; border-radius: 4px; background: transparent; color: rgba(255,255,255,0.35); font-size: 12px; line-height: 18px; cursor: pointer; }
+.cue-list .fill-down:hover { color: #FFFFFF; background: rgba(10,132,255,0.35); }
 `;
 
 function InsertButton({ onInsert }) {
@@ -897,7 +899,7 @@ function HeaderColorLoad({ slots, perm }) {
   );
 }
 
-function CueRow({ lookBySpot, selected, lqSeed, onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesBySpot, irisChangesBySpot, cue, isLastCue, fieldsShown, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onNewCustomCharacter, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal, onCueDoubleClick, irisSizes, customActions, actionNames, defaults, fromOffCells, aboveCells }) {
+function CueRow({ fillCount, onFillDown, lookBySpot, selected, lqSeed, onDragFinished, onCellMenu, onCueMenu, menuCell, colorChangesBySpot, irisChangesBySpot, cue, isLastCue, fieldsShown, spots, spotCues, characters, colorSlotsBySpot, scenes, onUpdateCue, onUpdateSpotCue, onNewCustomCharacter, onDelete, onInsertAfter, dragSource, dragTarget, setDragSource, setDragTarget, setShowDragModal, onCueDoubleClick, irisSizes, customActions, actionNames, defaults, fromOffCells, aboveCells }) {
   const [editingLQ, setEditingLQ] = useState(false);
   const [lqVal, setLqVal] = useState(cue.lq_number || '');
 
@@ -961,6 +963,10 @@ function CueRow({ lookBySpot, selected, lqSeed, onDragFinished, onCellMenu, onCu
                 style={{ fontSize: '20px', borderRadius: '6px', padding: '0 4px', fontWeight: '700', color: lqVal ? '#FFFFFF' : 'rgba(255,255,255,0.28)', cursor: 'pointer', minHeight: '24px', fontVariantNumeric: 'tabular-nums' }}>
                 {lqVal || '—'}
               </div>
+            )}
+            {!editingLQ && fillCount > 0 && (
+              <button tabIndex={-1} className="fill-down" onClick={onFillDown}
+                title={`Copy ${(cue.lq_number || '').trim()}${cue.page ? ' and page ' + cue.page : ''} into the ${fillCount === 1 ? 'cue' : fillCount + ' cues'} below`}>↓</button>
             )}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', color: 'rgba(255,255,255,0.35)', fontVariantNumeric: 'tabular-nums' }}>
               <span>T·{cue.track_number}</span>
@@ -2135,6 +2141,26 @@ const groupedCues = () => {
   };
 
   // The bottom cue of the list (no insert button after it)
+  // Fill down: a cue's LQ and page copied into the blank-LQ cues right below it, up to the next numbered cue.
+  // fillBelow: cue id → those cues (only cues with an LQ and at least one blank cue under them)
+  const fillBelow = (() => {
+    const out = new Map();
+    const cues = sortedCues();
+    const blank = (c) => !String(c.lq_number || '').trim();
+    cues.forEach((c, i) => {
+      if (blank(c)) return;
+      const below = [];
+      for (let j = i + 1; j < cues.length && blank(cues[j]); j++) below.push(cues[j]);
+      if (below.length) out.set(c.id, below);
+    });
+    return out;
+  })();
+  const fillDown = (cue) => {
+    for (const c of fillBelow.get(cue.id) || []) {
+      updateCue(c.id, 'lq_number', cue.lq_number);
+      if ((c.page || '') !== (cue.page || '')) updateCue(c.id, 'page', cue.page || null);
+    }
+  };
   const lastCueId = (() => { const all = groupedCues().flatMap(g => g.cues); return all.length ? all[all.length - 1].id : null; })();
 
       return (
@@ -2250,6 +2276,7 @@ const groupedCues = () => {
                   <InsertButton onInsert={() => insertCueAtSceneTop(group)} />
                   {group.cues.map((cue) => (
                     <CueRow key={cue.id} cue={cue} fieldsShown={listFields}
+                      fillCount={fillBelow.get(cue.id)?.length || 0} onFillDown={() => fillDown(cue)}
                       lookBySpot={lookBySpot} selected={selectedCueId === cue.id} lqSeed={lqSeed?.cueId === cue.id ? lqSeed : null}
                       isLastCue={cue.id === lastCueId}
                       spots={data?.spots || []}
