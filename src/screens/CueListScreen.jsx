@@ -943,31 +943,11 @@ function NotesButton({ count }) {
   );
 }
 
-// The Notes sidebar's frame: slides in and out from the right edge. Its width grows from 0, so the cue
-// list makes room as it comes in. The slide starts on the click itself (the 0 width is measured before
-// the change, so the browser animates it straight away). Instant when the Mac is set to reduce motion.
+// The Notes sidebar's frame: shows and hides instantly (no slide), and the cue list makes room for it.
 function SlidePanel({ width, children }) {
   const open = useNotesOpen();
-  const [mounted, setMounted] = useState(open);
-  const [shown, setShown] = useState(open);
-  const ref = useRef(null);
-  useLayoutEffect(() => {
-    if (open && !mounted) { setMounted(true); return; }
-    if (open && mounted && !shown) { void ref.current?.offsetWidth; setShown(true); return; }
-    if (!open && shown) setShown(false);
-  }, [open, mounted, shown]);
-  useEffect(() => {
-    if (open || !mounted) return;
-    const t = setTimeout(() => setMounted(false), 260);   // keep it drawn while it slides out
-    return () => clearTimeout(t);
-  }, [open, mounted]);
-  if (!mounted) return null;
-  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  return (
-    <div ref={ref} style={{ width: shown ? width : 0, flexShrink: 0, overflow: 'hidden', display: 'flex', transition: reduce ? 'none' : 'width 240ms cubic-bezier(0.2, 0.8, 0.2, 1)', willChange: 'width' }}>
-      {children}
-    </div>
-  );
+  if (!open) return null;
+  return <div style={{ width, flexShrink: 0, overflow: 'hidden', display: 'flex' }}>{children}</div>;
 }
 
 // Double-clicked scene header: rename the scene right there (Enter or clicking away saves, Escape cancels).
@@ -1018,15 +998,29 @@ export default function CueListScreen({ show, navigate }) {
   const scrollRef = useRef(null);
   // Sticky scene headers sit just under the sticky spot header
   const theadRef = useRef(null);
-  const [theadHeight, setTheadHeight] = useState(48);
+  // The spot header's height goes straight into a CSS variable (--thead-h) the scene headers pin
+  // under. It's set before the screen is drawn (and again whenever the header changes size, e.g. a
+  // color load opening), so the scene headers move in the same frame instead of bouncing a frame later.
+  const theadHeightRef = useRef(48);
+  const headerObserver = useRef(null);
+  const measureThead = () => {
+    const h = theadRef.current?.getBoundingClientRect().height || 48;
+    theadHeightRef.current = h;
+    scrollRef.current?.style.setProperty('--thead-h', (Math.floor(h) - 1) + 'px');
+  };
+  useLayoutEffect(() => {
+    measureThead();
+    const el = theadRef.current;
+    if (el && headerObserver.current?.el !== el) {
+      headerObserver.current?.ro.disconnect();
+      const ro = new ResizeObserver(measureThead);
+      ro.observe(el);
+      headerObserver.current = { ro, el };
+    }
+  });
+  useEffect(() => () => headerObserver.current?.ro.disconnect(), []);
   // The pinned scene header whose first cue has scrolled past (shown in [brackets])
   const [continuedScene, setContinuedScene] = useState(null);
-  useEffect(() => {
-    if (!theadRef.current) return;
-    const ro = new ResizeObserver(() => setTheadHeight(theadRef.current?.getBoundingClientRect().height || 48));
-    ro.observe(theadRef.current);
-    return () => ro.disconnect();
-  });
   const updateContinuedScene = () => {
     const container = scrollRef.current;
     if (!container) return;
@@ -1782,7 +1776,7 @@ const groupedCues = () => {
               const target = sceneRow.nextElementSibling || sceneRow;
               const headerHeight = sceneRow.getBoundingClientRect().height;
               const offset = target.getBoundingClientRect().top - containerTop;
-              scrollRef.current.scrollBy({ top: offset - theadHeight - headerHeight, behavior: 'smooth' });
+              scrollRef.current.scrollBy({ top: offset - theadHeightRef.current - headerHeight, behavior: 'smooth' });
             }
           }
         }}
@@ -1812,7 +1806,7 @@ const groupedCues = () => {
         const el = scrollRef.current;
         if (el && scrollRestored.current) {
           // The first cue row below the pinned spot names, and how far down it sits
-          const topEdge = el.getBoundingClientRect().top + theadHeight;
+          const topEdge = el.getBoundingClientRect().top + theadHeightRef.current;
           const row = [...el.querySelectorAll('tr[data-cue-id]')].find(r => r.getBoundingClientRect().bottom > topEdge);
           sessionStorage.setItem(`cueScroll_${show.id}`, JSON.stringify({ top: el.scrollTop, left: el.scrollLeft,
             cueId: row ? row.dataset.cueId : null, offset: row ? row.getBoundingClientRect().top - el.getBoundingClientRect().top : 0 }));
@@ -1856,7 +1850,7 @@ const groupedCues = () => {
               {groupedCues().map((group) => (
                 <React.Fragment key={group.sceneId || 'unassigned'}>
                   <tr data-scene-id={group.sceneId} data-scene-key={group.sceneId || 'unassigned'}>
-                    <td colSpan={(data?.spots || []).length + 1} style={{ position: 'sticky', top: Math.floor(theadHeight) - 1, zIndex: 6, padding: '7px 14px', textAlign: 'center', background: group.actBreak ? '#3E301B' : '#203A2A',
+                    <td colSpan={(data?.spots || []).length + 1} style={{ position: 'sticky', top: 'var(--thead-h, 47px)', zIndex: 6, padding: '7px 14px', textAlign: 'center', background: group.actBreak ? '#3E301B' : '#203A2A',
                       // Lines drawn inside the cell: a table's own borders don't move with a pinned (sticky) cell, which left
                       // a see-through sliver above it. Tucked 1px under the spot-name bar so no cue shows between them.
                       boxShadow: `inset 0 1px 0 ${group.actBreak ? 'rgba(255,159,10,0.35)' : 'rgba(48,209,88,0.32)'}, inset 0 -1px 0 ${group.actBreak ? 'rgba(255,159,10,0.35)' : 'rgba(48,209,88,0.32)'}` }}>

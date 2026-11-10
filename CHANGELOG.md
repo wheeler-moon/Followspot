@@ -6,6 +6,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 
 ## Unreleased
 
+- Cue list: the Notes sidebar opens and closes instantly, and opening a spot's color load no longer makes the scene headers jump
 - Spot Settings and New Show are more compact: operator, location and fixture sit on one row, and the color frames are two short rows. The permanent color is the last box, **Perm** (leave it empty for none), and hovering a frame shows **+** for a second gel. A picked gel shows just its number (R02); the search list and hovering the box show the name
 - Show Settings: **Custom Actions** is now just **Actions**
 - Actions: Off is no longer on the list of actions you can rename; it always reads Off
