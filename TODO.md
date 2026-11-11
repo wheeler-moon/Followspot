@@ -35,7 +35,7 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 
 ## Desktop app (`followspot`)
 
-### Next (0.5.1)
+### Next (0.5.2)
 - [ ] Beta feedback: add items here as testers report them
 - [ ] Cue Defaults, second pass: first version is in (Show Settings → Cue Defaults, `src/cueDefaults.js`). Wheeler wants to think it through more and make sure it fully works and is structured right: when defaults should apply (on picking an action vs. when a cue is made), how they interact with tracking, inserted cues, copy/paste and actions' own settings, whether defaults should be per spot, and whether more details (character, When) belong there. Remove the "In progress" label in the panel once it is settled.
 
@@ -43,6 +43,7 @@ Current desktop version: **0.3.1** (released 2026-10-14). Changes since then: `C
 
 ### Before launch (not features)
 - [ ] **Policy for after release:** when an update changes something in people's existing shows (an action icon, how something prints), decide whether they can keep the old way in shows they already wrote, or choose when they update. Think it through before the first post-launch change
+- [ ] **Update Electron** (now 41.0.2) to the newest 41.x before the release candidate (Dec 7): picks up Node.js and Chromium security fixes (the Oct 2026 eMudhra certificate and Node TLS issues). Run the app, print every sheet and check auto-update after
 - [ ] **Apple signing certificate expires Feb 1, 2027** (Developer ID Application, team 299TQ9H5QB). Make a new one in December so 1.0 and its first updates are signed with it. If the developer account moves to the LLC, convert the existing account rather than opening a new one: auto-update needs the same Team ID
 - [ ] Make the app's code private (steps below, under Later) before launch, with a release
 
