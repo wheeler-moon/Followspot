@@ -13,7 +13,7 @@ import { irisSizeList } from '../irisSizes';
 import { gelColor } from '../gelColors';
 import { MAX_CHARACTERS, extraCharacters, extraCharactersJSON } from '../characterNames';
 import { setUndoTarget } from '../undoTarget';
-import { followDown, FOLLOW_FIELDS, goesOut } from '../characterTracking';
+import { followDown, FOLLOW_FIELDS, goesOut, NEW_TARGET } from '../characterTracking';
 import { withGaps } from '../frames';
 import ActionIcon from '../components/ActionIcon';
 import { findCue } from '../cueSearch';
@@ -386,7 +386,7 @@ function ExtraCharacterBox({ value, characters, onChange, onRemove, onNewName, c
           onKeyDown={e => { if (e.key === 'Enter') commit(e.target.value); if (e.key === 'Escape') { done.current = true; setTyping(false); } }}
           style={{ ...charBoxStyle, gridColumn: column, color: '#FFFFFF' }} />
       ) : (
-        <select value={typeof value === 'number' ? value : ''} onChange={e => {
+        <select data-char className={value ? 'char-set' : undefined} value={typeof value === 'number' ? value : ''} onChange={e => {
           if (e.target.value === 'custom') { done.current = false; setTyping(true); }
           else if (e.target.value) onChange(parseInt(e.target.value));
         }} style={{ ...charBoxStyle, gridColumn: column, color: value ? '#FFFFFF' : 'rgba(255,255,255,0.28)' }}>
@@ -427,9 +427,17 @@ function SpotCueCell({ above, onDragEnd, onContextMenu, spotCue, spot, cue, fiel
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') { e.preventDefault(); pickerByKey.current = true; setShowActionPicker(true); }
   };
+  // After an action that picks someone up (Pick Up, Bump Up, Swap To, Slide To), the character box is next
+  const charRef = useRef(null);
+  const focusChar = useRef(false);
+  useEffect(() => {
+    if (focusChar.current && !showActionPicker && charRef.current) { focusChar.current = false; charRef.current.focus(); }
+  });
   const closePicker = () => {
     setShowActionPicker(false);
-    if (pickerByKey.current) { pickerByKey.current = false; requestAnimationFrame(() => actionBtnRef.current?.focus()); }
+    const byKey = pickerByKey.current;
+    pickerByKey.current = false;
+    if (byKey && !focusChar.current) requestAnimationFrame(() => actionBtnRef.current?.focus());
   };
 
   if (!spotCue) return (
@@ -475,6 +483,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
       return;
     }
     onUpdate(spotCue.id, 'action', a.name);
+    if (NEW_TARGET.includes(a.name) && fieldsShown.character !== false) focusChar.current = true;
     // Turning a spot Off starts its box clean: the active cue's note doesn't carry into the Off note
     if (a.name === 'Off' && spotCue.action !== 'Off') {
       if (spotCue.notes) onUpdate(spotCue.id, 'notes', '');
@@ -651,7 +660,7 @@ const actionDef = ACTIONS.find(a => a.name === spotCue?.action) || (customAction
             style={{ ...charBoxStyle, display: showChar ? undefined : 'none', gridColumn: charColumn, color: '#FFFFFF' }}
           />
         ) : (
-          <select value={spotCue.character_id || ''} onChange={e => {
+          <select ref={charRef} data-char className={(spotCue.character_id || spotCue.custom_character) ? 'char-set' : undefined} value={spotCue.character_id || ''} onChange={e => {
             if (e.target.value === 'custom') {
               customCharDone.current = false;
               onUpdate(spotCue.id, 'character_id', null);
@@ -819,6 +828,9 @@ const CUE_LIST_CSS = `
 .cue-list tr[data-selected="true"] > td { background-image: linear-gradient(rgba(10,132,255,0.12), rgba(10,132,255,0.12)); box-shadow: inset 0 1px 0 rgba(10,132,255,0.55), inset 0 -1px 0 rgba(10,132,255,0.55); }
 .cue-list :focus-visible { outline: 2px solid #0A84FF !important; outline-offset: 1px; }
 .cue-list tr[data-cue-id] { scroll-margin-top: calc(var(--thead-h, 47px) + 36px); }
+.cue-list select[data-char]:focus { outline: 2px solid #0A84FF !important; outline-offset: 1px; }
+.cue-list select.char-set { background: transparent !important; font-size: 16px !important; font-weight: 700 !important; color: #FFFFFF !important; }
+.cue-list select.char-set:hover, .cue-list select.char-set:focus { background: rgba(255,255,255,0.08) !important; }
 .cue-list .fill-down { position: absolute; top: 12px; right: 3px; width: 16px; height: 18px; padding: 0; border: none; border-radius: 4px; background: transparent; color: rgba(255,255,255,0.35); font-size: 12px; line-height: 18px; cursor: pointer; }
 .cue-list .fill-down:hover { color: #FFFFFF; background: rgba(10,132,255,0.35); }
 `;
@@ -1411,20 +1423,25 @@ export default function CueListScreen({ show, navigate }) {
 
     const dataRef = useRef(data);
   useEffect(() => { dataRef.current = data; }, [data]);
+  const scrollToCue = useRef(null);
+  useEffect(() => {
+    const id = scrollToCue.current;
+    const row = id && scrollRef.current?.querySelector(`tr[data-cue-id="${id}"]`);
+    if (row) { scrollToCue.current = null; row.scrollIntoView({ block: 'center' }); }
+  }, [data]);
 
   useEffect(() => {
     const handler = () => {
       const cues = dataRef.current?.cues || [];
       const selected = cues.find(c => c.id === keysRef.current.selectedCueId);
-      if (selected) {
-        const id = insertCueAfter(selected.id, selected.scene_id);
-        if (id) keysRef.current.selectCue(id);
-      } else if (cues.length > 0) {
+      let id;
+      if (selected) id = insertCueAfter(selected.id, selected.scene_id);
+      else if (cues.length > 0) {
         const lastCue = [...cues].sort((a, b) => a.sort_order - b.sort_order)[cues.length - 1];
-        insertCueAfter(lastCue.id, lastCue.scene_id);
-      } else {
-        addCue();
-      }
+        id = insertCueAfter(lastCue.id, lastCue.scene_id);
+      } else id = addCue();
+      // Select the new cue and bring it into view once it's drawn
+      if (id) { scrollToCue.current = id; keysRef.current.selectCue(id, false); }
     };
     ipcRenderer.on('menu-add-cue', handler);
     return () => {
@@ -1521,6 +1538,7 @@ export default function CueListScreen({ show, navigate }) {
     const r = ipcRenderer.sendSync('db-create-cue', { showId: show.id, sceneId });
     if (r?.success) pushUndo({ type: 'cue-created', cueId: r.id });
     load();
+    return r?.success ? r.id : null;
   };
 
   // The strip under a scene header: a new first cue for that scene. In an act break with no cues yet, it
@@ -1897,7 +1915,7 @@ export default function CueListScreen({ show, navigate }) {
   // ── A selected cue row and the keyboard ──
   // Clicking empty space in a cue (not a box or button) selects its whole row, like a row in a
   // spreadsheet. With a row selected: ↑/↓ move the selection, ⌘C / ⌘V copy and paste the whole cue
-  // (paste replaces what every spot does; LQ, page and scene stay), ⌘D duplicates it below, ⌘= adds
+  // (paste replaces what every spot does; LQ, page and scene stay), ⌘D duplicates it below, ⌘N adds
   // a cue after it, ⌘Delete deletes it (asks first), ⌘1–⌘9 opens that spot's cue window, typing
   // starts the LQ number, Tab goes into the row, and Escape (or clicking elsewhere) clears it.
   // Tabbing into a row selects it too, so the shortcuts follow the keyboard.
@@ -2119,9 +2137,8 @@ const groupedCues = () => {
     for (const sceneId of sceneOrder) {
       const sceneCues = sorted.filter(c => c.scene_id === sceneId);
       const scene = scenes.find(s => s.id === sceneId);
-      // A scene with no cues is left out, but an act break always shows: it's a header ("Act One") that
-      // usually has no cues of its own, and the list should open on it
-      if (sceneCues.length === 0 && !scene?.act_break) continue;
+      // A scene or act break with no cues is left out (prints still show act breaks)
+      if (sceneCues.length === 0) continue;
       groups.push({
         sceneId,
         sceneLabel: scene ? scene.label : 'Unknown',

@@ -1197,7 +1197,7 @@ ipcMain.on('db-get-show-stats', (event, showId) => {
         // (or a custom action marked "Spot goes out after this")
         const endsInOff = ['Fade Out', 'Bump Out', 'Fade In Place', 'Up & Out', 'Iris/Fade Out'].includes(prevAction) || customOut.has(prevAction);
         const wasOff = prevAction === 'Off';
-        const startsOff = endsInOff || wasOff;
+        const startsOff = endsInOff || wasOff || !prevSpotCue;   // nothing above (a show's first cue): every spot starts Off
 
                 // A new cue tracks on from the cue above: same character(s), iris size and color (unless the spot ended up Off)
                 database.prepare('INSERT INTO spot_cues (cue_id, spot_id, action, character_id, custom_character, extra_characters, intensity, fade_time, active_frames, description, notes, frame_size, no_color) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(
@@ -1480,7 +1480,7 @@ app.whenReady().then(async () => {
     {
       label: 'File',
       submenu: [
-        { label: 'New Show', accelerator: 'CmdOrCtrl+N', click: () => { mainWindow.webContents.send('menu-new-show'); } },
+        { label: 'New Show', click: () => { mainWindow.webContents.send('menu-new-show'); } },
         { label: 'Export Show', accelerator: 'CmdOrCtrl+E', click: () => { mainWindow.webContents.send('menu-export-show'); } },
         { label: 'Export as Spreadsheet (CSV)…', click: () => { mainWindow.webContents.send('menu-export-csv'); } },
         { label: 'Import Show', accelerator: 'CmdOrCtrl+I', click: () => { mainWindow.webContents.send('menu-import-show'); } },
@@ -1503,7 +1503,7 @@ app.whenReady().then(async () => {
         { label: 'Paste', role: 'paste' },
         { label: 'Select All', role: 'selectAll' },
         { type: 'separator' },
-        { label: 'Add Cue', accelerator: 'CmdOrCtrl+=', click: () => { mainWindow.webContents.send('menu-add-cue'); } },
+        { label: 'Add Cue', accelerator: 'CmdOrCtrl+N', click: () => { mainWindow.webContents.send('menu-add-cue'); } },
         { id: 'go-to-cue', label: 'Go to Cue…', accelerator: 'CmdOrCtrl+G', enabled: false, click: () => { mainWindow.webContents.send('menu-go-to-cue'); } },
       ],
     },

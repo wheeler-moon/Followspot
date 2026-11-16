@@ -109,6 +109,19 @@ function framesText(activeFrames) {
 const QUIET_GREY = '#8a8a8a';
 const isQuiet = (sc) => !!sc && sc.action !== 'Off' && (!sc.action || sc.action === 'Tracked');
 
+// The cues where a spot's iris size changes (its first size counts too); the rest print grey
+function irisChangeCues(orderedCues, spotCuesForSpot) {
+  const changed = new Set();
+  let last = null;
+  for (const cue of orderedCues) {
+    const sc = spotCuesForSpot.find(x => x.cue_id === cue.id);
+    if (!sc || sc.action === 'Off' || !sc.frame_size) continue;
+    if (sc.frame_size !== last) changed.add(cue.id);
+    last = sc.frame_size;
+  }
+  return changed;
+}
+
 function colorChangeCues(orderedCues, spotCuesForSpot) {
   const changed = new Set();
   let last = null;
@@ -151,9 +164,11 @@ function emptyActBreaks(scenes, printedCues, { edges = true } = {}) {
     return before;
   };
 }
+// Act breaks print dark orange (like the gold act headers on the cue list); scenes print black
+const ACT_BREAK_BG = '#B35C00';
 const sceneRowHTML = (scene, colspan) => `
           <tr class="scene-row">
-            <td colspan="${colspan}">${scene.label || scene.song || ''}${scene.label && scene.song ? ' · ' + scene.song : ''}</td>
+            <td colspan="${colspan}"${scene.act_break ? ` style="background:${ACT_BREAK_BG}"` : ''}>${scene.label || scene.song || ''}${scene.label && scene.song ? ' · ' + scene.song : ''}</td>
           </tr>
         `;
 
@@ -189,6 +204,7 @@ const sceneOrderMap = {};
     return a.sort_order - b.sort_order;
   });
   const colorChanged = colorChangeCues(sortedCues, spotCues.filter(x => x.spot_id === spot.id));
+  const irisChanged = irisChangeCues(sortedCues, spotCues.filter(x => x.spot_id === spot.id));
 
   if (rangeStart !== null && rangeStart !== undefined) {
     sortedCues = sortedCues.filter(c => c.track_number >= rangeStart);
@@ -299,7 +315,7 @@ const sceneOrderMap = {};
         <td class="char-cell">${charText || '—'}</td>
         <td class="int-iris-cell">
           <div class="int-val" style="font-size:11pt;font-weight:700;color:#1a1a1a;">${sc.intensity || '—'}</div>
-          <div class="iris-val" style="font-size:10pt;color:#333;">${sc.frame_size || '—'}</div>
+          <div class="iris-val" style="font-size:10pt;color:${irisChanged.has(cue.id) ? '#333' : QUIET_GREY};">${sc.frame_size || '—'}</div>
         </td>
         <td class="frames-cell" style="${colorChanged.has(cue.id) ? `background:${COLOR_CHANGE_BG}` : `color:${QUIET_GREY}`}">${sc.no_color ? 'NC' : (activeFrames || '—')}</td>
         <td class="time-cell">${sc.fade_time ? sc.fade_time + 's' : '—'}</td>
@@ -700,6 +716,8 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
   });
   const colorChangedBySpot = {};
   for (const spot of spots) colorChangedBySpot[spot.id] = colorChangeCues(sortedCues, spotCuesBySpot[spot.id] || []);
+  const irisChangedBySpot = {};
+  for (const spot of spots) irisChangedBySpot[spot.id] = irisChangeCues(sortedCues, spotCuesBySpot[spot.id] || []);
   // A T· range (Print Setup): only those cues, after color changes are worked out on the whole show
   const isRange = rangeStart != null || rangeEnd != null;
   if (rangeStart != null) sortedCues = sortedCues.filter(cue => cue.track_number >= rangeStart);
@@ -797,7 +815,7 @@ function buildCallerSheetHTML({ cueFields, show, spots, colorSlotsBySpot, cues, 
       // A change is highlighted yellow; the same color as before prints grey
       const colorHL = colorChangedBySpot[spot.id].has(cue.id) ? `background:${COLOR_CHANGE_BG};` : `color:${QUIET_GREY};`;
       const items = [
-        printFields.iris.print && sc.frame_size ? `<span class="detail-badge iris"><span class="lbl">Iris</span>${escapeText(irisText(sc.frame_size))}</span>` : '',
+        printFields.iris.print && sc.frame_size ? `<span class="detail-badge iris"${irisChangedBySpot[spot.id].has(cue.id) ? '' : ` style="color:${QUIET_GREY}"`}><span class="lbl">Iris</span>${escapeText(irisText(sc.frame_size))}</span>` : '',
         printFields.color.print && colorText ? `<span class="detail-badge color" style="${colorHL}"><span class="lbl">Color</span>${colorText}</span>` : '',
         printFields.time.print && sc.fade_time ? `<span class="detail-badge time"><span class="lbl">Time</span>${sc.fade_time}s</span>` : '',
       ].filter(Boolean);

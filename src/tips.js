@@ -29,7 +29,7 @@ export const TIPS = {
     { id: 'cue-first', target: 'first-cue', title: 'Add your first cue',
       body: 'Each row is one spot cue, with a column for each spot.' },
     { id: 'cue-lq', target: 'cue-lq', title: 'One row per spot cue',
-      body: 'Click to type the LQ, and pg for the script page. ⌘= adds a cue.' },
+      body: 'Click to type the LQ, and pg for the script page. ⌘N adds a cue.' },
     { id: 'cue-action', target: 'cue-action', title: 'What the spot does',
       body: 'Pick an action, then the character. + adds another character.' },
     { id: 'cue-look', target: 'cue-look', title: 'Iris and color',
