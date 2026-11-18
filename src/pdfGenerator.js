@@ -164,8 +164,8 @@ function emptyActBreaks(scenes, printedCues, { edges = true } = {}) {
     return before;
   };
 }
-// Act breaks print as a bigger, centered title on a medium grey bar, underlined in black; scenes print as black bars
-const ACT_BREAK_CSS = 'background:#B0B0B0;color:#000;border-bottom:3px solid #000;font-size:13pt;font-weight:800;letter-spacing:0.14em;text-align:center;padding:7px 10px;';
+// Act breaks print as a bigger, centered title on a medium grey bar with a heavy black line above and below; scenes print as black bars
+const ACT_BREAK_CSS = 'background:#B0B0B0;color:#000;border-top:3px solid #000;border-bottom:3px solid #000;font-size:13pt;font-weight:800;letter-spacing:0.14em;text-align:center;padding:7px 10px;';
 const sceneRowHTML = (scene, colspan) => `
           <tr class="scene-row">
             <td colspan="${colspan}"${scene.act_break ? ` style="${ACT_BREAK_CSS}"` : ''}>${scene.label || scene.song || ''}${scene.label && scene.song ? ' · ' + scene.song : ''}</td>
