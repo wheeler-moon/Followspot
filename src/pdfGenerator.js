@@ -164,11 +164,11 @@ function emptyActBreaks(scenes, printedCues, { edges = true } = {}) {
     return before;
   };
 }
-// Act breaks print dark orange (like the gold act headers on the cue list); scenes print black
-const ACT_BREAK_BG = '#B35C00';
+// Act breaks print as a bigger, centered title between two heavy lines (the same on any printer); scenes print as black bars
+const ACT_BREAK_CSS = 'background:#fff;color:#1a1a1a;border-top:3px solid #1a1a1a;border-bottom:3px solid #1a1a1a;font-size:13pt;font-weight:800;letter-spacing:0.14em;text-align:center;padding:7px 10px;';
 const sceneRowHTML = (scene, colspan) => `
           <tr class="scene-row">
-            <td colspan="${colspan}"${scene.act_break ? ` style="background:${ACT_BREAK_BG}"` : ''}>${scene.label || scene.song || ''}${scene.label && scene.song ? ' · ' + scene.song : ''}</td>
+            <td colspan="${colspan}"${scene.act_break ? ` style="${ACT_BREAK_CSS}"` : ''}>${scene.label || scene.song || ''}${scene.label && scene.song ? ' · ' + scene.song : ''}</td>
           </tr>
         `;
 

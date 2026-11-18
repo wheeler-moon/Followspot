@@ -11,7 +11,7 @@ Sections: Cue list · Printing · Spots & shows · iPad · Fixes · Other. Websi
 - Cue list: after Pick Up, Bump Up, Swap To or Slide To, the character box is ready to type in
 - Cue list: character names are bigger and bolder, so you can see who each spot is on at a glance
 - Cue list: an act break with no cues no longer shows
-- Prints: an iris size that's the same as before prints grey, like color. Act breaks print in orange
+- Prints: an iris size that's the same as before prints grey, like color. Act breaks print as a bigger, centered title between two heavy lines
 ## 0.5.1 (2026-11-10)
 
 Cue list
