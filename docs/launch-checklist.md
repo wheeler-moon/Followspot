@@ -38,7 +38,7 @@ Every task between now and launch, in date order, for all of SpotPlot (Mac app, 
 
 ## Nov 23 – Dec 6: build the selling side (Stripe test mode)
 
-- [ ] W: Stripe account in the LLC's name (EIN, bank account); products and prices: Standard $17/mo or $170/yr, Student $8/mo or $72/yr
+- [x] W: Stripe account in the LLC's name (EIN, Mercury); products and prices made in test mode: Standard $17/mo or $170/yr, Student $8/mo or $72/yr
 - [ ] W: Stripe settings: receipts, failed-payment and expiring-card emails, yearly renewal reminders, customer portal (cancel / update card), Stripe Tax per the accountant
 - [ ] B: Stripe checkout: collects the buyer's **name**; unticked "I agree to the Terms; renews automatically until canceled" box; renewal terms by the Pay button
 - [ ] B: Webhooks → license server: create the license on purchase, set end dates from the subscription, `payment_failed` (24-hour grace), cancellations, `stripe_customer_id`, history
