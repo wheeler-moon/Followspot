@@ -18,7 +18,7 @@ Every task between now and launch, in date order, for all of SpotPlot (Mac app, 
 - [ ] W: Request the D-U-N-S number for the LLC (free; can take ~2 weeks)
 - [x] W: **Reserve the app name**: "SpotPlot" app record created in App Store Connect (Nov 4); first build (1.0, build 1) uploaded to TestFlight
 - [ ] W: Business mailing address for the Terms and Privacy Policy (a PO box or virtual address is fine)
-- [ ] W: Decide: does the **Student plan** launch Jan 1? (needs .edu verification and a graduation date at checkout) or Standard only at first?
+- [x] W: Decide: **Standard and Student both launch Jan 1** (decided Nov 20); Production and Institution come later
 - [ ] W: Decide what beta testers get at launch (e.g. a discount code, or a free first month)
 
 ## Nov 9 – Nov 22: finish 1.0 features
@@ -43,7 +43,7 @@ Every task between now and launch, in date order, for all of SpotPlot (Mac app, 
 - [ ] B: Stripe checkout: collects the buyer's **name**; unticked "I agree to the Terms; renews automatically until canceled" box; renewal terms by the Pay button
 - [ ] B: Webhooks → license server: create the license on purchase, set end dates from the subscription, `payment_failed` (24-hour grace), cancellations, `stripe_customer_id`, history
 - [ ] W+B: **The license email**: how a buyer gets their key. Stripe doesn't send it, so the server sends it (an email service such as Postmark or Resend, sent from spotplotapp.com with SPF/DKIM set up so it doesn't land in spam). Includes the key, the email to sign in with and the download link
-- [ ] B: Student .edu verification and graduation date (if Student launches Jan 1)
+- [ ] B: Student .edu verification and graduation date (Student launches Jan 1)
 - [ ] B: `STRIPE_PORTAL_URL` on Render so Settings → Manage… opens the customer portal
 - [ ] W+B: Full test purchase in test mode: buy → email arrives → download → sign in → welcome → Settings shows the plan and renewal date; then cancel in the portal, and a failed payment (Stripe test cards)
 - [ ] W: Confirm the Render plan doesn't sleep when idle (a sleeping server makes the first sign-in wait ~50s) and that the disk is persistent; download a copy of the license backups somewhere off Render
