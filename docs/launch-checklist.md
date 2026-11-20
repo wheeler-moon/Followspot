@@ -12,7 +12,7 @@ Every task between now and launch, in date order, for all of SpotPlot (Mac app, 
 
 - [x] W: The Wheeler Moon Group LLC filed and approved (Nov 3)
 - [x] W: EIN (done Nov 8)
-- [ ] W: Business bank account (needs the EIN)
+- [ ] W: Business bank account: **Mercury** (chosen Nov 20; needs the EIN)
 - [ ] W: Book the lawyer: Terms, Privacy Policy, license agreement, refunds (no refunds), auto-renewal rules; also ask about a **"SpotPlot" trademark search**
 - [ ] W: Ask an accountant: sales tax, selling outside the US (Stripe Tax vs. Paddle/Lemon Squeezy)
 - [x] W: D-U-N-S number for the LLC (got it Nov 20)
