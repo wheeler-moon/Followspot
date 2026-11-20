@@ -64,6 +64,7 @@ Every task between now and launch, in date order, for all of SpotPlot (Mac app, 
 - [ ] W+B: Update from the current beta (0.4.x) to 1.0 through auto-update; What's New shows once
 - [ ] W+B: License cases: wrong key, wrong email, third Mac, signed out, offline, ended license, turned-off license
 - [ ] B: Shipped app's code is minified with no comments or notes (no visible AI traces)
+- [ ] W+B: Website paperwork examples (spot sheet, caller sheet, characters) and app screenshots remade from a demo show on the 1.0 release candidate
 - [ ] B: Website: manual and support match 1.0; screenshots current; no wording that reads as AI-written; Terms/Privacy final
 - [ ] W: Website wording pass sent (any form)
 - [ ] B: Website repo private or replaced with a fresh one without history or `CLAUDE.md`
