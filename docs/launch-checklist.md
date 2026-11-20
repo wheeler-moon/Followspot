@@ -24,11 +24,11 @@ Every task between now and launch, in date order, for all of SpotPlot (Mac app, 
 ## Nov 9 – Nov 22: finish 1.0 features
 
 - [x] W+B: Action icons refined from beta feedback (Mac, iPad copy, printed Action Key)
-- [ ] W+B: "Track down" button (Wheeler explains it first)
+- [x] W+B: "Track down" button: covered by automatic tracking (character, iris, color, custom actions) and the LQ fill-down arrow
 - [x] B: Tracking: what a cue picks up from the cue above when made Tracked
 - [ ] W+B: Print headers pass (needs Wheeler's notes; Color Load header misaligned)
-- [ ] B: Narrow windows (half a Mac screen)
-- [ ] B: ⌘C / ⌘V for a cue box
+- [x] B: Narrow windows (half a Mac screen)
+- [x] B: ⌘C / ⌘V for a cue box (select a whole cue row)
 - [ ] W+B: Cue Defaults second pass
 - [ ] W+B: iPad: dark-booth check on the real iPad (landscape, text size)
 - [ ] W: Pick what's in 1.0; everything else moves to a "1.1" list on Nov 22
