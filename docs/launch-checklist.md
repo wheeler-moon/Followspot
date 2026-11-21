@@ -45,7 +45,7 @@ Every task between now and launch, in date order, for all of SpotPlot (Mac app, 
 - [ ] W+B: **The license email**: how a buyer gets their key. Stripe doesn't send it, so the server sends it (an email service such as Postmark or Resend, sent from spotplotapp.com with SPF/DKIM set up so it doesn't land in spam). Includes the key, the email to sign in with and the download link
 - [x] B: Student .edu verification and graduation date (Student launches Jan 1)
 - [ ] B: `STRIPE_PORTAL_URL` on Render so Settings → Manage… opens the customer portal
-- [ ] W+B: Full test purchase in test mode: buy → email arrives → download → sign in → welcome → Settings shows the plan and renewal date; then cancel in the portal, and a failed payment (Stripe test cards)
+- [ ] W+B: Full test purchase in test mode (Nov 21: checkout → license created works; still to check: email, sign in, Settings, cancel, failed payment): buy → email arrives → download → sign in → welcome → Settings shows the plan and renewal date; then cancel in the portal, and a failed payment (Stripe test cards)
 - [ ] W: Confirm the Render plan doesn't sleep when idle (a sleeping server makes the first sign-in wait ~50s) and that the disk is persistent; download a copy of the license backups somewhere off Render
 - [ ] W+B: Make the app's code private: new public `spotplot-releases` repo, auto-update and the website's Download button pointed at it, then `Followspot` private (steps in TODO.md)
 - [ ] W: Email address for support (e.g. support@spotplotapp.com) that you'll actually check; use it on the website, in the app and in the App Store listing
@@ -93,6 +93,7 @@ Every task between now and launch, in date order, for all of SpotPlot (Mac app, 
 ## Dec 22 – Dec 30: holiday buffer
 
 - [ ] W: iPad app shows "Pending Developer Release" (approved and waiting)
+- [ ] W: Before going live: cancel the Stripe **test** subscriptions and turn off their test licenses in the dashboard (first one made Nov 21)
 - [ ] W: Dec 29: Stripe to **live mode** (live keys and webhook secret on Render); buy one real license yourself and check it end to end
 - [ ] W: Your own licenses set to **No End Date** in the dashboard (done Nov 3; check again)
 - [ ] W+B: Launch announcement written: beta testers' email, social posts, forums and groups, press list
