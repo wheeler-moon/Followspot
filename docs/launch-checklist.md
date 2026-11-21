@@ -40,10 +40,10 @@ Every task between now and launch, in date order, for all of SpotPlot (Mac app, 
 
 - [x] W: Stripe account in the LLC's name (EIN, Mercury); products and prices made in test mode: Standard $17/mo or $170/yr, Student $8/mo or $72/yr
 - [ ] W: Stripe settings: receipts, failed-payment and expiring-card emails, yearly renewal reminders, customer portal (cancel / update card), Stripe Tax per the accountant
-- [ ] B: Stripe checkout: collects the buyer's **name**; unticked "I agree to the Terms; renews automatically until canceled" box; renewal terms by the Pay button
-- [ ] B: Webhooks → license server: create the license on purchase, set end dates from the subscription, `payment_failed` (24-hour grace), cancellations, `stripe_customer_id`, history
+- [x] B: Stripe checkout: collects the buyer's **name**; unticked "I agree to the Terms; renews automatically until canceled" box; renewal terms by the Pay button
+- [x] B: Webhooks → license server: create the license on purchase, set end dates from the subscription, `payment_failed` (24-hour grace), cancellations, `stripe_customer_id`, history
 - [ ] W+B: **The license email**: how a buyer gets their key. Stripe doesn't send it, so the server sends it (an email service such as Postmark or Resend, sent from spotplotapp.com with SPF/DKIM set up so it doesn't land in spam). Includes the key, the email to sign in with and the download link
-- [ ] B: Student .edu verification and graduation date (Student launches Jan 1)
+- [x] B: Student .edu verification and graduation date (Student launches Jan 1)
 - [ ] B: `STRIPE_PORTAL_URL` on Render so Settings → Manage… opens the customer portal
 - [ ] W+B: Full test purchase in test mode: buy → email arrives → download → sign in → welcome → Settings shows the plan and renewal date; then cancel in the portal, and a failed payment (Stripe test cards)
 - [ ] W: Confirm the Render plan doesn't sleep when idle (a sleeping server makes the first sign-in wait ~50s) and that the disk is persistent; download a copy of the license backups somewhere off Render
