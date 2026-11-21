@@ -1455,7 +1455,7 @@ app.whenReady().then(async () => {
   const emailSupport = (subject, prompt) => {
     const details = `SpotPlot ${app.getVersion()} · macOS ${process.getSystemVersion()} · ${process.arch === 'arm64' ? 'Apple silicon' : 'Intel'} Mac`;
     const body = `${prompt}\n\n\n\n---\n${details}`;
-    shell.openExternal(`mailto:wheeler@wheelermoon.com?subject=${encodeURIComponent(subject + ' (' + app.getVersion() + ')')}&body=${encodeURIComponent(body)}`);
+    shell.openExternal(`mailto:contact@spotplotapp.com?subject=${encodeURIComponent(subject + ' (' + app.getVersion() + ')')}&body=${encodeURIComponent(body)}`);
   };
   // Settings → Help & Feedback uses the same emails
   ipcMain.on('email-support', (event, kind) => {

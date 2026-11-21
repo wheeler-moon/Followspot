@@ -48,7 +48,7 @@ Every task between now and launch, in date order, for all of SpotPlot (Mac app, 
 - [ ] W+B: Full test purchase in test mode (Nov 21: checkout → license created works; still to check: email, sign in, Settings, cancel, failed payment): buy → email arrives → download → sign in → welcome → Settings shows the plan and renewal date; then cancel in the portal, and a failed payment (Stripe test cards)
 - [ ] W: Confirm the Render plan doesn't sleep when idle (a sleeping server makes the first sign-in wait ~50s) and that the disk is persistent; download a copy of the license backups somewhere off Render
 - [ ] W+B: Make the app's code private: new public `spotplot-releases` repo, auto-update and the website's Download button pointed at it, then `Followspot` private (steps in TODO.md)
-- [ ] W: Email address for support (e.g. support@spotplotapp.com) that you'll actually check; use it on the website, in the app and in the App Store listing
+- [x] W: Support email: **contact@spotplotapp.com** (iCloud custom domain, Nov 21); on the website, in Help → Contact Support and the license agreement. Still to use in the App Store listing
 
 ## Dec 7: release candidate
 
