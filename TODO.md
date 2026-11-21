@@ -110,6 +110,7 @@ Plan: `docs/admin-dashboard-plan.md`.
 - [ ] Q1 2027: Production licenses (show, spots, close date). Q2 2027: Education licenses (school, seats)
 
 ## Business and pricing
+- [ ] **Behind-the-scenes guide (Word doc, kept private, not in any repo):** one place listing every service SpotPlot runs on and how they connect: Stripe, Render (license server + its settings), Postmark, the domain and DNS, GitHub repos, Apple Developer / App Store Connect / TestFlight, signing certificate (expires Feb 1, 2027), Mercury, the LLC (EIN, D-U-N-S), the admin page, where backups live, and what to do when (renewals, cert renewal, going live). Logins and keys themselves go in a password manager; the doc says where each one is, never the key itself
 - [ ] Support email address that gets checked (e.g. support@spotplotapp.com), used on the website, in the app and on the App Store
 - [ ] Decide what beta testers get at launch (discount code, free month…) and whether the Student plan launches Jan 1
 - [ ] Stripe integration. Plans: Standard $17/month or $170/year; Student $8/month or $72/year (.edu). Launch with Standard and Student in January; Production tier Q1 after launch; Education tier Q2
