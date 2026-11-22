@@ -23,13 +23,13 @@ Stripe is the source of truth for money; the license server is the source of tru
 **Customer:** id, name, email, Stripe customer id, notes, created.
 
 **License:**
-- key, customer, plan (`standard`, `student`, `production`, `education`, `comped`, `beta`), billing (`monthly`, `yearly`, `one-time`, `free`)
+- key, customer, plan (`standard`, `student`, `production`, `institution`, `comped`, `beta`), billing (`monthly`, `yearly`, `one-time`, `free`)
 - status: `active`, `past_due` (in grace), `canceled` (works to period end), `expired`, `revoked`
 - dates: starts_at, expires_at (Stripe's current period end, or the admin's override), grace_ends_at
 - device limit (default 2), devices (id, app version, first/last seen)
 - Stripe subscription id
 - Production only: show name, spot count, closes_on (max 12 months)
-- Education only: institution, domain, seats included / extra / used
+- Institution only: organization, domain, seats included / extra / used
 - history: every change with time, source (Stripe, admin, app) and a plain description
 
 ## Admin dashboard
@@ -58,7 +58,7 @@ Stripe is the source of truth for money; the license server is the source of tru
 
 - **Before launch:** the three fixes, expiry dates, Stripe for Standard and Student, dashboard home, list, license page with edits and history, app notices.
 - **Q1 2027:** Production licenses.
-- **Q2 2027:** Education licenses.
+- **Q2 2027:** Institution licenses.
 
 ## Decisions (Wheeler, 2026-10-13)
 

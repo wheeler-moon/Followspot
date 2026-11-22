@@ -14,7 +14,7 @@ const C = {
   accent: '#0A84FF', accentText: '#409CFF', red: '#FF453A', orange: '#FF9F0A', green: '#30D158',
 };
 
-const PLAN_NAMES = { standard: 'Standard', student: 'Student', comped: 'Complimentary', production: 'Production', education: 'Education', beta: 'Beta' };
+const PLAN_NAMES = { standard: 'Standard', student: 'Student', comped: 'Complimentary', production: 'Production', institution: 'Institution', education: 'Institution', beta: 'Beta' };
 const formatDate = (iso) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
 function planText(lic) {

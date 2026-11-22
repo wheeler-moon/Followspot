@@ -108,13 +108,13 @@ Plan: `docs/admin-dashboard-plan.md`.
 - [ ] The Wheeler Moon Group LLC (NY, approved 2026-11-03; name now in the Terms, Privacy Policy and license agreement). EIN done (Nov 8). Still to do: business bank account, add a mailing address to both policies' Contact sections, NY publication notice within 120 days (by about March 3, 2027), D-U-N-S number if Apple should list the company, and use the name in Stripe and the App Store
 - [ ] Sales tax and international sales: decide whether to sell outside the US at launch. Stripe Tax handles US sales tax (still register in states as thresholds are hit); for worldwide VAT, consider a merchant of record (Paddle or Lemon Squeezy) instead. Ask an accountant
 - [ ] Stripe checkout: an unticked "I agree to the Terms; renews automatically until canceled" checkbox, the renewal terms right by the Pay button, confirmation email with how to cancel, and yearly renewal reminder emails (the Terms promise these)
-- [ ] Q1 2027: Production licenses (show, spots, close date). Q2 2027: Education licenses (school, seats)
+- [ ] Q1 2027: Production licenses (show, spots, close date). Q2 2027: Institution licenses (school or organization, seats)
 
 ## Business and pricing
 - [ ] **Behind-the-scenes guide (Word doc, kept private, not in any repo):** one place listing every service SpotPlot runs on and how they connect: Stripe, Render (license server + its settings), Postmark, the domain and DNS, GitHub repos, Apple Developer / App Store Connect / TestFlight, signing certificate (expires Feb 1, 2027), Mercury, the LLC (EIN, D-U-N-S), the admin page, where backups live, and what to do when (renewals, cert renewal, going live). Logins and keys themselves go in a password manager; the doc says where each one is, never the key itself
 - [ ] Support email address that gets checked (e.g. support@spotplotapp.com), used on the website, in the app and on the App Store
 - [ ] Decide what beta testers get at launch (discount code, free month…) and whether the Student plan launches Jan 1
-- [ ] Stripe integration. Plans: Standard $17/month or $170/year; Student $8/month or $72/year (.edu). Launch with Standard and Student in January; Production tier Q1 after launch; Education tier Q2
+- [ ] Stripe integration. Plans: Standard $17/month or $170/year; Student $8/month or $72/year (.edu). Launch with Standard and Student in January; Production tier Q1 after launch; Institution tier Q2
 - [ ] Production plan: revisit the device count (spots × 2 + 2), since iPads are free and don't need licenses
 - [ ] Windows distribution
 - [ ] **Student license term:** a Student license lasts 4 years or until the student's graduation date, whichever comes sooner (the website's Support page already says so). Needs: an end date on student licenses in the license server, collecting the graduation date at signup (with .edu verification), and a reminder email before it ends with an offer to move to Standard
