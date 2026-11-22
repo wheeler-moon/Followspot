@@ -86,6 +86,7 @@ Plan: `docs/ipad-app-plan.md`. Contract with the desktop: `docs/sync-protocol.md
 - [ ] **Teaser until launch:** the public sees only the `teaser` branch (logo, tagline, 1.1.2027). Go live mid-December by switching GitHub → Settings → Pages → Branch from `teaser` to `main` (see the website's CLAUDE.md)
 - [ ] Buy buttons: switch the "Coming soon" buttons to Stripe checkout links at launch (see the site's README)
 - [ ] Check the Support page's billing answers match how Stripe is set up
+- [ ] **Example shows for the paperwork (before the examples below):** build or clean up 2–3 *real* shows, not made-up ones. Public-domain shows are safe for marketing (e.g. The Pirates of Penzance, H.M.S. Pinafore, A Midsummer Night's Dream, Romeo and Juliet); a show Wheeler actually lit only with the producer's OK (ask the lawyer). Avoid big licensed musicals on the public site. These also serve as the App Store screenshots' demo show and Apple's review file
 - [ ] **Paperwork examples before launch:** remake the sample prints on the site (`img/spot1-p1.jpg`, `caller-p1.jpg`, `characters-p1.jpg`) from a demo show on the final 1.0 build, so they show the current look (act break bars, grey iris, Page Setup), and the app screenshots (`home.jpg`, `cuelist.jpg`, `dashboard.jpg`) too. After the print headers pass
 - [ ] Add the promo video when it's finished
 - [ ] **Wording pass (Wheeler):** comb through every page (home, manual, support) and fix the wording. Send edits in any form (marked-up screenshots, pasted text, "change X to Y") and they get applied across all pages
